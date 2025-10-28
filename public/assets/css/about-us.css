@@ -1,0 +1,61 @@
+/* Hero */
+
+.hero-sec {
+    padding-top: 160px;
+    padding-bottom: 70px;
+    background-color: #FAFBEA;
+}
+
+.hero-sec .hero-img{
+    border-radius: 36px;
+    box-shadow: 0 10px 15px 0 #00000025;
+}
+
+
+/* Service */
+
+.service-sec{
+    padding-top: 50px;
+}
+
+.service-sec .service-card{
+    background-color: var(--custom-dark);
+    padding: 20px;
+    border-radius: 25px;
+    box-shadow: 0 4px 14px 0 #00000025;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.service-sec .service-card .content-wrapper .title{
+    font-size: clamp(30px,5vw,48px);
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.service-sec .service-card .content-wrapper .description{
+    font-weight: 600;
+    color: white;
+    font-size: 14px;
+}
+
+
+/* Half Section */
+
+.half-sec{
+    padding: 50px 0;
+}
+
+.half-sec .sec-card{
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: #F9F9F9;
+}
+
+.half-sec .sec-card .content-wrapper{
+    padding: 24px;
+    padding-right: clamp(24px,5vw,50px);
+}

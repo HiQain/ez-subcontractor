@@ -1,0 +1,84 @@
+/* Hero */
+
+.hero-sec {
+    background-color: #FAFBEA;
+    padding-top: 160px;
+    padding-bottom: 70px;
+}
+
+.hero-sec .content-wrapper {
+    margin: 0 auto;
+}
+
+.hero-sec .content-wrapper .form-wrapper {
+    background-color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: fit-content;
+    padding: 5px;
+    border: 1px solid var(--custom-dark);
+}
+
+.hero-sec .content-wrapper .form-wrapper .input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    width: 100%;
+}
+
+.hero-sec .content-wrapper .form-wrapper .input-wrapper:first-child {
+    border-right: 1px solid var(--custom-dark);
+}
+
+.hero-sec .content-wrapper .form-wrapper .input-wrapper .input-control {
+    border: none;
+    background-color: transparent;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    font-size: 18px;
+}
+
+.hero-sec .content-wrapper .form-wrapper .submit-btn {
+    background-color: var(--custom-green);
+    color: var(--custom-dark);
+    font-weight: 600;
+    font-size: 18px;
+    padding: 12px 30px;
+    border-radius: 8px;
+    border: none;
+    width: fit-content;
+    height: fit-content;
+}
+
+.hero-sec .content-wrapper .custom-btn-s1{
+    text-decoration: none;
+    color: var(--custom-dark);
+    font-weight: 600;
+    background-color: transparent;
+    border-radius: 30px;
+    border: 1px solid var(--custom-dark);
+    padding: 8px 16px;
+    transition: all .3s ease;
+}
+
+.hero-sec .content-wrapper .custom-btn-s1:hover{
+    background-color: var(--custom-green);
+    border-color: var(--custom-green);
+}
+
+@media (max-width:768px) {
+    /* Banner */
+
+    .hero-sec .content-wrapper .form-wrapper {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .hero-sec .content-wrapper .form-wrapper .input-wrapper:first-child {
+        border: none;
+    }
+}

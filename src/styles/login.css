@@ -1,0 +1,250 @@
+.login-sec {
+    min-height: 100vh;
+    width: 100% ;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.login-sec .row {
+    width: 100%;
+}
+.login-sec .image-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-size: 50%;
+    width: 50%;
+    height: 100%;
+    background-position: top left;
+    z-index: -1;
+}
+.login-sec .login-wrapper .icon{
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--custom-dark);
+}
+
+.login-sec .register-card {
+    background-color: #F9F9F9;
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.login-sec .register-card .register-radio{
+    width: 24px;
+    height: 24px;
+}
+
+
+.login-sec .login-wrapper .form .buttons .form-button{
+    background-color: var(--custom-dark);
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    width: fit-content;
+}
+
+.login-sec .login-wrapper .form > :nth-child(3) {
+    grid-column: 1 / -1;
+}
+.login-sec .login-wrapper .form > :nth-child(4) {
+    grid-column: 1 / -1;
+}
+.login-sec .login-wrapper .form > :nth-child(11) {
+    grid-column: 1 / -1;
+}
+.login-sec .login-wrapper .form > :nth-child(12) {
+    grid-column: 1 / -1;
+}
+
+/* Remove spinner buttons */
+input[type="number"],
+input[type="tel"]::-webkit-inner-spin-button,
+input[type="number"],
+input[type="tel"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.iti__selected-dial-code {
+    font-weight: 600;
+    color: #333;
+    margin-left: 6px;
+}
+
+
+.login-sec .input-wrapper input,
+.login-sec .input-wrapper select {
+    max-height: 45px;
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #DADADA;
+    padding: 12px;
+    outline: none;
+    transition: all .3s ease;
+}
+
+.login-sec .input-wrapper input:hover,
+.login-sec .input-wrapper input:focus,
+.login-sec .input-wrapper select:hover,
+.login-sec .input-wrapper select:focus {
+    border-color: var(--custom-green);
+    outline: none;
+    box-shadow: none;
+}
+
+.login-sec .note-card {
+    border: 1px solid #00BBFF;
+    background: #00BBFF10;
+    border-radius: 10px;
+    padding: 15px 30px;
+}
+
+.login-sec .custom-select {
+    position: relative;
+    width: 100%;
+    user-select: none;
+    border: 1px solid #DADADA;
+    border-radius: 10px;
+    background: #fff;
+    transition: all 0.3s ease;
+}
+
+.login-sec .custom-select:hover {
+    border-color: var(--custom-green);
+}
+
+/* Selected area */
+.login-sec .select-selected {
+    padding: 12px 40px 12px 14px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+}
+
+/* Arrow icon */
+.login-sec .select-arrow {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #666;
+    pointer-events: none;
+    transition: transform 0.3s ease;
+}
+
+/* Rotate arrow when open */
+.login-sec .custom-select.open .select-arrow {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Dropdown options */
+.login-sec .select-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    border: 1px solid #DADADA;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    margin-top: 4px;
+    z-index: 10;
+    display: none;
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 0;
+}
+
+/* Show dropdown */
+.login-sec .custom-select.open .select-options {
+    display: block;
+}
+
+/* Option style */
+.login-sec .select-options li {
+    padding: 10px 14px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+/* Hover effect */
+.login-sec .select-options li:hover {
+    background: #EEF4BD;
+}
+
+
+
+
+
+
+
+.login-sec .form .submit-btn {
+    width: 100%;
+    height: fit-content;
+    background-color: var(--custom-green);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    border: 1px solid var(--custom-green);
+    transition: all .3s ease;
+}
+
+.login-sec .form .submit-btn:hover,
+.login-sec .form .submit-btn:focus {
+    background-color: #b3c41d;
+}
+
+.login-sec .form .icon-wrapper {
+    padding: 10px 27px;
+    border: 1px solid #DADADA;
+    border-radius: 10px;
+    width: fit-content;
+    transition: all .3s ease;
+}
+
+.login-sec .form .icon-wrapper:hover,
+.login-sec .form .icon-wrapper:focus {
+    background-color: var(--custom-green);
+    border-color: var(--custom-green);
+}
+
+.login-sec .login-wrapper .summary-card{
+    border-radius: 10px;
+    border: 1px solid #272727;
+    background-color: #f4f4f4;
+    padding: 10px 20px;
+}
+
+
+@media (max-width:992px) {
+    .login-sec .image-wrapper {
+        height: 50vh;
+    }
+}
+
+@media (max-width:768px) {
+    .login-sec .login-wrapper .form{
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,129 @@
+/* Hero */
+
+.hero-sec {
+    padding-top: 160px;
+    padding-bottom: 70px;
+    background-color: #FAFBEA;
+}
+.hero-sec:before {
+    display: none;
+}
+.hero-sec .hero-img{
+    border-radius: 36px;
+    box-shadow: 0 10px 15px 0 #00000025;
+}
+
+/* Blog Section */
+
+.blog-sec{
+    padding: 50px 0;
+}
+
+.blog-sec .blog-wrapper{
+    background: center /contain no-repeat;
+    max-width: 568px;
+    width: 100%;
+    height: 444px;
+    border-radius: 28px;
+    padding: 0;
+    display: block;
+    text-decoration: none;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+.blog-sec .blog-wrapper .blog-content {
+    padding: 22px;
+}
+.blog-sec .blog-wrapper::before{
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--custom-dark);
+    z-index: -1;
+    opacity: .1;
+}
+
+.blog-sec .feature-title{
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: black;
+}
+
+.blog-sec .feature-post{
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.blog-sec .feature-post:last-child{
+    margin-bottom: 0;
+}
+
+.blog-sec .feature-post .date{
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.blog-sec .feature-post .description{
+    font-size: 14px;
+    text-decoration: none;
+    color: var(--custom-dark);
+    display: block;
+    line-height: 1.2;
+    font-weight: 500;
+}
+
+
+
+/* Blog Single Page */
+
+/* Blog Single Hero */
+
+.blog-single-hero{
+    background: center /cover no-repeat;
+    height: 685px;
+    width: 100%;
+}
+
+.blog-sec .blog-single-title{
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.blog-sec .blog-single-description{
+    font-weight: 500;
+    margin-bottom: 30px;
+}
+
+.blog-sec .blog-single-description:last-child{
+    margin-bottom: 0;
+}
+
+
+@media (max-width:992px) {
+    /* Blog Section */
+
+    .blog-sec .blog-wrapper{
+        height: 350px !important;
+    }
+
+    /* Blog Single */
+
+    .blog-single-hero{
+        height: 400px;
+    }
+}
+
+@media (max-width:768px) {
+    /* Blog Section */
+
+    .blog-sec .blog-wrapper{
+        height: 250px !important;
+    }
+}

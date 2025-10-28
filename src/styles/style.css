@@ -1,0 +1,139 @@
+body {
+  color: #272727 !important;
+  font-family: 'Montserrat', sans-serif !important;
+}
+
+
+
+:root {
+  --custom-green: #C9DA2B;
+  --custom-gray: #F9F9F9;
+  --custom-gray-light: #9A9A9A;
+  --custom-dark: #272727;
+}
+
+.custom-bg {
+  background-color: var(--custom-green);
+}
+
+.custom-text {
+  color: var(--custom-green);
+}
+
+.custom-bg-gray{
+  background-color: var(--custom-gray);
+}
+
+.custom-text-gray{
+  color: var(--custom-gray);
+}
+
+.custom-text-gray-light{
+  color: var(--custom-gray-light);
+}
+
+.custom-bg-dark{
+  background-color: var(--custom-dark) !important;
+}
+
+.custom-text-dark{
+  color: var(--custom-dark);
+}
+
+h1{
+  font-weight: bold  !important;
+  font-size: clamp(28px, 4vw, 48px)  !important;
+}
+
+h2{
+  font-weight: 600  !important;
+  font-size: clamp(24px, 3vw, 36px)  !important;
+}
+
+/* Button */
+
+.custom-btn{
+  padding: 12px 31px;
+  font-weight: 600;
+  width: fit-content;
+  height: fit-content;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 30px;
+  transition: all .3s ease;
+  text-decoration: none;
+  color: var(--custom-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.custom-primary-btn{
+  background-color: var(--custom-green);
+  border-color: var(--custom-green);
+  box-shadow: 0 4px 7px 0 #00000025;
+}
+
+.custom-primary-btn:hover{
+  box-shadow: unset;
+}
+
+.custom-outline-btn{
+  border-color: var(--custom-dark);
+}
+
+.custom-outline-btn:hover{
+  background-color: var(--custom-green);
+  border-color: var(--custom-green);
+}
+
+/* Card */
+
+.custom-card{
+  box-shadow: 0 4px 13px 0 #00000010;
+  background-color: var(--custom-gray);
+  border-radius: 10px;
+  padding: 15px;
+  border-left: 4px solid var(--custom-green);
+  margin: 10px;
+}
+
+
+input{
+  outline: none;
+}
+
+a{
+  text-decoration: none;
+}
+
+ul{
+  list-style: none;
+}
+
+li{
+  margin: 0;
+  padding: 0;
+}
+
+/* Scroll */
+
+/* 👇 For all scrollable areas */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--custom-gray-light);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--custom-green);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
