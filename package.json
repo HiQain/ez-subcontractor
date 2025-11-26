@@ -1,5 +1,5 @@
 {
-  "name": "ez-subcontractor-next",
+  "name": "ez-subcontractor",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -9,10 +9,15 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.8",
+    "libphonenumber-js": "^1.12.26",
     "next": "14.2.0",
+    "quill": "^2.0.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-phone-number-input": "^3.4.13",
+    "react-quill": "^2.0.0",
     "react-slick": "^0.31.0",
+    "sass": "^1.94.0",
     "slick-carousel": "^1.8.1"
   },
   "devDependencies": {

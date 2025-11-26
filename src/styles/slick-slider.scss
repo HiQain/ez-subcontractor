@@ -1,0 +1,74 @@
+.slick-dots {
+  display: flex !important;
+  justify-content: start;
+  align-items: center;
+  bottom: -80px;
+  left: 20px;
+  .page-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #272727;
+    cursor: pointer;
+    transition: all .3s ease;
+    &:hover {
+      background: #c9da2b;
+      border: 2px solid #272727;
+      width: 29px;
+      height: 12px;
+      border-radius: 30px;
+    }
+    button {
+      padding: 0;
+      width: 12px;
+      height: 12px;
+      &:before {
+        display: none;
+      }
+    }
+  }
+  li {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #272727;
+    cursor: pointer;
+    transition: all .3s ease;
+    &:hover {
+      background: #c9da2b;
+      border: 2px solid #272727;
+      width: 29px;
+      height: 12px;
+      border-radius: 30px;
+    }
+    button {
+      padding: 0;
+      width: 12px;
+      height: 12px;
+      &:before {
+        display: none;
+      }
+    }
+  }
+  .page-dot.active {
+    background: #c9da2b;
+    border: 2px solid #272727;
+    width: 29px;
+    height: 12px;
+    border-radius: 30px;
+  }
+  li.active {
+    background: #c9da2b;
+    border: 2px solid #272727;
+    width: 29px;
+    height: 12px;
+    border-radius: 30px;
+  }
+  li.slick-active {
+    background: #c9da2b;
+    border: 2px solid #272727;
+    width: 29px;
+    height: 12px;
+    border-radius: 30px;
+  }
+}

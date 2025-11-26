@@ -1,0 +1,49 @@
+$primary: #C9DA2B !important;
+$gray: #F9F9F9 !important;
+$gray-light: #9A9A9A !important;
+$dark: #272727 !important;
+$danger: #DC2626;
+
+.hero-sec.how-it-works {
+    padding-top: 160px;
+    padding-bottom: 70px;
+
+    .tab {
+        .nav-tabs {
+            border: 1px solid $dark;
+            padding: 2px;
+            border-radius: 30px;
+            width: fit-content;
+            overflow: hidden;
+            margin-bottom: 30px;
+            display: flex;
+
+            .nav-item {
+                .nav-link {
+                    background-color: transparent;
+                    border-radius: 30px;
+                    font-size: 18px;
+                    font-weight: 600;
+                    padding: 9px 27px;
+                    color: $dark;
+                    transition: all .3s ease;
+
+                    &.active {
+                        background: $dark;
+                        color: #fff !important;
+                    }
+                    &:hover {
+                        background: $dark;
+                        color: #fff !important;
+                    }
+                }
+            }
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+    }
+}

@@ -1,0 +1,194 @@
+$primary: #C9DA2B;
+$gray: #F9F9F9;
+$gray-light: #9A9A9A;
+$dark: #272727;
+$danger: #DC2626;
+
+.hero-sec.login {
+  .image-wrapper {
+    .left-image {
+      position: fixed;
+      inset: 0;
+      object-fit: cover;
+      width: 50%;
+      height: 100vh;
+    }
+    .main-title{
+      font-weight: 600;
+      position: fixed;
+      left: 30px;
+      bottom: 30px;
+      color: white;
+    }
+  }
+  .content-wrapper {
+    width: 100%;
+    margin-left: auto;
+    min-height: 100vh;
+    max-width: 482px;
+    margin: 0 auto;
+    /* screen height se chhoti na ho */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    .content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+      .numbers{
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        .number{
+          background-color: $gray;
+          width: 77px;
+          height: 61px;
+          border-radius: 6px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: clamp(20px,2.5vw,24px);
+          font-weight: 600;
+          color: #000000;
+          margin-bottom: 15px;
+          border: none;
+          border: 1px solid #124944;
+          text-align: center;
+          &.active{
+            border: none;
+          }
+        }
+      }
+      .timer-button{
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 12px;
+        border-radius: 30px;
+        border: 1px solid $primary;
+        width: fit-content;
+        margin: 0 auto;
+        margin-bottom: 10px;
+      }
+      .form {
+        display: grid;
+        gap: 20px;
+      }
+      .icon {
+        width: 80px;
+        height: 46px;
+        border: 1px solid #dadada;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 40px;
+      }
+    }
+    // Account
+    .account-card {
+      background-color: $gray;
+      border-radius: 25px;
+      padding: 20px;
+      position: relative;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .note-card {
+      background-color: #00BBFF10;
+      border: 1px solid #00BBFF;
+      border-radius: 10px;
+      padding: 21px 35px;
+      font-weight: 600;
+    }
+  }
+
+  .register-topbar {
+    background-color: $gray;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+}
+
+/* Slide-up animation from bottom */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply animation to error messages */
+.text-danger.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+/* Media Query */
+@media (min-width:768px) {
+  .input-wrapper-s1 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width:992px) {
+  .hero-sec {
+    display: flex;
+    flex-direction: column-reverse;
+    .image-wrapper{
+      .left-image{
+        display: none;
+      }
+      .main-title{
+        color: $dark !important;
+        position: static !important;
+        padding:20px !important;
+        text-align: center !important;
+      }
+    }
+    .content-wrapper{
+      width: 100%;
+      min-height: 100% !important;
+    }
+  }
+}
+
+@media (max-width:768px) {
+  .input-wrapper-s1 {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+@media (max-width:576px) {
+  .hero-sec.login {
+    .content-wrapper {
+      .content {
+        .account-wrapper {
+          grid-template-columns: 1fr;
+        }
+
+        .input-wrapper-s2 {
+          .buttons {
+            flex-wrap: wrap;
+          }
+        }
+      }
+    }
+  }
+}

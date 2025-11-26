@@ -1,0 +1,51 @@
+$primary: #C9DA2B !important;
+$gray: #F9F9F9 !important;
+$gray-light: #9A9A9A !important;
+$dark: #272727 !important;
+$danger: #DC2626;
+
+.banner-sec.reviews {
+    padding-top: 157px;
+    padding-bottom: 50px;
+    .topbar {
+        background-color: $dark;
+        padding: clamp(20px,3vw,30px) clamp(30px,5vw,50px);
+        border-radius: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        .rating-icons {
+            img {
+                @media(max-width:576px) {
+                    width: 36px;
+                    height: 36px;
+                }
+            }
+        }
+        .right {
+            @media(max-width:576px) {
+                flex-wrap: wrap;
+            }
+            .content {
+                div {
+                    @media(max-width:576px) {
+                        text-align: start !important;
+                    }
+                }
+            }
+        }
+    }
+    .review-card {
+        padding: clamp(16px, 3vw, 30px);
+        border-radius: 25px;
+        background-color: #F9F9F9;
+        position: relative;
+        .quote-icon {
+            position: absolute;
+            bottom: clamp(16px, 3vw, 30px);
+            right: clamp(16px, 3vw, 30px);
+        }
+    }
+}

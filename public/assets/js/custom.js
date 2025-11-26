@@ -67,7 +67,7 @@ $(document).ready(function () {
         // Current window width check karein
         let windowWidth = $(window).width();
 
-        if (windowWidth > 992) {
+        if (windowWidth > 1200) {
             // Jab Desktop Size (> 992px) ho:
 
             // 1. Navigation ko hamesha dikhao (CSS Media Query ko override karega agar slideToggle use hua ho)
@@ -84,7 +84,7 @@ $(document).ready(function () {
     });
 
     // Initial Load par bhi check karein ke agar desktop size hai toh nav dikhe
-    if ($(window).width() > 992) {
+    if ($(window).width() > 1200) {
         $(".header nav").show();
     }
 });

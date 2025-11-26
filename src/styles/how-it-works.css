@@ -1,0 +1,37 @@
+.hero-sec.how-it-works {
+  padding-top: 160px;
+  padding-bottom: 70px;
+}
+.hero-sec.how-it-works .tab .nav-tabs {
+  border: 1px solid #272727 !important;
+  padding: 2px;
+  border-radius: 30px;
+  width: fit-content;
+  overflow: hidden;
+  margin-bottom: 30px;
+  display: flex;
+}
+.hero-sec.how-it-works .tab .nav-tabs .nav-item .nav-link {
+  background-color: transparent;
+  border-radius: 30px;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 9px 27px;
+  color: #272727 !important;
+  transition: all 0.3s ease;
+}
+.hero-sec.how-it-works .tab .nav-tabs .nav-item .nav-link.active {
+  background: #272727 !important;
+  color: #fff !important;
+}
+.hero-sec.how-it-works .tab .nav-tabs .nav-item .nav-link:hover {
+  background: #272727 !important;
+  color: #fff !important;
+}
+.hero-sec.how-it-works .tab .content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/*# sourceMappingURL=how-it-works.css.map */

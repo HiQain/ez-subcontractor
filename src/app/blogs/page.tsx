@@ -1,77 +1,26 @@
 // app/pricing/page.tsx
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
-import '../../styles/blogs.css';
+import '../../styles/blog.css';
 
-// Mock blog data
-const blogs = [
-    {
-        id: 1,
-        title: "The residential construction industry is evolving fast",
-        excerpt: "With homeowners demanding smarter, greener, and more efficient spaces",
-        author: "Jonathan Louis",
-        date: "Aug 02, 2025",
-        image: "/assets/img/blog-img1.webp",
-    },
-    {
-        id: 2,
-        title: "The residential construction industry is evolving fast",
-        excerpt: "With homeowners demanding smarter, greener, and more efficient spaces",
-        author: "Jonathan Louis",
-        date: "Aug 02, 2025",
-        image: "/assets/img/blog-img1.webp",
-    },
-    {
-        id: 3,
-        title: "The residential construction industry is evolving fast",
-        excerpt: "With homeowners demanding smarter, greener, and more efficient spaces",
-        author: "Jonathan Louis",
-        date: "Aug 02, 2025",
-        image: "/assets/img/blog-img1.webp",
-    },
-    {
-        id: 4,
-        title: "The residential construction industry is evolving fast",
-        excerpt: "With homeowners demanding smarter, greener, and more efficient spaces",
-        author: "Jonathan Louis",
-        date: "Aug 02, 2025",
-        image: "/assets/img/blog-img1.webp",
-    },
-];
 
-// Mock featured & latest posts
-const featuredPosts = Array(3).fill({
-    title: "From supply chain issues to labor shortages, residential contractors face unique challenges every day.",
-    date: "Jan 12, 2025",
-    image: "/assets/img/feature-img1.webp",
-});
-
-const latestPosts = Array(3).fill({
-    title: "From supply chain issues to labor shortages, residential contractors face unique challenges every day.",
-    date: "Jan 12, 2025",
-    image: "/assets/img/feature-img1.webp",
-});
 
 export default function PricingPage() {
     return (
         <div>
             <Header />
             <div className="sections overflow-hidden">
-                {/* Hero Section */}
+                {/* Banner */}
                 <section
-                    className="hero-sec"
                     style={{
-                        backgroundImage: `url('/assets/img/regular-bg.webp')`,
-                        backgroundPosition: 'center',
-                        backgroundSize: 'cover',
-                        backgroundRepeat: 'no-repeat',
+                        background: `url('/assets/img/regular-bg.webp') center /cover no-repeat`,
                     }}
+                    className="hero-sec blog position-static"
                 >
                     <div className="container">
                         <div className="row g-4">
@@ -87,11 +36,10 @@ export default function PricingPage() {
                             <div className="col-lg-6 order-lg-1">
                                 <div className="content-wrapper d-flex flex-column h-100 justify-content-center">
                                     <h1 className="mb-4">Blogs</h1>
-                                    <p className="mb-3 fw-medium fs-5">
-                                        Explore What’s New at EZSubcontractor
-                                    </p>
+                                    <p className="mb-3 fw-medium fs-5">Explore What’s New at EZSubcontractor</p>
                                     <p className="mb-0 fw-medium fs-5">
-                                        From innovative projects to expert tips and success stories — discover what’s happening in the construction world.
+                                        From innovative projects to expert tips and success stories discover what’s happening in the
+                                        construction world.
                                     </p>
                                 </div>
                             </div>
@@ -103,22 +51,25 @@ export default function PricingPage() {
                 <section className="blog-sec">
                     <div className="container">
                         <div className="row g-4">
-                            {/* Main Blog Grid */}
                             <div className="col-lg-9">
                                 <div className="row g-4">
-                                    {blogs.map((blog) => (
-                                        <div key={blog.id} className="col-md-6">
-                                            <Link href={`/blogs/${blog.id}`} className="blog-wrapper">
-                                                <div
-                                                    className="blog-content d-flex h-100 justify-content-end flex-column"
-                                                    style={{
-                                                        backgroundImage: `url('${blog.image}')`,
-                                                        backgroundSize: 'cover',
-                                                        backgroundPosition: 'center',
-                                                    }}
-                                                >
+                                    {[1, 2, 3, 4].map((item) => (
+                                        <div key={item} className="col-md-6">
+                                            <Link
+                                                href="#"
+                                                style={{
+                                                    background: `url('/assets/img/blog-img1.webp')`,
+                                                    backgroundSize: 'cover',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    display: 'block',
+                                                }}
+                                                className="blog-wrapper"
+                                            >
+                                                <div className="blog-content d-flex h-100 justify-content-end flex-column">
                                                     <div className="description text-white fw-medium mb-2">
-                                                        {blog.excerpt}
+                                                        The residential construction industry is evolving fast, with homeowners demanding smarter,
+                                                        greener, and more efficient spaces
                                                     </div>
                                                     <div className="d-flex align-items-center gap-1 justify-content-between">
                                                         <div className="blog-icon d-flex align-items-center gap-2">
@@ -127,11 +78,12 @@ export default function PricingPage() {
                                                                 width={40}
                                                                 height={40}
                                                                 alt="Blog Icon"
+                                                                loading="lazy"
                                                             />
-                                                            <span className="d-block fw-semibold text-white">{blog.author}</span>
+                                                            <span className="d-block fw-semibold text-white">Jonathan Louis</span>
                                                         </div>
                                                         <div style={{ fontSize: '14px' }} className="date text-white">
-                                                            {blog.date}
+                                                            Aug 02, 2025
                                                         </div>
                                                     </div>
                                                 </div>
@@ -141,26 +93,26 @@ export default function PricingPage() {
                                 </div>
                             </div>
 
-                            {/* Sidebar: Featured & Latest Posts */}
                             <div className="col-lg-3">
                                 {/* Featured Posts */}
                                 <div className="featured-post mb-5">
                                     <div className="feature-title">Featured</div>
-                                    {featuredPosts.map((post, idx) => (
-                                        <div key={`featured-${idx}`} className="feature-post">
+                                    {[1, 2, 3].map((item) => (
+                                        <div key={`feat-${item}`} className="feature-post">
                                             <Link href="#">
                                                 <Image
-                                                    src={post.image}
+                                                    src="/assets/img/feature-img1.webp"
                                                     width={124}
                                                     height={107}
                                                     alt="Featured Image"
-                                                    className="d-block"
+                                                    loading="lazy"
                                                 />
                                             </Link>
                                             <div className="content">
-                                                <div className="date">{post.date}</div>
+                                                <div className="date">Jan 12, 2025</div>
                                                 <Link href="#" className="description">
-                                                    {post.title}
+                                                    From supply chain issues to labor shortages, residential contractors face unique challenges every
+                                                    day.
                                                 </Link>
                                             </div>
                                         </div>
@@ -170,21 +122,22 @@ export default function PricingPage() {
                                 {/* Latest Posts */}
                                 <div className="latest-post">
                                     <div className="feature-title">Latest</div>
-                                    {latestPosts.map((post, idx) => (
-                                        <div key={`latest-${idx}`} className="feature-post">
+                                    {[1, 2, 3].map((item) => (
+                                        <div key={`latest-${item}`} className="feature-post">
                                             <Link href="#">
                                                 <Image
-                                                    src={post.image}
+                                                    src="/assets/img/feature-img1.webp"
                                                     width={124}
                                                     height={107}
                                                     alt="Featured Image"
-                                                    className="d-block"
+                                                    loading="lazy"
                                                 />
                                             </Link>
                                             <div className="content">
-                                                <div className="date">{post.date}</div>
+                                                <div className="date">Jan 12, 2025</div>
                                                 <Link href="#" className="description">
-                                                    {post.title}
+                                                    From supply chain issues to labor shortages, residential contractors face unique challenges every
+                                                    day.
                                                 </Link>
                                             </div>
                                         </div>

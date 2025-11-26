@@ -1,0 +1,58 @@
+$primary: #C9DA2B;
+$gray: #F9F9F9;
+$gray-light: #9A9A9A;
+$dark: #272727;
+
+.hero-sec.about {
+    padding-top: 160px;
+    padding-bottom: 70px;
+    background-color: #FAFBEA;
+
+    .hero-img {
+        border-radius: 36px;
+        box-shadow: 0 10px 15px 0 #00000025;
+    }
+}
+
+/* Service Section */
+.service-sec {
+    padding-top: 50px;
+    .service-card {
+        background-color: $dark;
+        padding: 20px;
+        border-radius: 25px;
+        box-shadow: 0 4px 14px 0 #00000025;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        .content-wrapper {
+            .title {
+                font-size: clamp(30px, 5vw, 48px);
+                font-weight: 700;
+                color: white;
+                margin-bottom: 8px;
+            }
+            .description {
+                font-weight: 600;
+                color: white;
+                font-size: 14px;
+            }
+        }
+    }
+}
+
+.half-sec {
+    padding: 50px 0;
+
+    .sec-card {
+        border-radius: 16px;
+        overflow: hidden;
+        background-color: #F9F9F9;
+
+        .content-wrapper {
+            padding: 24px;
+            padding-right: clamp(24px, 5vw, 50px);
+        }
+    }
+}

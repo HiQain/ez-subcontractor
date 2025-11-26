@@ -1,0 +1,35 @@
+.hero-sec .icon {
+  background-color: #272727 !important;
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.hero-sec .form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.hero-sec .form .input-wrapper-s2 {
+  display: grid;
+  gap: 20px;
+}
+.hero-sec .summary-card {
+  background-color: rgba(39, 39, 39, 0.0196078431);
+  border-radius: 10px;
+  padding: 10px 20px;
+  border: 1px solid #272727 !important;
+}
+
+/* Media Query */
+@media (min-width: 768px) {
+  .hero-sec .form .input-wrapper-s2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+/*# sourceMappingURL=checkout.css.map */

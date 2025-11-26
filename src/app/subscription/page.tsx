@@ -6,90 +6,202 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
-import '../../styles/subscription.css';
-import '../../styles/main-page.css';
+import '../../styles/pricing.css';
 
 // Pricing plan data
-const pricingData = {
+const pricingPlans = {
     'sub-contractor': [
         {
-            id: 'free-trial',
+            id: 1,
             title: '30-Days Free Trial',
             price: 'Free',
             features: Array(4).fill(
                 'Registration with full company profile, license number, insurance, and workers’ comp details.'
             ),
-            note: 'After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with contractors, and accessing premium tools.',
-            cta: 'Buy Now',
+            hasNote: false,
             isPopular: false,
+            showStrike: false,
+            saveText: null,
+            saveColor: null,
         },
         {
-            id: 'monthly',
-            title: 'Monthly',
-            price: '50',
+            id: 2,
+            title: '30-Days Free Trial',
+            price: 'Free',
             features: Array(4).fill(
                 'Registration with full company profile, license number, insurance, and workers’ comp details.'
             ),
-            note: 'After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with contractors, and accessing premium tools.',
-            cta: 'Buy Now',
+            hasNote: true,
             isPopular: false,
+            showStrike: false,
+            saveText: null,
+            saveColor: null,
         },
         {
-            id: 'yearly',
+            id: 3,
+            title: '30-Days Free Trial',
+            price: 'Free',
+            features: Array(4).fill(
+                'Registration with full company profile, license number, insurance, and workers’ comp details.'
+            ),
+            hasNote: true,
+            isPopular: false,
+            showStrike: false,
+            saveText: null,
+            saveColor: null,
+        },
+        {
+            id: 4,
             title: 'Yearly',
             price: '400',
             features: Array(4).fill(
                 'Registration with full company profile, license number, insurance, and workers’ comp details.'
             ),
-            note: 'After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with contractors, and accessing premium tools.',
-            cta: 'Buy Now',
+            hasNote: true,
             isPopular: true,
-            saveAmount: '200',
+            showStrike: true,
+            saveText: 'Save $200',
+            saveColor: '#DC2626',
         },
     ],
     affiliate: [
         {
-            id: 'affiliate-free-1',
+            id: 1,
             title: '30-Days Free Trial 1',
             price: 'Free',
             features: Array(4).fill(
                 'Registration with full company profile, license number, insurance, and workers’ comp details.'
             ),
-            note: 'After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with contractors, and accessing premium tools.',
-            cta: 'Get Started',
+            hasNote: true,
             isPopular: false,
+            showStrike: false,
+            saveText: null,
+            saveColor: null,
         },
         {
-            id: 'affiliate-free-2',
+            id: 2,
             title: '30-Days Free Trial',
             price: 'Free',
             features: Array(4).fill(
                 'Registration with full company profile, license number, insurance, and workers’ comp details.'
             ),
-            note: 'After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with contractors, and accessing premium tools.',
-            cta: 'Get Started',
+            hasNote: true,
             isPopular: false,
+            showStrike: false,
+            saveText: null,
+            saveColor: null,
         },
         {
-            id: 'affiliate-popular',
+            id: 3,
             title: '30-Days Free Trial',
             price: 'Free',
             features: Array(4).fill(
                 'Registration with full company profile, license number, insurance, and workers’ comp details.'
             ),
-            note: 'After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with contractors, and accessing premium tools.',
-            cta: 'Get Started',
+            hasNote: true,
             isPopular: true,
-            saveAmount: '200',
+            showStrike: false,
+            saveText: 'Save $200',
+            saveColor: '#10BC17',
         },
     ],
 };
 
 export default function PricingPage() {
-    const [activeTab, setActiveTab] = useState<'sub-contractor' | 'affiliate'>('sub-contractor');
+    const renderNoteCard = () => (
+        <div className="note-card d-flex align-items-start gap-1">
+            <Image
+                src="/assets/img/icons/note.webp"
+                width={24}
+                height={24}
+                alt="Note"
+                loading="lazy"
+                className="d-block"
+            />
+            <div className="content">
+        <span style={{ fontSize: '14px' }} className="d-block fw-semibold mb-1">
+          Note
+        </span>
+                <p style={{ fontSize: '12px' }} className="mb-0">
+                    After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with
+                    contractors, and accessing premium tools.
+                </p>
+            </div>
+        </div>
+    );
 
-    const plans = pricingData[activeTab];
+    const renderPlanCard = (plan: (typeof pricingPlans)['sub-contractor'][0], index: number) => (
+        <div
+            key={plan.id}
+            className={`col-lg-${index === 3 ? '3' : index >= 2 && plan.isPopular ? '4' : '3'} col-md-${plan.isPopular ? '12' : '6'}`}
+        >
+            <div className={`price-card ${plan.isPopular ? 'price-card1' : ''} free`}>
+                <div>
+                    <div className="pricing-header">
+                        {plan.isPopular ? (
+                            <div className="d-flex align-items-center gap-1 justify-content-between mb-3">
+                                <span className="title1 mb-0">{plan.title}</span>
+                                <div style={{ fontSize: '14px' }} className="custom-btn bg-white shadow p-2 rounded-pill">
+                                    🔥 Popular
+                                </div>
+                            </div>
+                        ) : (
+                            <span className="title1">{plan.title}</span>
+                        )}
+
+                        {plan.showStrike ? (
+                            <div className="d-flex align-items-center gap-1 flex-wrap">
+                                <del className="fs-4 fw-medium text-black">$ 600</del>
+                                <div className="d-flex align-items-center gap-2">
+                <span className="price">
+                  $<span className="fw-bold">{plan.price}</span>
+                </span>
+                                    {plan.saveText && (
+                                        <button
+                                            type="button"
+                                            style={{ backgroundColor: plan.saveColor! }}
+                                            className="custom-btn text-white p-2 rounded-pill"
+                                        >
+                                            {plan.saveText}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="d-flex align-items-center gap-2">
+              <span className="price">
+                $<span className="fw-bold">{plan.price}</span>
+              </span>
+                                {plan.saveText && (
+                                    <button
+                                        type="button"
+                                        style={{ backgroundColor: plan.saveColor! }}
+                                        className="custom-btn text-white p-2"
+                                    >
+                                        {plan.saveText}
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="pricing-body">
+                        <ul className="m-0 p-0 list-with-icon">
+                            {plan.features.map((feature, i) => (
+                                <li key={i}>{feature}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+
+                {plan.hasNote && renderNoteCard()}
+
+                <div className="pricing-button">
+                    <button className="btn">Get Started</button>
+                </div>
+            </div>
+        </div>
+    );
 
     return (
         <div>
@@ -97,120 +209,96 @@ export default function PricingPage() {
             <div className="sections overflow-hidden">
                 {/* Hero Section */}
                 <section
-                    className="hero-sec"
                     style={{
-                        backgroundImage: `url('/assets/img/subscription-hero.webp')`,
-                        backgroundPosition: 'center',
-                        backgroundSize: 'cover',
-                        backgroundRepeat: 'no-repeat',
+                        background: `url('/assets/img/pricing-hero.webp') center /cover no-repeat`,
                     }}
+                    className="hero-sec position-relative pricing"
                 >
                     <div className="container">
                         <div className="content-wrapper">
-                            <h1 className="text-center mb-3 custom-text">
+                            <h1 className="text-primary text-center mb-3">
                                 Choose Your Plan and Start Getting Project Leads Today
                             </h1>
                             <p className="mb-4 text-white text-center fs-5 fw-medium">
-                                Unlock full access to jobs, messaging, and contractor tools — no hidden fees.
+                                Unlock full access to jobs, messaging, and contractor tools no hidden fees.
                             </p>
-                            <div className="pricing-tabs d-flex justify-content-center gap-1 mb-5">
-                                <button
-                                    className={`tab-btn ${activeTab === 'sub-contractor' ? 'active' : ''}`}
-                                    onclick={() => setActiveTab('sub-contractor')}
-                                >
-                                    Sub Contractor
-                                </button>
-                                <button
-                                    className={`tab-btn ${activeTab === 'affiliate' ? 'active' : ''}`}
-                                    onclick={() => setActiveTab('affiliate')}
-                                >
-                                    Affiliate
-                                </button>
-                            </div>
+
+                            <ul className="nav nav-tabs justify-content-center" id="pricingTab" role="tablist">
+                                <li className="nav-item tabs" role="presentation">
+                                    <button
+                                        className="tab-btn active"
+                                        id="sub-contractor-tab"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#sub-contractor"
+                                        type="button"
+                                        role="tab"
+                                    >
+                                        Sub Contractor
+                                    </button>
+                                </li>
+                                <li className="nav-item tabs" role="presentation">
+                                    <button
+                                        className="tab-btn"
+                                        id="affiliate-tab"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#affiliate"
+                                        type="button"
+                                        role="tab"
+                                    >
+                                        Affiliate
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </section>
 
                 {/* Pricing Section */}
                 <section className="pricing-sec">
-                    <div className="container">
-                        <div className="pricing-wrapper">
-                            <div className="row g-3">
-                                {plans.map((plan) => (
-                                    <div
-                                        key={plan.id}
-                                        className={`col-lg-4 ${plan.isPopular ? 'col-md-12' : 'col-md-6'}`}
-                                    >
-                                        <div className="price-card free">
-                                            <div className="pricing-header">
-                                                {plan.isPopular ? (
-                                                    <div
-                                                        className="d-flex align-items-center gap-1 justify-content-between mb-3">
-                                                        <span className="title1 mb-0">{plan.title}</span>
-                                                        <div className="custom-btn bg-white shadow p-2">🔥 Popular</div>
-                                                    </div>
-                                                ) : (
-                                                    <span className="title1">{plan.title}</span>
-                                                )}
+                    <div className="container-fluid">
+                        <div className="tab-content pricing-wrapper" id="pricingTabContent">
+                            {/* Sub Contractor Tab */}
+                            <div
+                                className="tab-pane fade show active pricing-content"
+                                id="sub-contractor"
+                                role="tabpanel"
+                            >
+                                <div className="row g-3">
+                                    {pricingPlans['sub-contractor'].map((plan, index) =>
+                                        renderPlanCard(plan, index)
+                                    )}
+                                </div>
+                            </div>
 
-                                                <div className="d-flex align-items-center gap-2">
-                        <span className="price">
-                          ${plan.price === 'Free' ? (
-                            <span className="fw-bold">Free</span>
-                        ) : (
-                            <span className="fw-bold">{plan.price}</span>
-                        )}
-                        </span>
-                                                    {plan.saveAmount && (
-                                                        <Link
-                                                            href="#"
-                                                            className="custom-btn text-white p-2"
-                                                            style={{backgroundColor: '#10BC17'}}
-                                                        >
-                                                            Save ${plan.saveAmount}
-                                                        </Link>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div className="pricing-body">
-                                                <ul className="m-0 p-0 list-with-icon">
-                                                    {plan.features.map((feature, idx) => (
-                                                        <li key={idx}>{feature}</li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-
-                                            <div className="note-card d-flex align-items-start gap-1">
-                                                <Image
-                                                    src="/assets/img/note.webp"
-                                                    width={24}
-                                                    height={24}
-                                                    alt="Note"
-                                                    className="d-block"
-                                                />
-                                                <div className="content">
-                        <span className="d-block fw-semibold mb-1" style={{fontSize: '14px'}}>
-                          Note
-                        </span>
-                                                    <p className="mb-0" style={{fontSize: '12px'}}>
-                                                        {plan.note}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div className="pricing-button">
-                                                <button className="btn">{plan.cta}</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                            {/* Affiliate Tab */}
+                            <div className="tab-pane fade pricing-content" id="affiliate" role="tabpanel">
+                                <div className="row g-3">
+                                    {pricingPlans.affiliate.map((plan) => renderPlanCard(plan, -1))}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
             </div>
             <Footer />
+            <style jsx>{`
+        .hero-sec {
+          position: relative;
+          z-index: 1;
+        }
+
+        .hero-sec::before {
+          content: '';
+          position: absolute;
+          inset: 0; /* shorthand for top:0; left:0; right:0; bottom:0 */
+          width: 100%;
+          height: 100%;
+          background-color: #000;
+          opacity: 0.85;
+          z-index: -1;
+          display: block;
+        }
+      `}</style>
         </div>
     );
 }

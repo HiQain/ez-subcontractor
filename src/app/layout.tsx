@@ -1,23 +1,41 @@
 "use client";
+import "../styles/font-montserrat.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import "../styles/style.css";
-import { useEffect } from "react";
-import 'bootstrap/dist/css/bootstrap.min.css';
-
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import Loader from "./components/Loader";
 
 export default function RootLayout({ children }) {
-  return (
-      <html lang="en">
-      <head>
-        <link
-            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap"
-            rel="stylesheet"
-        />
-          <link
-              rel="stylesheet"
-              href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-          />
-      </head>
-      <body>{children}</body>
-      </html>
-  );
+    const [loading, setLoading] = useState(true);
+    const [fadeOut, setFadeOut] = useState(false);
+    const pathname = usePathname(); // detects route changes
+
+    useEffect(() => {
+        // Trigger loader immediately on route change
+        setLoading(true);
+        setFadeOut(false);
+
+        const minLoaderTime = 0; // minimum 2 sec
+
+        const timer = setTimeout(() => {
+            setFadeOut(true); // start fade-out
+            setTimeout(() => setLoading(false), 500); // remove loader after fade-out
+        }, minLoaderTime);
+
+        return () => clearTimeout(timer);
+    }, [pathname]); // runs on every route change
+
+    return (
+        <html lang="en">
+        <head></head>
+        <body>
+        {/*{loading && <Loader fadeOut={fadeOut} />}*/}
+        {/*{!loading && children}*/}
+        {children}
+        </body>
+        </html>
+    );
 }
