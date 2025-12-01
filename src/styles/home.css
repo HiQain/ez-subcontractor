@@ -36,10 +36,10 @@
 .home-banner-sec .banner-wrapper {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: end;
   justify-content: center;
   background: center/cover no-repeat;
-  padding: 140px 20px;
+  padding: clamp(140px, 28vw, 140px) 20px;
   text-align: center;
 }
 .home-banner-sec .banner-wrapper .content-wrapper {
@@ -110,7 +110,7 @@
   text-align: center;
   color: white;
   font-weight: 600;
-  font-size: 24px;
+  font-size: 18px;
   text-decoration: none;
 }
 

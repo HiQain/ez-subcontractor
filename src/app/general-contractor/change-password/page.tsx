@@ -73,11 +73,19 @@ export default function ChangePassword() {
             strokeLinejoin="round"
             className={`eye-icon ${active ? 'active' : ''}`}
         >
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-            <line className="slash" x1="2" y1="2" x2="22" y2="22"></line>
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+            <line
+                className="slash"
+                x1="2"
+                y1="2"
+                x2="22"
+                y2="22"
+                style={{ stroke: active ? 'none' : 'currentColor' }}
+            />
         </svg>
     );
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

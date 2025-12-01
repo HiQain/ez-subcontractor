@@ -2,10 +2,10 @@
 'use client';
 
 import '../../../../styles/login.css';
-import React, { useState, useRef, useEffect } from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter, useParams } from 'next/navigation';
+import {useRouter, useParams} from 'next/navigation';
 
 
 export default function RegisterPage() {
@@ -28,6 +28,10 @@ export default function RegisterPage() {
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showOld, setShowOld] = useState(false);
+    const [showNew, setShowNew] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [oldPassword, setOldPassword] = useState('');
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isAgreed, setIsAgreed] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +48,7 @@ export default function RegisterPage() {
 
     // ✅ Unified input handler — now with correct typing and error clearing
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
 
         let sanitized = value;
 
@@ -53,12 +57,12 @@ export default function RegisterPage() {
             sanitized = formatUSPhone(value);          // digits + auto-format
         }
 
-        setFormData(prev => ({ ...prev, [name]: sanitized }));
+        setFormData(prev => ({...prev, [name]: sanitized}));
 
         /* clear field error while typing */
         if (errors[name]) {
             setErrors(prev => {
-                const { [name]: _, ...rest } = prev;
+                const {[name]: _, ...rest} = prev;
                 return rest;
             });
         }
@@ -70,11 +74,30 @@ export default function RegisterPage() {
         setIsAgreed(e.target.checked);
         if (errors.agreement) {
             setErrors((prev) => {
-                const { agreement: _, ...rest } = prev;
+                const {agreement: _, ...rest} = prev;
                 return rest;
             });
         }
     };
+
+    const EyeIcon = ({active}: { active: boolean }) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`eye-icon ${active ? 'active' : ''}`}
+        >
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+            <line className="slash" x1="2" y1="2" x2="22" y2="22"></line>
+        </svg>
+    );
 
 
     // ✅ Final submit handler — matches Postman payload exactly
@@ -114,6 +137,8 @@ export default function RegisterPage() {
             'affiliate': 'affiliate',
         };
         const role = localStorage.getItem('role');
+
+        console.log(role)
 
         const payload: Record<string, any> = {
             name: formData.name,
@@ -160,13 +185,21 @@ export default function RegisterPage() {
                         router.push('/affiliate/subscription');
                     }
                 } else {
-                    setErrors({ api: 'Registration succeeded, but no token received.' });
+                    setErrors({api: 'Registration succeeded, but no token received.'});
                 }
             } else {
-                // ❌ Handle error (your existing logic)
+                let errorMessage = 'Registration failed. Please try again.';
+
+                if (data.message && Array.isArray(data.message) && data.message.length > 0) {
+                    errorMessage = data.message[0]; // e.g., "The email has already been taken."
+                } else if (typeof data.message === 'string') {
+                    errorMessage = data.message;
+                }
+
+                setErrors({api: errorMessage});
             }
         } catch (err) {
-            setErrors({ api: 'Network error. Please check your connection.' });
+            setErrors({api: 'Network error. Please check your connection.'});
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -193,8 +226,10 @@ export default function RegisterPage() {
 
             <div className="row">
                 <div className="col-lg-6 offset-lg-6">
-                    <div className="content-wrapper d-flex align-items-center justify-content-center" style={{ padding: '20px' }}>
-                        <div className="content w-100 mx-auto" style={{ maxWidth: '482px', position: 'relative', minHeight: '600px' }}>
+                    <div className="content-wrapper d-flex align-items-center justify-content-center"
+                         style={{padding: '20px'}}>
+                        <div className="content w-100 mx-auto"
+                             style={{maxWidth: '482px', position: 'relative', minHeight: '600px'}}>
                             <Link href="/" className="d-block mb-4">
                                 <Image
                                     src="/assets/img/icons/logo.webp"
@@ -202,7 +237,7 @@ export default function RegisterPage() {
                                     height={100}
                                     alt="Logo"
                                     className="img-fluid d-block w-100 mx-auto"
-                                    style={{ maxWidth: '350px' }}
+                                    style={{maxWidth: '350px'}}
                                 />
                             </Link>
 
@@ -307,15 +342,16 @@ export default function RegisterPage() {
                                         className="form-control pe-5"
                                         placeholder="Password123"
                                         value={formData.password}
-                                        onChange={handleChange} // ✅ Fixed
+                                        onChange={handleChange}
+                                        disabled={isLoading}
                                     />
-                                    {/*<span*/}
-                                    {/*    className="toggle-password position-absolute"*/}
-                                    {/*    style={{right: '10px', top: '38px', cursor: 'pointer'}}*/}
-                                    {/*    onClick={() => setShowPassword(!showPassword)} // ✅ Fixed*/}
-                                    {/*>*/}
-                                    {/*            <i className={`bi ${showPassword ? 'bi-eye' : 'bi-eye-slash'}`}></i>*/}
-                                    {/*        </span>*/}
+                                    <span
+                                        className="toggle-password position-absolute"
+                                        style={{right: '10px', top: '38px', cursor: 'pointer'}}
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    >
+                                    <EyeIcon active={showPassword}/>
+                                        </span>
                                     {errors.password && (
                                         <span className="text-danger animate-slide-up">{errors.password}</span>
                                     )}
@@ -331,15 +367,16 @@ export default function RegisterPage() {
                                         className="form-control pe-5"
                                         placeholder="Password123"
                                         value={formData.password_confirmation}
-                                        onChange={handleChange} // ✅ Fixed
+                                        onChange={handleChange}
+                                        disabled={isLoading}
                                     />
-                                    {/*<span*/}
-                                    {/*    className="toggle-password position-absolute"*/}
-                                    {/*    style={{right: '10px', top: '38px', cursor: 'pointer'}}*/}
-                                    {/*    onclick={() => setShowConfirmPassword(!showConfirmPassword)} // ✅ Fixed*/}
-                                    {/*>*/}
-                                    {/*            <i className={`bi ${showConfirmPassword ? 'bi-eye' : 'bi-eye-slash'}`}></i>*/}
-                                    {/*        </span>*/}
+                                    <span
+                                        className="toggle-password position-absolute"
+                                        style={{right: '10px', top: '38px', cursor: 'pointer'}}
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    >
+                                                <EyeIcon active={showConfirmPassword}/>
+                                            </span>
                                     {errors.password_confirmation && (
                                         <span
                                             className="text-danger animate-slide-up">{errors.password_confirmation}</span>

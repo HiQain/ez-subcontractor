@@ -91,7 +91,7 @@ $danger: #DC2626;
     .account-card {
       background-color: $gray;
       border-radius: 25px;
-      padding: 20px;
+      padding: 20px 40px;
       position: relative;
       display: flex;
       gap: 8px;
@@ -118,6 +118,7 @@ $danger: #DC2626;
     flex-wrap: wrap;
   }
 }
+.eye-icon.active .slash { stroke: none; }
 
 /* Slide-up animation from bottom */
 @keyframes slideUp {

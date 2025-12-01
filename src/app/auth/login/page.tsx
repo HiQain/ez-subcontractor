@@ -12,13 +12,40 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false); // ⬅️ NEW
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+
+    // ✅ Eye Icon — identical to RegisterPage
+    const EyeIcon = ({ active }: { active: boolean }) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`eye-icon ${active ? 'active' : ''}`}
+        >
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+            <line
+                className="slash"
+                x1="2"
+                y1="2"
+                x2="22"
+                y2="22"
+                style={{ stroke: active ? 'none' : 'currentColor' }}
+            ></line>
+        </svg>
+    );
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        setIsLoading(true); // ⛔ Disable button
+        setIsLoading(true);
 
         // Validation
         if (!email.trim()) {
@@ -55,9 +82,10 @@ export default function LoginPage() {
             const data = await response.json();
 
             if (response.ok) {
-                const token = data.data.token;
-                if (!token) {
-                    setError('Authentication succeeded but no token received.');
+                const token = data.data?.token;
+                const user = data.data?.user;
+                if (!token || !user) {
+                    setError('Authentication succeeded but no token/user received.');
                     setIsLoading(false);
                     return;
                 }
@@ -65,37 +93,28 @@ export default function LoginPage() {
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('userEmail', email);
                 localStorage.setItem('token', token);
-                localStorage.setItem('role', data.data.user.role);
+                localStorage.setItem('role', user.role);
 
-                const role = data.data.user.role;
-
-                console.log(data);
-                console.log(data.data.user.role);
-
-
-
+                const role = user.role;
 
                 if (role === 'general_contractor') {
                     router.push('/general-contractor/dashboard');
-                }
-                if (role === 'subcontractor') {
+                } else if (role === 'subcontractor') {
                     router.push('/subcontractor/subscription');
-                }
-                if (role === 'affiliate') {
+                } else if (role === 'affiliate') {
                     router.push('/affiliate/subscription');
+                } else {
+                    router.push('/');
                 }
-
-                setIsLoading(false);
 
             } else {
                 setError(data.message || 'Invalid email or password');
-                setIsLoading(false); // 🔄 Re-enable button
             }
-
         } catch (err) {
             setError('Something went wrong. Please try again.');
             console.error('Login error:', err);
-            setIsLoading(false); // 🔄 Re-enable button
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -111,7 +130,9 @@ export default function LoginPage() {
                 />
                 <p className="main-title mb-0">
                     Developed by:
-                    <Link href="https://designspartans.com/" target="_blank" className="text-primary fw-semibold"> Design Spartans</Link>
+                    <Link href="https://designspartans.com/" target="_blank" className="text-primary fw-semibold">
+                        {' '}Design Spartans
+                    </Link>
                 </p>
             </div>
 
@@ -143,9 +164,11 @@ export default function LoginPage() {
                                         placeholder="hello@example.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
+                                        className="form-control"
                                     />
                                 </div>
 
+                                {/* ✅ Password field — with SVG EyeIcon (same as RegisterPage) */}
                                 <div className="input-wrapper d-flex flex-column position-relative">
                                     <label htmlFor="password" className="mb-1 fw-semibold">
                                         Password *
@@ -163,7 +186,7 @@ export default function LoginPage() {
                                         style={{ right: '10px', top: '38px', cursor: 'pointer' }}
                                         onClick={() => setShowPassword(!showPassword)}
                                     >
-                                        <i className={`bi ${showPassword ? 'bi-eye' : 'bi-eye-slash'}`} id="toggleIcon"></i>
+                                        <EyeIcon active={showPassword} />
                                     </span>
                                 </div>
 
@@ -194,18 +217,15 @@ export default function LoginPage() {
                                     </p>
                                 )}
 
-                                <input
+                                <button
                                     type="submit"
-                                    value={isLoading ? "Please wait..." : "Login"}
-                                    disabled={isLoading}
                                     className="btn btn-primary rounded-3 w-100 d-block mb-4"
-                                    style={{
-                                        opacity: isLoading ? 0.6 : 1,
-                                        cursor: isLoading ? "not-allowed" : "pointer",
-                                    }}
-                                />
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? 'Please wait...' : 'Login'}
+                                </button>
                             </form>
-                            
+
                             <div className="text-center fw-medium text-gray-light">
                                 Don’t have an account?{' '}
                                 <Link href="/auth/register" className="fw-semibold text-black">

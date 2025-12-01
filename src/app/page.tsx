@@ -32,6 +32,20 @@ export default function HomePage() {
                 'The trusted platform connecting General Contractors with verified Sub-Contractors. Post or find construction projects, bid on real work, and build your team for success. Free Trial Available!';
             document.head.appendChild(newMetaDescription);
         }
+
+
+        const video = document.querySelector('.hero-video') as HTMLVideoElement;
+        if (video) {
+            // Try to play on user interaction (e.g., first click/tap)
+            const attemptPlay = () => {
+                video.play().catch(() => {
+                    // Still blocked? Show a subtle "play" button over hero
+                    // (optional UX enhancement)
+                });
+            };
+            document.addEventListener('click', attemptPlay, { once: true });
+            document.addEventListener('touchstart', attemptPlay, { once: true });
+        }
     }, []);
 
     const banners = [
@@ -44,48 +58,50 @@ export default function HomePage() {
             btn2Text: "Search a Project",
             btn2Link: "/projects",
             notice: "No credit card required — enjoy a free 30-day trial.",
+            video: "/assets/img/video.mp4",
+            video_poster: "/assets/img/poster.webp",
         },
-        {
-            id: 2,
-            image: "/assets/img/home-banner-img2.webp",
-            title: "Connects Contractors with Trusted, Licensed Subs.",
-            btn1Text: "Post a Project",
-            btn1Link: "/auth/login",
-            btn2Text: "Search a Project",
-            btn2Link: "/projects",
-            notice: "No credit card required — enjoy a free to subscribe",
-        },
-        {
-            id: 3,
-            image: "/assets/img/home-banner-img3.webp",
-            title: "Find Trusted Subs quickly, Post Your Project Free",
-            btn1Text: "Post a Project",
-            btn1Link: "/auth/login",
-            btn2Text: "Search a Project",
-            btn2Link: "/projects",
-            notice: "No credit card required — enjoy a free to subscribe",
-        },
-        {
-            id: 4,
-            image: "/assets/img/home-banner-img4.webp",
-            title:
-                "Access Verified Contractor Projects — No Brokers, No Middlemen, Just Real Jobs Daily.",
-            btn1Text: "Post a Project",
-            btn1Link: "/auth/login",
-            btn2Text: "Search a Project",
-            btn2Link: "/projects",
-            notice: "No credit card required — enjoy a free to subscribe",
-        },
-        {
-            id: 5,
-            image: "/assets/img/home-banner-img5.webp",
-            title: "Stop Chasing Leads. Start Bidding Jobs.",
-            btn1Text: "Post a Project",
-            btn1Link: "/auth/login",
-            btn2Text: "Search a Project",
-            btn2Link: "/projects",
-            notice: "No credit card required — enjoy a free to subscribe",
-        },
+        // {
+        //     id: 2,
+        //     image: "/assets/img/home-banner-img2.webp",
+        //     title: "Connects Contractors with Trusted, Licensed Subs.",
+        //     btn1Text: "Post a Project",
+        //     btn1Link: "/auth/login",
+        //     btn2Text: "Search a Project",
+        //     btn2Link: "/projects",
+        //     notice: "No credit card required — enjoy a free to subscribe",
+        // },
+        // {
+        //     id: 3,
+        //     image: "/assets/img/home-banner-img3.webp",
+        //     title: "Find Trusted Subs quickly, Post Your Project Free",
+        //     btn1Text: "Post a Project",
+        //     btn1Link: "/auth/login",
+        //     btn2Text: "Search a Project",
+        //     btn2Link: "/projects",
+        //     notice: "No credit card required — enjoy a free to subscribe",
+        // },
+        // {
+        //     id: 4,
+        //     image: "/assets/img/home-banner-img4.webp",
+        //     title:
+        //         "Access Verified Contractor Projects — No Brokers, No Middlemen, Just Real Jobs Daily.",
+        //     btn1Text: "Post a Project",
+        //     btn1Link: "/auth/login",
+        //     btn2Text: "Search a Project",
+        //     btn2Link: "/projects",
+        //     notice: "No credit card required — enjoy a free to subscribe",
+        // },
+        // {
+        //     id: 5,
+        //     image: "/assets/img/home-banner-img5.webp",
+        //     title: "Stop Chasing Leads. Start Bidding Jobs.",
+        //     btn1Text: "Post a Project",
+        //     btn1Link: "/auth/login",
+        //     btn2Text: "Search a Project",
+        //     btn2Link: "/projects",
+        //     notice: "No credit card required — enjoy a free to subscribe",
+        // },
     ];
 
     const bannerSettings = {
@@ -144,15 +160,26 @@ export default function HomePage() {
                             <div key={banner.id}>
                                 <div
                                     className="banner-wrapper"
-                                    style={{
-                                        backgroundImage: `url(${banner.image})`,
-                                        backgroundSize: "cover",
-                                        backgroundPosition: "center",
-                                        display: "flex",
-                                        alignItems: "end",
-                                        justifyContent: "center",
-                                    }}
                                 >
+                                    <video
+                                        autoPlay
+                                        muted
+                                        loop
+                                        playsInline
+                                        poster={banner.video_poster}
+                                        className="hero-video"
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            zIndex: -1,
+                                        }}
+                                    >
+                                        <source src={banner.video} type="video/mp4"/>
+                                    </video>
                                     <div className="content-wrapper text-center text-white px-3">
                                         {/* ✅ First slide <h1>, others <h2> */}
                                         {banner.id === 1 ? (
@@ -203,16 +230,16 @@ export default function HomePage() {
                     </Slider>
 
                     {/* 🔹 Custom Pagination */}
-                    <div className="custom-pagination d-flex align-items-center justify-content-center gap-2 mt-3">
-                        {banners.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => sliderRef.current?.slickGoTo(index)}
-                                className={`custom-dot ${currentSlide === index ? "active" : ""}`}
-                                aria-label={`Go to slide ${index + 1}`}
-                            />
-                        ))}
-                    </div>
+                    {/*<div className="custom-pagination d-flex align-items-center justify-content-center gap-2 mt-3">*/}
+                    {/*    {banners.map((_, index) => (*/}
+                    {/*        <button*/}
+                    {/*            key={index}*/}
+                    {/*            onClick={() => sliderRef.current?.slickGoTo(index)}*/}
+                    {/*            className={`custom-dot ${currentSlide === index ? "active" : ""}`}*/}
+                    {/*            aria-label={`Go to slide ${index + 1}`}*/}
+                    {/*        />*/}
+                    {/*    ))}*/}
+                    {/*</div>*/}
                 </section>
 
                 {/* 🔹 Project Section */}

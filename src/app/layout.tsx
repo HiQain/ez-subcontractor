@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "../styles/style.css";
+// import 'select2/dist/css/select2.min.css';
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Loader from "./components/Loader";
@@ -14,6 +15,8 @@ export default function RootLayout({ children }) {
     const pathname = usePathname(); // detects route changes
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        console.log(token);
         // Trigger loader immediately on route change
         setLoading(true);
         setFadeOut(false);

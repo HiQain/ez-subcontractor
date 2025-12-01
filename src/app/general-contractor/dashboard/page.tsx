@@ -266,7 +266,7 @@ export default function DashboardPage() {
                     <div className="bar d-flex align-items-center gap-2 justify-content-between flex-wrap mb-4">
                         <div className="fs-4 fw-semibold">My Projects</div>
                         <button
-                            onClick={() => router.push('/general_contractor/ad-job-post')}
+                            onClick={() => router.push('/general-contractor/ad-job-post')}
                             className="btn btn-primary rounded-3 d-flex align-items-center gap-2"
                         >
                             <Image
