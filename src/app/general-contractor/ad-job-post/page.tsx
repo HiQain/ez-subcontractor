@@ -107,17 +107,6 @@ export default function PostAd() {
         fetchCategories();
     }, []);
 
-    // Close dropdown on outside click
-    // useEffect(() => {
-    //     const handleClickOutside = (event: MouseEvent) => {
-    //         if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-    //             // setSelectOpen(false);
-    //             clearError('category');
-    //         }
-    //     };
-    //     document.addEventListener('mousedown', handleClickOutside);
-    //     return () => document.removeEventListener('mousedown', handleClickOutside);
-    // }, []);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -137,17 +126,8 @@ export default function PostAd() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // 🔒 Validation
         const newErrors: Record<string, string> = {};
-        //
-        // if (!selectedCategory || selectedCategory === '') {
-        //     newErrors.category = 'Please select a category.';
-        // } else {
-        //     const categoryIdNum = parseInt(selectedCategory);
-        //     if (isNaN(categoryIdNum)) {
-        //         newErrors.category = 'Invalid category selected.';
-        //     }
-        // }
+    
 
         if (!city.trim()) newErrors.city = 'City is required.';
         if (!state.trim()) newErrors.state = 'State is required.';
@@ -170,92 +150,56 @@ export default function PostAd() {
         setIsSubmitting(true);
         setErrors({});
 
-        try {
-            const token = localStorage.getItem('token');
-            if (!token || token.trim() === '') {
-                setErrors({ api: 'Authentication required. Please log in.' });
-                router.push('/auth/login');
-                return;
-            }
+       try {
+    const token = localStorage.getItem('token');
+    if (!token || token.trim() === '') {
+        setErrors({ api: 'Authentication required. Please log in.' });
+        router.push('/auth/login');
+        return;
+    }
 
-            // const formData = new FormData();
-            // formData.append('title', 'New Project');
-            // formData.append('description', description);
-            //
-            // // ✅ FIX: Send category_id as a single integer (not array)
-            // const categoryIdNum = parseInt(selectedCategory);
-            // if (isNaN(categoryIdNum)) {
-            //     setErrors({ category: 'Invalid category ID.' });
-            //     setIsSubmitting(false);
-            //     return;
-            // }
-            // formData.append('city', city);
-            // formData.append('state', state);
-            // formData.append('category_id', '1');
-            // formData.append('zip', zip);
-            // formData.append('estimate_due_date', estimateDueDate);
-            // formData.append('start_date', startDate);
-            // formData.append('end_date', endDate);
-            // formData.append('status', 'pending');
-            //
-            // uploadedFiles.forEach((file, index) => {
-            //     formData.append(`attachments[${index}][file]`, file);
-            //     formData.append(`attachments[${index}][description]`, file.name);
-            // });
+    const formData = new FormData();
+    formData.append("title", "New Project");
+    formData.append("description", "Project description");
+    formData.append("category_id", "1");
+    formData.append("city", "New York");
+    formData.append("state", "NY");
+    formData.append("zip", "10001");
+    formData.append("estimate_due_date", "2025-12-31");
+    formData.append("start_date", "2025-11-26");
+    formData.append("end_date", "2025-12-31");
+    formData.append("status", "pending");
 
-            const formdata = new FormData();
-            formdata.append("title", " New Project");
-            formdata.append("description", " Project description");
-            formdata.append("category_id", " 1");
-            formdata.append("city", " New York");
-            formdata.append("state", " NY");
-            formdata.append("zip", " 10001");
-            formdata.append("estimate_due_date", " 2025-12-31");
-            formdata.append("start_date", " 2025-11-26");
-            formdata.append("end_date", " 2025-12-31");
-            formdata.append("status", " pending");
+ 
 
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects/create`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+        },
+        body: formData,
+    });
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects/create`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json',
-                    'Content-Type': 'multipart/form-data',
-                },
-                body: formdata,
-            });
+    const result = await response.json();
+    console.log(result);
 
+    if (!response.ok) {
+        const errorMsg = result?.message || 'Failed to create project.';
+        setErrors({ api: errorMsg });
+        return;
+    }
 
-            const result = await response.json();
+    console.log('✅ Project created:', result);
+    // router.push('/general_contractor/add-attachment');
 
-            console.log(result);
+} catch (error) {
+    console.error('Network error:', error);
+    setErrors({ api: 'Network error. Please check your connection.' });
+} finally {
+    setIsSubmitting(false);
+}
 
-            // if (response.status === 401) {
-            //     setErrors({ api: 'Session expired. Please log in again.' });
-            //     localStorage.removeItem('token');
-            //     router.push('/login');
-            //     return;
-            // }
-            //
-            // if (!response.ok) {
-            //     const errorMsg = Array.isArray(result.message)
-            //         ? result.message[0] || 'Failed to create project.'
-            //         : result.message || 'Failed to create project.';
-            //     setErrors({ api: errorMsg });
-            //     return;
-            // }
-            //
-            // // ✅ Success
-            // console.log('✅ Project created:', result);
-            // router.push('/general_contractor/add-attachment');
-
-        } catch (error) {
-            console.error('Network error:', error);
-            setErrors({ api: 'Network error. Please check your connection.' });
-        } finally {
-            setIsSubmitting(false);
-        }
     };
 
     return (
