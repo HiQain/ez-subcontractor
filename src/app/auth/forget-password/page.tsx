@@ -111,7 +111,7 @@ export default function ForgotPassword() {
                             <form className="form" onSubmit={handleSubmit}>
                                 <div className="input-wrapper d-flex flex-column">
                                     <label htmlFor="email" className="mb-1 fw-semibold">
-                                        Email Address *
+                                        Email Address <span className="text-danger">*</span>
                                     </label>
                                     <input
                                         type="email"

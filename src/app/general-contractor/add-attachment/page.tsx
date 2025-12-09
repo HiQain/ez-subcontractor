@@ -227,11 +227,11 @@ export default function AddAttachment() {
                                     ))}
                                 </div>
 
-                                {/* Updated: Add Project button redirects to edit-job-post */}
+                                {/* Updated: Add Project button redirects to edit-project */}
                                 <button
                                     type="button"
                                     className="btn btn-primary rounded-3 w-100 justify-content-center"
-                                    onClick={() => router.push('/general_contractor/edit-job-post')}
+                                    onClick={() => router.push('/general_contractor/edit-project')}
                                 >
                                     Add Project
                                 </button>

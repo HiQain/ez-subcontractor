@@ -94,10 +94,10 @@ export default function SubscribedPage() {
                                                 <Image src="/assets/img/dashboard-arrow1.svg" alt="Next" width={8} height={16} />
                                             </button>
                                         </div>
-                                        {/* Icon redirect to job-details */}
+                                        {/* Icon redirect to project-details */}
                                         <div
                                             className="icon"
-                                            onClick={() => router.push('/subcontractor/job-details')}
+                                            onClick={() => router.push('/subcontractor/project-details')}
                                             style={{ cursor: 'pointer' }}
                                         >
                                             <Image src="/assets/img/icons/search-icon1.svg" alt="Go to Job Details" width={14} height={14} />

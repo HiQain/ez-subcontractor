@@ -238,7 +238,7 @@ export default function VerifyEmail() {
                             <div className="buttons-wrapper d-flex align-items-center gap-4">
                                 <button
                                     type="button"
-                                    onClick={() => router.push('/auth/forgot-password')}
+                                    onClick={() => router.push('/auth/forget-password')}
                                     className="btn btn-outline-dark rounded-3 justify-content-center w-100"
                                     disabled={isSubmitting}
                                 >

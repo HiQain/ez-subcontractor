@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -368,7 +368,7 @@ export default function EditProfile() {
                                     <form onSubmit={handleSubmit}>
                                         <div className="form">
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="name" className="mb-1 fw-semibold">Full Name *</label>
+                                                <label htmlFor="name" className="mb-1 fw-semibold">Full Name </label>
                                                 <input
                                                     type="text"
                                                     id="name"
@@ -382,7 +382,7 @@ export default function EditProfile() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="company_name" className="mb-1 fw-semibold">Company Name *</label>
+                                                <label htmlFor="company_name" className="mb-1 fw-semibold">Company Name</label>
                                                 <input
                                                     type="text"
                                                     id="company_name"
@@ -396,7 +396,7 @@ export default function EditProfile() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="email" className="mb-1 fw-semibold">Email Address *</label>
+                                                <label htmlFor="email" className="mb-1 fw-semibold">Email Address</label>
                                                 <input
                                                     type="email"
                                                     id="email"
@@ -410,7 +410,7 @@ export default function EditProfile() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="phone" className="mb-1 fw-semibold">Phone Number *</label>
+                                                <label htmlFor="phone" className="mb-1 fw-semibold">Phone Number</label>
                                                 <input
                                                     id="phone"
                                                     name="phone"
@@ -436,57 +436,57 @@ export default function EditProfile() {
                                                 />
                                             </div>
 
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="address" className="mb-1 fw-semibold">Address</label>
-                                                <input
-                                                    type="text"
-                                                    id="address"
-                                                    name="address"
-                                                    className="form-control"
-                                                    placeholder="abc street"
-                                                    value={formData.address}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
+                                            {/*<div className="input-wrapper d-flex flex-column">*/}
+                                            {/*    <label htmlFor="address" className="mb-1 fw-semibold">Address</label>*/}
+                                            {/*    <input*/}
+                                            {/*        type="text"*/}
+                                            {/*        id="address"*/}
+                                            {/*        name="address"*/}
+                                            {/*        className="form-control"*/}
+                                            {/*        placeholder="abc street"*/}
+                                            {/*        value={formData.address}*/}
+                                            {/*        onChange={handleChange}*/}
+                                            {/*    />*/}
+                                            {/*</div>*/}
 
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="city" className="mb-1 fw-semibold">City</label>
-                                                <input
-                                                    type="text"
-                                                    id="city"
-                                                    name="city"
-                                                    className="form-control"
-                                                    placeholder="New York"
-                                                    value={formData.city}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
+                                            {/*<div className="input-wrapper d-flex flex-column">*/}
+                                            {/*    <label htmlFor="city" className="mb-1 fw-semibold">City</label>*/}
+                                            {/*    <input*/}
+                                            {/*        type="text"*/}
+                                            {/*        id="city"*/}
+                                            {/*        name="city"*/}
+                                            {/*        className="form-control"*/}
+                                            {/*        placeholder="New York"*/}
+                                            {/*        value={formData.city}*/}
+                                            {/*        onChange={handleChange}*/}
+                                            {/*    />*/}
+                                            {/*</div>*/}
 
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="state" className="mb-1 fw-semibold">State</label>
-                                                <input
-                                                    type="text"
-                                                    id="state"
-                                                    name="state"
-                                                    className="form-control"
-                                                    placeholder="Texas"
-                                                    value={formData.state}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
+                                            {/*<div className="input-wrapper d-flex flex-column">*/}
+                                            {/*    <label htmlFor="state" className="mb-1 fw-semibold">State</label>*/}
+                                            {/*    <input*/}
+                                            {/*        type="text"*/}
+                                            {/*        id="state"*/}
+                                            {/*        name="state"*/}
+                                            {/*        className="form-control"*/}
+                                            {/*        placeholder="Texas"*/}
+                                            {/*        value={formData.state}*/}
+                                            {/*        onChange={handleChange}*/}
+                                            {/*    />*/}
+                                            {/*</div>*/}
 
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="zip" className="mb-1 fw-semibold">ZIP Code</label>
-                                                <input
-                                                    type="text"
-                                                    id="zip"
-                                                    name="zip"
-                                                    className="form-control"
-                                                    placeholder="12345"
-                                                    value={formData.zip}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
+                                            {/*<div className="input-wrapper d-flex flex-column">*/}
+                                            {/*    <label htmlFor="zip" className="mb-1 fw-semibold">ZIP Code</label>*/}
+                                            {/*    <input*/}
+                                            {/*        type="text"*/}
+                                            {/*        id="zip"*/}
+                                            {/*        name="zip"*/}
+                                            {/*        className="form-control"*/}
+                                            {/*        placeholder="12345"*/}
+                                            {/*        value={formData.zip}*/}
+                                            {/*        onChange={handleChange}*/}
+                                            {/*    />*/}
+                                            {/*</div>*/}
                                         </div>
                                     </form>
                                 </div>

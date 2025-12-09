@@ -37,6 +37,9 @@
   justify-content: center;
   background-color: #272727 !important;
 }
+.banner-sec.profile .right-bar .icon-wrapper .icon.delete {
+  background-color: #DC2626 !important;
+}
 .banner-sec.profile .right-bar .icon-wrapper .icon-box {
   display: flex;
   align-items: center;
@@ -330,7 +333,8 @@
 .banner-sec.profile .form {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  column-gap: 30px;
+  row-gap: 10px;
 }
 .banner-sec.profile .custom-grid1 {
   display: grid;
@@ -472,6 +476,13 @@
 }
 .table-responsive .custom-table .badge.more {
   background: #000;
+}
+
+.review-card-s1 .review-inner-card {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #DADADA;
+  background: #F9F9F9;
 }
 
 @media (max-width: 768px) {

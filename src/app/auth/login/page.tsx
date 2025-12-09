@@ -156,7 +156,7 @@ export default function LoginPage() {
                             <form className="form" onSubmit={handleSubmit}>
                                 <div className="input-wrapper d-flex flex-column">
                                     <label htmlFor="email" className="mb-1 fw-semibold">
-                                        Email Address *
+                                        Email Address <span className="text-danger">*</span>
                                     </label>
                                     <input
                                         type="email"
@@ -171,7 +171,7 @@ export default function LoginPage() {
                                 {/* ✅ Password field — with SVG EyeIcon (same as RegisterPage) */}
                                 <div className="input-wrapper d-flex flex-column position-relative">
                                     <label htmlFor="password" className="mb-1 fw-semibold">
-                                        Password *
+                                        Password <span className="text-danger">*</span>
                                     </label>
                                     <input
                                         type={showPassword ? 'text' : 'password'}

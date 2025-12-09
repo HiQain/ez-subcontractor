@@ -46,6 +46,10 @@ $danger: #DC2626;
         justify-content: center;
         background-color: $dark;
       }
+      .icon.delete {
+        background-color: #DC2626 !important;
+      }
+
       .icon-box {
         display: flex;
         align-items: center;
@@ -341,7 +345,8 @@ $danger: #DC2626;
   .form {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    column-gap: 30px;
+    row-gap: 10px;
   }
   .custom-grid1 {
     display: grid;
@@ -487,6 +492,14 @@ $danger: #DC2626;
         background: #000;
       }
     }
+  }
+}
+.review-card-s1 {
+  .review-inner-card {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #DADADA;
+    background: #F9F9F9;
   }
 }
 @media (max-width: 768px) {

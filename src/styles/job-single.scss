@@ -17,7 +17,12 @@ $dark: #272727 !important;
       justify-content: center;
       background-color: $dark;
     }
+    .icon.delete {
+      background-color: #DC2626 !important;
+      border: transparent;
+    }
   }
+
   .custom-card {
     border-left: none !important;
     box-shadow: none;

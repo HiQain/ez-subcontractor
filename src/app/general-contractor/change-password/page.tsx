@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -330,7 +330,7 @@ export default function ChangePassword() {
                                         {/* Old Password */}
                                         <div className="input-wrapper d-flex flex-column position-relative mb-4">
                                             <label htmlFor="old_password" className="mb-1 fw-semibold">
-                                                Old Password *
+                                                Old Password <span className="text-danger">*</span>
                                             </label>
                                             <input
                                                 type={showOld ? 'text' : 'password'}
@@ -353,7 +353,7 @@ export default function ChangePassword() {
                                         {/* New Password */}
                                         <div className="input-wrapper d-flex flex-column position-relative mb-4">
                                             <label htmlFor="password" className="mb-1 fw-semibold">
-                                                New Password *
+                                                New Password <span className="text-danger">*</span>
                                             </label>
                                             <input
                                                 type={showNew ? 'text' : 'password'}
@@ -376,7 +376,7 @@ export default function ChangePassword() {
                                         {/* Confirm Password */}
                                         <div className="input-wrapper d-flex flex-column position-relative mb-4">
                                             <label htmlFor="confirm_password" className="mb-1 fw-semibold">
-                                                Confirm Password *
+                                                Confirm Password <span className="text-danger">*</span>
                                             </label>
                                             <input
                                                 type={showConfirm ? 'text' : 'password'}

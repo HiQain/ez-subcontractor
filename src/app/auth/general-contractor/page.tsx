@@ -205,7 +205,7 @@ export default function RegisterPage() {
                                     </div>
                                 </div>
                                 <div className="input-wrapper d-flex flex-column">
-                                    <label htmlFor="name" className="mb-1 fw-semibold">Full Name</label>
+                                    <label htmlFor="name" className="mb-1 fw-semibold">Full Name <span className="text-danger">*</span></label>
                                     <input
                                         type="text"
                                         id="name"
@@ -220,7 +220,7 @@ export default function RegisterPage() {
                                     )}
                                 </div>
                                 <div className="input-wrapper d-flex flex-column">
-                                    <label htmlFor="company_name" className="mb-1 fw-semibold">Company Name</label>
+                                    <label htmlFor="company_name" className="mb-1 fw-semibold">Company Name <span className="text-danger">*</span></label>
                                     <input
                                         type="text"
                                         id="company_name"

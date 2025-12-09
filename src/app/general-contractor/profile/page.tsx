@@ -324,8 +324,7 @@ export default function ProfilePage() {
                                             </Link>
                                             <Link
                                                 href="#"
-                                                className="icon"
-                                                style={{ backgroundColor: '#DC2626 !important' }}
+                                                className="icon delete"
                                             >
                                                 <Image
                                                     src="/assets/img/icons/delete.svg"

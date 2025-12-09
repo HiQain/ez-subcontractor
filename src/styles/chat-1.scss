@@ -1,0 +1,123 @@
+// style.scss
+$primary: #C9DA2B !important;
+$gray: #F9F9F9 !important;
+$gray-light: #9A9A9A !important;
+$dark: #272727 !important;
+$danger: #DC2626;
+
+.chat-wrapper {
+
+    .contact-panel {
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid #DADADA;
+        position: relative;
+
+        .custom-card {
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none;
+            padding: 12px;
+            margin: 0;
+            margin-bottom: clamp(24px, 7vw, 73px);
+
+            .btn.btn-outline-dark {
+                padding: 8px 18px;
+            }
+        }
+
+        .contact-options {
+            padding: 0 12px;
+        }
+
+        // ✅ Mobile: overlay panel
+        @media (max-width: 992px) {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+
+            &.open {
+                transform: translateX(0);
+            }
+        }
+
+        .contact-header {
+            border-bottom: 1px solid #EAEAEA;
+        }
+
+        .contact-options {
+            .option {
+                cursor: pointer;
+
+                &.danger {
+                    color: $danger;
+                }
+            }
+
+            // Mute toggle switch
+            .mute-toggle {
+                position: relative;
+                display: inline-block;
+                width: 50px;
+                height: 24px;
+
+                input {
+                    opacity: 0;
+                    width: 0;
+                    height: 0;
+                }
+
+                .slider {
+                    position: absolute;
+                    cursor: pointer;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: #ccc;
+                    transition: 0.4s;
+                    border-radius: 24px;
+
+                    &:before {
+                        position: absolute;
+                        content: "";
+                        height: 16px;
+                        width: 16px;
+                        left: 4px;
+                        bottom: 4px;
+                        background-color: white;
+                        transition: 0.4s;
+                        border-radius: 50%;
+                    }
+                }
+
+                input:checked+.slider {
+                    background-color: $primary;
+                }
+
+                input:checked+.slider:before {
+                    transform: translateX(26px);
+                }
+            }
+        }
+    }
+}
+
+.close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 28px;
+    line-height: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $dark;
+    z-index: 1001;
+}
