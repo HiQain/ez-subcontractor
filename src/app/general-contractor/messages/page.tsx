@@ -1,15 +1,58 @@
-// app/chat/page.tsx
 'use client';
 
-import { useEffect } from 'react';
 import Image from 'next/image';
+import Link from "next/link";
 import Header from './../../components/Header';
 import '../../../styles/chat.css';
-import Link from "next/link";
+import { useEffect, useState } from 'react';
 
+interface Contractor {
+  id: number;
+  name: string;
+  company_name: string;
+  city: string | null;
+  state: string | null;
+  average_rating: string;
+  ratings_count: string;
+  created_at: string;
+}
 
 export default function ChatPage() {
-  // Optional: Agar koi JS behavior chahiye ho (jaise dropdown, waveform, etc.), yahan useEffect mein handle karein
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [results, setResults] = useState<Contractor[]>([]);
+
+  useEffect(() => {
+    getUsers();
+  }, []);
+
+  const getUsers = async () => {
+    setSearchLoading(true);
+
+    try {
+      const token = localStorage.getItem('token');
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}common/contractors?page=1&perPage=2000`,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : '',
+            Accept: 'application/json',
+          },
+        }
+      );
+
+      const data = await res.json();
+      const contractors = data?.data?.data || [];
+
+      console.log(contractors);
+      setResults(contractors);
+    } catch (error) {
+      console.error('Search failed:', error);
+      setResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
 
   return (
     <div className="sections overflow-hidden">
@@ -18,6 +61,7 @@ export default function ChatPage() {
       <section className="chat-sec">
         <div className="container">
           <div className="chat-wrapper">
+
             {/* Sidebar */}
             <div className="sidebar">
               <div className="form-wrapper">
@@ -29,57 +73,80 @@ export default function ChatPage() {
                     alt="Search Icon"
                     loading="lazy"
                   />
-                  <input type="text" placeholder="Search here" className="form-control border-0 shadow-none" />
+                  <input
+                    type="text"
+                    placeholder="Search here"
+                    className="form-control border-0 shadow-none"
+                  />
                 </div>
+
                 <Link
-                    href={'#'}
-                    className="btn bg-transparent px-2 py-0 text-decoration-none border-0"
+                  href={'#'}
+                  className="btn bg-transparent px-2 py-0 text-decoration-none border-0"
                 >
                   <Image
-                      src="/assets/img/icons/voice.svg"
-                      width={18}
-                      height={18}
-                      alt="Voice Icon"
-                      loading="lazy"
+                    src="/assets/img/icons/voice.svg"
+                    width={18}
+                    height={18}
+                    alt="Voice Icon"
+                    loading="lazy"
                   />
                 </Link>
               </div>
+
               <div className="filter-tabs">
                 <button className="filter-btn active">All</button>
                 <button className="filter-btn">Unread</button>
                 <button className="filter-btn">Read</button>
                 <button className="filter-btn">Archived</button>
               </div>
+
               <div className="chat-list">
-                {[
-                  { id: 1, title: 'ProBuilds Express', preview: "You didn't get any ice cream?", time: 'Just Now', unread: 99 },
-                  { id: 2, title: 'BuildRight Construction', preview: "You: Good Chris. I've taught you well...", time: '1hr ago' },
-                  { id: 3, title: 'BrightSide Homes', preview: '✓ Not really, but will keep it', time: '1 day ago' },
-                  { id: 4, title: 'Apex General Contractors', preview: 'Nothing just warming up', time: '2w ago' },
-                  { id: 5, title: 'Horizon Homes Inc', preview: 'Tomorrow you have game get ready', time: '2w ago' },
-                  { id: 6, title: 'SolidFrame Builders', preview: 'Keep going dear!', time: '2w ago' },
-                  { id: 7, title: 'Prime Construction Co.', preview: "You: It was fantastic really enjoyed!", time: '1m ago' },
-                ].map((item) => (
-                  <div key={item.id} className={`chat-item ${item.id === 1 ? 'active' : ''}`}>
-                    <div className="avatar">
-                      <Image
-                        src="/assets/img/icons/p-icon.svg"
-                        width={40}
-                        height={40}
-                        alt="Icon"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="chat-info">
-                      <div className="chat-title">{item.title}</div>
-                      <div className="chat-preview">{item.preview}</div>
-                    </div>
-                    <div className="chat-meta">
-                      <div className="time">{item.time}</div>
-                      {item.unread && <div className="unread-count">{item.unread}</div>}
-                    </div>
+                {results.length === 0 && !searchLoading && (
+                  <div className="text-center py-4 text-muted">
+                    No contractors found
                   </div>
-                ))}
+                )}
+
+                {searchLoading && (
+                  <div className="text-center py-4 text-muted">
+                    Loading...
+                  </div>
+                )}
+
+                {results.map((item) => {
+                  const initials = (item.company_name || item.name || "?")
+                    .split(" ")
+                    .map(word => word[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2);
+
+                  return (
+                    <div key={item.id} className="chat-item">
+                      <div className="avatar">
+                        <div className="initials-circle">
+                          {initials}
+                        </div>
+                      </div>
+
+                      {/* Info Section */}
+                      <div className="chat-info">
+                        <div className="chat-title">
+                          {item.company_name || item.name}
+                        </div>
+                      </div>
+
+                      {/* Meta */}
+                      <div className="chat-meta">
+                        <div className="time">
+                          {new Date(item.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
               </div>
             </div>
 
@@ -101,6 +168,7 @@ export default function ChatPage() {
                     <div className="chat-time">Today at 3:30 PM</div>
                   </div>
                 </div>
+
                 <div className="chat-header-right">
                   <div className="dropdown-container">
                     <button className="more-options">⋯</button>
@@ -116,6 +184,7 @@ export default function ChatPage() {
                 </div>
               </div>
 
+              {/* Chat Messages */}
               <div className="chat-messages">
                 {/* Incoming Message */}
                 <div className="message incoming">
@@ -170,6 +239,7 @@ export default function ChatPage() {
                           loading="lazy"
                         />
                       </button>
+
                       <div className="audio-waveform">
                         <div className="wave">
                           {[...Array(15)].map((_, i) => (
@@ -177,7 +247,9 @@ export default function ChatPage() {
                           ))}
                         </div>
                       </div>
+
                       <span className="audio-duration">00:16</span>
+
                       <div className="message-meta">
                         <span className="message-time">23:34</span>
                         <span className="message-status">✓</span>
@@ -192,17 +264,18 @@ export default function ChatPage() {
                     <div className="file-message">
                       <div className="file-icon">
                         <Image
-                            src="/assets/img/pdf-icon.svg"
-                            width={24}
-                            height={24}
-                            alt="Search"
-                            loading="lazy"
+                          src="/assets/img/pdf-icon.svg"
+                          width={24}
+                          height={24}
+                          alt="Search"
+                          loading="lazy"
                         />
                       </div>
                       <div className="file-info">
                         <div className="file-name">master_craftsman.pdf</div>
                         <div className="file-date">30 May 2024 at 4:36 pm</div>
                       </div>
+
                       <div className="message-meta">
                         <span className="message-time">13:34</span>
                       </div>
@@ -259,43 +332,40 @@ export default function ChatPage() {
                       placeholder="Type a message..."
                       className="form-control border-0 shadow-none"
                     />
+
                     <div className="d-flex align-items-center">
-                      <Link
-                          href={'#'}
-                          className="btn bg-transparent px-3 border-0"
-                      >
+                      <Link href={'#'} className="btn bg-transparent px-3 border-0">
                         <Image
-                            src="/assets/img/attachment.svg"
-                            width={18}
-                            height={18}
-                            alt="Search"
-                            loading="lazy"
+                          src="/assets/img/attachment.svg"
+                          width={18}
+                          height={18}
+                          alt="Attachment"
+                          loading="lazy"
                         />
                       </Link>
-                      <Link
-                          href={'#'}
-                          className="btn bg-transparent px-3 border-0"
-                      >
+
+                      <Link href={'#'} className="btn bg-transparent px-3 border-0">
                         <Image
-                            src="/assets/img/icons/voice.svg"
-                            width={18}
-                            height={18}
-                            alt="Voice"
-                            loading="lazy"
+                          src="/assets/img/icons/voice.svg"
+                          width={18}
+                          height={18}
+                          alt="Voice"
+                          loading="lazy"
                         />
                       </Link>
                     </div>
                   </div>
                 </div>
+
                 <div className="input-actions">
                   <button className="send-btn">➤</button>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
       </section>
-
     </div>
   );
 }
