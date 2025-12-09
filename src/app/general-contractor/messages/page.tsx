@@ -3,8 +3,8 @@
 
 import { useEffect } from 'react';
 import Image from 'next/image';
-import Header from './../components/Header';
-import '../../styles/chat.css';
+import Header from './../../components/Header';
+import '../../../styles/chat.css';
 import Link from "next/link";
 
 
