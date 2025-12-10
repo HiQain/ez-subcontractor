@@ -423,11 +423,11 @@
 'use client';
 
 import Image from 'next/image';
-import Header from './../../components/Header';
-import '../../../styles/chat.css';
+import Header from '../components/Header';
+import '../../styles/chat.css';
 import { useEffect, useRef, useState } from 'react';
-import { ChatMessage, Contractor, getContractors, getMessages, sendMessageAPI } from '../../api/chat';
-import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../../api/userChatPusher';
+import { ChatMessage, Contractor, getContractors, getMessages, sendMessageAPI } from '../api/chat';
+import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
 
 export default function ChatPage() {
   const [results, setResults] = useState<Contractor[]>([]);

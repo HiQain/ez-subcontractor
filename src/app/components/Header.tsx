@@ -143,7 +143,7 @@ export default function Header() {
                     return {
                         menuItems: [
                             { href: 'dashboard', label: 'Dashboard' },
-                            { href: 'messages', label: 'Messages' },
+                            { href: '/messages', label: 'Messages' },
                             { href: 'my-projects', label: 'My projects' },
                         ],
                         iconsButtons: commonIconsButtons
@@ -153,7 +153,7 @@ export default function Header() {
                     return {
                         menuItems: [
                             { href: 'dashboard', label: 'Dashboard' },
-                            { href: 'messages', label: 'Messages' },
+                            { href: '/messages', label: 'Messages' },
                             { href: 'rating', label: 'Rating' },
                         ],
                         iconsButtons: commonIconsButtons
@@ -163,7 +163,7 @@ export default function Header() {
                     return {
                         menuItems: [
                             { href: 'dashboard', label: 'Dashboard' },
-                            { href: 'messages', label: 'Messages' },
+                            { href: '/messages', label: 'Messages' },
                             { href: 'my-ads', label: 'My Ads' },
                         ],
                         iconsButtons: commonIconsButtons
