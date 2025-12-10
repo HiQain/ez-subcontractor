@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('admin_s@gmail.com');
+    const [email, setEmail] = useState('genc@yopmail.com');
     const [password, setPassword] = useState('Password123');
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
