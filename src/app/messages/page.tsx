@@ -547,6 +547,8 @@ export default function ChatPage() {
                       key={item.id}
                       className="chat-item"
                       onClick={() => {
+                        if (selectedChatId === item.id) return;
+
                         setSelectedChatId(item.id);
                         setSelectedUser(item);
                         loadMessages(item.id);
