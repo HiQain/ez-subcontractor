@@ -373,45 +373,45 @@
 //               </div>
 
 //               {/* Message Input */}
-//               <div className="message-input">
-//                 <div className="form-wrapper w-100 m-0">
-//                   <div className="d-flex align-items-center gap-2 w-100">
-//                     <input
-//                       type="text"
-//                       placeholder="Type a message..."
-//                       className="form-control border-0 shadow-none"
-//                     />
+// <div className="message-input">
+//   <div className="form-wrapper w-100 m-0">
+//     <div className="d-flex align-items-center gap-2 w-100">
+//       <input
+//         type="text"
+//         placeholder="Type a message..."
+//         className="form-control border-0 shadow-none"
+//       />
 
-//                     <div className="d-flex align-items-center">
-//                       <Link href={'#'} className="btn bg-transparent px-3 border-0">
-//                         <Image
-//                           src="/assets/img/attachment.svg"
-//                           width={18}
-//                           height={18}
-//                           alt="Attachment"
-//                           loading="lazy"
-//                         />
-//                       </Link>
+//       <div className="d-flex align-items-center">
+//         <Link href={'#'} className="btn bg-transparent px-3 border-0">
+//           <Image
+//             src="/assets/img/attachment.svg"
+//             width={18}
+//             height={18}
+//             alt="Attachment"
+//             loading="lazy"
+//           />
+//         </Link>
 
-//                       <Link href={'#'} className="btn bg-transparent px-3 border-0">
-//                         <Image
-//                           src="/assets/img/icons/voice.svg"
-//                           width={18}
-//                           height={18}
-//                           alt="Voice"
-//                           loading="lazy"
-//                         />
-//                       </Link>
-//                     </div>
-//                   </div>
-//                 </div>
+//         <Link href={'#'} className="btn bg-transparent px-3 border-0">
+//           <Image
+//             src="/assets/img/icons/voice.svg"
+//             width={18}
+//             height={18}
+//             alt="Voice"
+//             loading="lazy"
+//           />
+//         </Link>
+//       </div>
+//     </div>
+//   </div>
 
-//                 <div className="input-actions">
-//                   <button className="send-btn">➤</button>
-//                 </div>
-//               </div>
+//   <div className="input-actions">
+//     <button className="send-btn">➤</button>
+//   </div>
+// </div>
 
-//             </div>
+// </div>
 //           </div>
 //         </div>
 //       </section>
@@ -428,6 +428,7 @@ import '../../styles/chat.css';
 import { useEffect, useRef, useState } from 'react';
 import { ChatMessage, Contractor, getContractors, getMessages, sendMessageAPI } from '../api/chat';
 import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
+import Link from 'next/link';
 
 export default function ChatPage() {
   const [results, setResults] = useState<Contractor[]>([]);
@@ -437,6 +438,7 @@ export default function ChatPage() {
   const [messageText, setMessageText] = useState("");
   const [loadingMessages, setLoadingMessages] = useState(false);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     getContractors().then(setResults);
@@ -498,6 +500,10 @@ export default function ChatPage() {
     }
   };
 
+  const filteredResults = results.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="sections overflow-hidden">
       <Header />
@@ -521,13 +527,14 @@ export default function ChatPage() {
                     type="text"
                     placeholder="Search here"
                     className="form-control border-0 shadow-none"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
 
               <div className="chat-list">
-
-                {results.map((item) => {
+                {filteredResults.map((item) => {
                   const initials = (item.name || "?")
                     .split(" ")
                     .map(word => word[0])
@@ -566,9 +573,12 @@ export default function ChatPage() {
                     </div>
                   );
                 })}
-
+                {filteredResults.length === 0 && (
+                  <div className="text-center p-4">No results found</div>
+                )}
               </div>
             </div>
+
 
             {/* Main Chat Area */}
             <div className="main-chat">
@@ -628,15 +638,44 @@ export default function ChatPage() {
               {/* Message Input */}
               {selectedUser && (
                 <div className="message-input">
-                  <input
-                    type="text"
-                    placeholder="Type a message..."
-                    className="form-control border-0 shadow-none"
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                  />
-                  <button className="send-btn" onClick={sendMessage}>➤</button>
+                  <div className="form-wrapper w-100 m-0">
+                    <div className="d-flex align-items-center gap-2 w-100">
+                      <input
+                        type="text"
+                        placeholder="Type a message..."
+                        className="form-control border-0 shadow-none"
+                        value={messageText}
+                        onChange={(e) => setMessageText(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                      />
+
+                      <div className="d-flex align-items-center">
+                        <Link href={'#'} className="btn bg-transparent px-3 border-0">
+                          <Image
+                            src="/assets/img/attachment.svg"
+                            width={18}
+                            height={18}
+                            alt="Attachment"
+                            loading="lazy"
+                          />
+                        </Link>
+
+                        {/* <Link href={'#'} className="btn bg-transparent px-3 border-0">
+                          <Image
+                            src="/assets/img/icons/voice.svg"
+                            width={18}
+                            height={18}
+                            alt="Voice"
+                            loading="lazy"
+                          />
+                        </Link> */}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="input-actions">
+                    <button className="send-btn" onClick={sendMessage}>➤</button>
+                  </div>
                 </div>
               )}
 
