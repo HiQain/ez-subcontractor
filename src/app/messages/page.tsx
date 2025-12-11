@@ -54,28 +54,53 @@ export default function ChatPage() {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!selectedChatId || (!messageText.trim() && files.length === 0)) return;
+    if ((!messageText || messageText.trim() === "") && files.length === 0) return;
 
-    const tempMessage: ChatMessage = {
-      id: Date.now(),
+    const tempId = Date.now();
+
+    const tempMessage = {
+      id: tempId,
       sender_id: 0,
-      receiver_id: selectedChatId!,
+      receiver_id: selectedChatId,
       message: messageText,
       attachment: files.map(f => URL.createObjectURL(f)),
       created_at: new Date().toISOString(),
+      sending: true,
     };
 
-    setMessages((prev) => [...prev, tempMessage]);
+    setMessages(prev => [...prev, tempMessage]);
+
     setMessageText("");
     setFiles([]);
 
-    const savedMessage = await sendMessageAPI(selectedChatId, messageText, files);
-    if (savedMessage) {
-      setMessages((prev) =>
-        prev.map((msg) => (msg.id === tempMessage.id ? savedMessage : msg))
-      );
+    try {
+      const savedMessage = await sendMessageAPI(selectedChatId, messageText, files);
+
+      if (savedMessage) {
+        setMessages(prev =>
+          prev.map(msg => (msg.id === tempId ? savedMessage : msg))
+        );
+
+        setResults(prev =>
+          Array.isArray(prev)
+            ? prev.map(user =>
+              user.id === selectedChatId
+                ? {
+                  ...user,
+                  last_message: savedMessage.message || "📎 Attachment",
+                  last_message_time: savedMessage.created_at,
+                }
+                : user
+            )
+            : prev
+        );
+      }
+    } catch (error) {
+      console.error("Send message error:", error);
+      setMessages(prev => prev.filter(msg => msg.id !== tempId));
     }
   };
+
 
   const filteredResults = Array.isArray(results)
     ? results.filter(item =>
