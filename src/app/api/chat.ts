@@ -45,21 +45,33 @@ export const getMessages = async (chatId: number): Promise<ChatMessage[]> => {
     return Array.isArray(data?.data?.data) ? data.data.data : [];
 };
 
-// Send message
-export const sendMessageAPI = async (receiver_id: number, message: string): Promise<ChatMessage | null> => {
+// Send message with optional attachment
+export const sendMessageAPI = async (
+    receiver_id: number,
+    message: string,
+    file?: File
+): Promise<ChatMessage | null> => {
     const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("receiver_id", receiver_id.toString());
+    formData.append("message", message || "");
+    if (file) {
+        formData.append("attachments[0]", file, file.name);
+    }
+
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/chat/send-message`, {
         method: "POST",
         headers: {
             Authorization: token ? `Bearer ${token}` : "",
             Accept: "application/json",
-            "Content-Type": "application/json",
         },
-        body: JSON.stringify({ receiver_id, message }),
+        body: formData,
     });
+
     const data = await res.json();
     return data?.data || null;
 };
+
 
 export const capitalizeEachWord = (text: string): string => {
     if (!text) return "";

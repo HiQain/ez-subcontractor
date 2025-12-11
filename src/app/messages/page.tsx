@@ -439,6 +439,7 @@ export default function ChatPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     getContractors().then(setResults);
@@ -476,29 +477,29 @@ export default function ChatPage() {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!selectedChatId || !messageText.trim()) return;
+    if (!selectedChatId || (!messageText.trim() && !file)) return;
 
-    // Optimistic UI
     const tempMessage: ChatMessage = {
       id: Date.now(),
       sender_id: 0,
       receiver_id: selectedChatId!,
       message: messageText,
-      attachment: [],
+      attachment: file ? [URL.createObjectURL(file)] : [],
       created_at: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, tempMessage]);
     setMessageText("");
+    setFile(null);
 
     // API call
-    const savedMessage = await sendMessageAPI(selectedChatId, tempMessage.message);
+    const savedMessage = await sendMessageAPI(selectedChatId, messageText, file || undefined);
     if (savedMessage) {
-      // Optionally replace tempMessage with real API message
       setMessages((prev) =>
         prev.map((msg) => (msg.id === tempMessage.id ? savedMessage : msg))
       );
     }
   };
+
 
   const filteredResults = results.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -671,25 +672,10 @@ export default function ChatPage() {
                       />
 
                       <div className="d-flex align-items-center">
-                        <Link href={'#'} className="btn bg-transparent px-3 border-0">
-                          <Image
-                            src="/assets/img/attachment.svg"
-                            width={18}
-                            height={18}
-                            alt="Attachment"
-                            loading="lazy"
-                          />
-                        </Link>
-
-                        {/* <Link href={'#'} className="btn bg-transparent px-3 border-0">
-                          <Image
-                            src="/assets/img/icons/voice.svg"
-                            width={18}
-                            height={18}
-                            alt="Voice"
-                            loading="lazy"
-                          />
-                        </Link> */}
+                        <input
+                          type="file"
+                          onChange={(e) => e.target.files && setFile(e.target.files[0])}
+                        />
                       </div>
                     </div>
                   </div>
