@@ -621,7 +621,25 @@ export default function ChatPage() {
                       >
                         <div className="message-content">
                           <div className="message-bubble">
-                            {msg.message}
+                            {/* Attachments first */}
+                            {msg.attachment && msg.attachment.length > 0 && (
+                              <div className="message-attachments mb-2">
+                                {msg.attachment.map((att, index) => (
+                                  <Image
+                                    key={index}
+                                    src={att}
+                                    alt={`attachment-${index}`}
+                                    width={200}
+                                    height={200}
+                                    className="rounded-md"
+                                  />
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Text below image */}
+                            {msg.message && <div className="message-text">{msg.message}</div>}
+
                             <div className="message-meta">
                               <span className="message-time">
                                 {new Date(msg.created_at).toLocaleTimeString()}
@@ -629,6 +647,7 @@ export default function ChatPage() {
                             </div>
                           </div>
                         </div>
+
                       </div>
                     ))
                   )
