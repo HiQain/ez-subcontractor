@@ -60,3 +60,11 @@ export const sendMessageAPI = async (receiver_id: number, message: string): Prom
     const data = await res.json();
     return data?.data || null;
 };
+
+export const capitalizeEachWord = (text: string): string => {
+    if (!text) return "";
+    return text
+        .split(" ")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+};

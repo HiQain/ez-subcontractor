@@ -426,7 +426,7 @@ import Image from 'next/image';
 import Header from '../components/Header';
 import '../../styles/chat.css';
 import { useEffect, useRef, useState } from 'react';
-import { ChatMessage, Contractor, getContractors, getMessages, sendMessageAPI } from '../api/chat';
+import { capitalizeEachWord, ChatMessage, Contractor, getContractors, getMessages, sendMessageAPI } from '../api/chat';
 import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
 import Link from 'next/link';
 
@@ -563,7 +563,7 @@ export default function ChatPage() {
 
                       <div className="chat-info">
                         <div className="chat-title">
-                          {item.name}
+                          {capitalizeEachWord(item.name)}
                         </div>
                       </div>
 
@@ -590,7 +590,7 @@ export default function ChatPage() {
                 {selectedUser ? (
                   <div className="chat-header-left">
                     <div className="chat-header-info">
-                      <div className="chat-name">{selectedUser.name}</div>
+                      <div className="chat-name">{capitalizeEachWord(selectedUser.name)}</div>
                       <div className="chat-time">
                         {new Date(selectedUser.created_at).toLocaleString()}
                       </div>
