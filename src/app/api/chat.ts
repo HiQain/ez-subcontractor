@@ -49,14 +49,17 @@ export const getMessages = async (chatId: number): Promise<ChatMessage[]> => {
 export const sendMessageAPI = async (
     receiver_id: number,
     message: string,
-    file?: File
+    files?: File[]
 ): Promise<ChatMessage | null> => {
     const token = localStorage.getItem("token");
     const formData = new FormData();
     formData.append("receiver_id", receiver_id.toString());
     formData.append("message", message || "");
-    if (file) {
-        formData.append("attachments[0]", file, file.name);
+
+    if (files && files.length > 0) {
+        files.forEach((file, index) => {
+            formData.append(`attachments[${index}]`, file, file.name);
+        });
     }
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/chat/send-message`, {
@@ -71,6 +74,7 @@ export const sendMessageAPI = async (
     const data = await res.json();
     return data?.data || null;
 };
+
 
 
 export const capitalizeEachWord = (text: string): string => {

@@ -439,7 +439,7 @@ export default function ChatPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
     getContractors().then(setResults);
@@ -477,29 +477,28 @@ export default function ChatPage() {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!selectedChatId || (!messageText.trim() && !file)) return;
+    if (!selectedChatId || (!messageText.trim() && files.length === 0)) return;
 
     const tempMessage: ChatMessage = {
       id: Date.now(),
       sender_id: 0,
       receiver_id: selectedChatId!,
       message: messageText,
-      attachment: file ? [URL.createObjectURL(file)] : [],
+      attachment: files.map(f => URL.createObjectURL(f)),
       created_at: new Date().toISOString(),
     };
+
     setMessages((prev) => [...prev, tempMessage]);
     setMessageText("");
-    setFile(null);
+    setFiles([]);
 
-    // API call
-    const savedMessage = await sendMessageAPI(selectedChatId, messageText, file || undefined);
+    const savedMessage = await sendMessageAPI(selectedChatId, messageText, files);
     if (savedMessage) {
       setMessages((prev) =>
         prev.map((msg) => (msg.id === tempMessage.id ? savedMessage : msg))
       );
     }
   };
-
 
   const filteredResults = results.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -657,6 +656,29 @@ export default function ChatPage() {
                 )}
               </div>
 
+              {/* 🔥 SHOW ATTACHMENT PREVIEW HERE */}
+              {selectedUser && (
+                <div className="message-input">
+                  {files.length > 0 && (
+                    <div className="attachments-preview p-2">
+                      {files.map((file, idx) => (
+                        <div key={idx} className="preview-item d-flex align-items-center gap-2 mb-1">
+                          <span>📎 {file.name}</span>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => {
+                              setFiles(files.filter((_, i) => i !== idx));
+                            }}
+                          >
+                            x
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Message Input */}
               {selectedUser && (
                 <div className="message-input">
@@ -671,12 +693,27 @@ export default function ChatPage() {
                         onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                       />
 
-                      <div className="d-flex align-items-center">
-                        <input
-                          type="file"
-                          onChange={(e) => e.target.files && setFile(e.target.files[0])}
+                      <div className="btn bg-transparent px-3 border-0" onClick={() => document.getElementById("fileInput")?.click()}>
+                        <Image
+                          src="/assets/img/attachment.svg"
+                          width={18}
+                          height={18}
+                          alt="Attachment"
+                          loading="lazy"
                         />
                       </div>
+
+                      <input
+                        id="fileInput"
+                        type="file"
+                        multiple
+                        className="d-none"
+                        onChange={(e) => {
+                          if (e.target.files) {
+                            setFiles(Array.from(e.target.files));
+                          }
+                        }}
+                      />
                     </div>
                   </div>
 
