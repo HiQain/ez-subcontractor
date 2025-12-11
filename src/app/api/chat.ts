@@ -12,24 +12,22 @@ export interface Contractor {
     id: number;
     name: string;
     company_name: string;
-    city: string | null;
-    state: string | null;
-    average_rating: string;
-    ratings_count: string;
     created_at: string;
+    last_message: string | null;
+    last_message_time: string | null;
 }
 
 // Get contractors
 export const getContractors = async (): Promise<Contractor[]> => {
     const token = localStorage.getItem("token");
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/contractors?page=1&perPage=2000`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/chat/users`, {
         headers: {
             Authorization: token ? `Bearer ${token}` : "",
             Accept: "application/json",
         },
     });
     const data = await res.json();
-    return data?.data?.data || [];
+    return Array.isArray(data?.data?.data) ? data.data?.data : [];
 };
 
 // Get messages

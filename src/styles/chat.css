@@ -130,12 +130,20 @@
 
 .chat-wrapper .chat-item .chat-title {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   color: #272727 !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 4px;
+}
+
+.chat-wrapper .chat-last-message {
+  font-size: 12px;
+  color: #272727 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chat-wrapper .chat-item .chat-preview {

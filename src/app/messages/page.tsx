@@ -77,9 +77,11 @@ export default function ChatPage() {
     }
   };
 
-  const filteredResults = results.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredResults = Array.isArray(results)
+    ? results.filter(item =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    : [];
 
   const handleClearChat = async () => {
     if (!selectedChatId || messages.length === 0) return;
@@ -156,11 +158,14 @@ export default function ChatPage() {
                         <div className="chat-title">
                           {capitalizeEachWord(item.name)}
                         </div>
+                        <div className="chat-last-message">
+                          {item.last_message || "No messages yet"}
+                        </div>
                       </div>
 
                       <div className="chat-meta">
                         <div className="time">
-                          {new Date(item.created_at).toLocaleDateString()}
+                          {new Date(item.last_message_time).toLocaleDateString()}
                         </div>
                       </div>
                     </div>
