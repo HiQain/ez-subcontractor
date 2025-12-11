@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Header from '../components/Header';
 import '../../styles/chat.css';
 import { useEffect, useRef, useState } from 'react';
-import { capitalizeEachWord, ChatMessage, Contractor, getContractors, getMessages, sendMessageAPI } from '../api/chat';
+import { capitalizeEachWord, ChatMessage, clearChatAPI, Contractor, getContractors, getMessages, sendMessageAPI } from '../api/chat';
 import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
 
 export default function ChatPage() {
@@ -80,6 +80,20 @@ export default function ChatPage() {
   const filteredResults = results.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleClearChat = async () => {
+    if (!selectedChatId || messages.length === 0) return;
+
+    setMessages([]);
+    alert("Chat cleared successfully!");
+
+    try {
+      await clearChatAPI(selectedChatId);
+    } catch (err) {
+      console.error("Failed to clear chat:", err);
+    }
+  };
+
 
   return (
     <div className="sections overflow-hidden">
@@ -186,12 +200,12 @@ export default function ChatPage() {
                   <div className="dropdown-container">
                     <button className="more-options">⋯</button>
                     <div className="dropdown-menu">
-                      <div className="dropdown-item">View contact</div>
+                      {/* <div className="dropdown-item">View contact</div>
                       <div className="dropdown-item">Search</div>
                       <div className="dropdown-item">Media</div>
-                      <div className="dropdown-item">Mute chat</div>
-                      <div className="dropdown-item">Clear chat</div>
-                      <div className="dropdown-item danger">Block user</div>
+                      <div className="dropdown-item">Mute chat</div> */}
+                      <div className="dropdown-item" onClick={handleClearChat}>Clear chat</div>
+                      {/* <div className="dropdown-item danger">Block user</div> */}
                     </div>
                   </div>
                 </div>

@@ -75,7 +75,24 @@ export const sendMessageAPI = async (
     return data?.data || null;
 };
 
-
+// Clear chat messages
+export const clearChatAPI = async (chatId: number): Promise<boolean> => {
+    const token = localStorage.getItem("token");
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/chat/clear/${chatId}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: token ? `Bearer ${token}` : "",
+                Accept: "application/json",
+            },
+        });
+        const data = await res.json();
+        return data?.success || false;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+};
 
 export const capitalizeEachWord = (text: string): string => {
     if (!text) return "";
