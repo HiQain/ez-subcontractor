@@ -6,7 +6,6 @@ import '../../styles/chat.css';
 import { useEffect, useRef, useState } from 'react';
 import { capitalizeEachWord, ChatMessage, Contractor, getContractors, getMessages, sendMessageAPI } from '../api/chat';
 import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
-import Link from 'next/link';
 
 export default function ChatPage() {
   const [results, setResults] = useState<Contractor[]>([]);
