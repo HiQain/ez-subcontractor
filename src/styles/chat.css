@@ -96,6 +96,10 @@
   background-color: #EEF4BD;
 }
 
+.chat-item.selected {
+  background-color: #EEF4BD;
+}
+
 .chat-wrapper .chat-item.active {
   background-color: #EEF4BD;
 }

@@ -122,7 +122,7 @@ export default function ChatPage() {
                   return (
                     <div
                       key={item.id}
-                      className="chat-item"
+                      className={`chat-item ${selectedChatId === item.id ? 'selected' : ''}`}
                       onClick={() => {
                         if (selectedChatId === item.id) return;
 
