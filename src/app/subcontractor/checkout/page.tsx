@@ -6,32 +6,63 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import '../../../styles/pricing.css';
 import '../../../styles/checkout.css';
 
 export default function CheckoutPage() {
-    const router = useRouter(); // ✅ Router for redirect
+    const stripe = useStripe();
+    const elements = useElements();
+    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState("Select category");
+    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+    const [selectedCategories, setSelectedCategories] = useState<{ id: number; name: string }[]>([]);
     const [selectedPlan, setSelectedPlan] = useState<any>(null);
-
-    const categories = [
-        { id: 1, name: "Plumbing" },
-        { id: 2, name: "Electric Work" },
-        { id: 3, name: "Framing" },
-        { id: 4, name: "Roofing" },
-    ];
-
-    const handleSelect = (category: string) => {
-        setSelectedCategory(category);
-        setIsOpen(false);
-    };
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // ✅ Load selected plan from localStorage
     useEffect(() => {
         const plan = localStorage.getItem('selectedPlan');
         if (plan) setSelectedPlan(JSON.parse(plan));
     }, []);
+
+    // ✅ Load name & email from localStorage
+    useEffect(() => {
+        const storedName = localStorage.getItem('userName');
+        const storedEmail = localStorage.getItem('userEmail');
+
+        if (storedName) setName(storedName);
+        if (storedEmail) setEmail(storedEmail);
+    }, []);
+
+    // 🔹 Fetch categories from API
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/specializations`);
+                const data = await res.json();
+                if (data.success && Array.isArray(data.data.specializations)) {
+                    setCategories(data.data.specializations);
+                } else {
+                    console.error('Failed to fetch specializations', data.message);
+                }
+            } catch (err) {
+                console.error('Error fetching categories:', err);
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    const toggleCategory = (category: { id: number; name: string }) => {
+        if (selectedCategories.some(c => c.id === category.id)) {
+            setSelectedCategories(selectedCategories.filter(c => c.id !== category.id));
+        } else {
+            setSelectedCategories([...selectedCategories, category]);
+        }
+    };
 
     // ✅ Price summary
     const basePrice = selectedPlan ? parseFloat(selectedPlan.price) || 0 : 0;
@@ -60,11 +91,83 @@ export default function CheckoutPage() {
     );
 
     // ✅ Handle payment confirm
-    const handleConfirmPayment = () => {
-        router.push('/subcontractor/success');
+    const handleConfirmPayment = async () => {
+        setError(null);
+
+        // 🔹 Validate name & email
+        if (!name.trim() || !email.trim()) {
+            setError('Please enter your name and email');
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 500);
+            return;
+        }
+
+        if (!stripe || !elements) {
+            setError('Stripe not loaded yet');
+            return;
+        }
+
+        const cardElement = elements.getElement(CardElement);
+        if (!cardElement) {
+            setError('Card details missing');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // 🔹 1. Create Stripe Payment Method
+            const { error: stripeError, paymentMethod } =
+                await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardElement,
+                    billing_details: { name, email },
+                });
+
+            if (stripeError || !paymentMethod) {
+                throw new Error(stripeError?.message || 'Payment method creation failed');
+            }
+
+            // 🔹 2. Call Backend Subscription API
+            const token = localStorage.getItem('token');
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/create-subscription`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` }),
+                    },
+                    body: JSON.stringify({
+                        plan_id: selectedPlan.id,
+                        category_ids: selectedCategories.map(c => c.id),
+                        payment_method_id: paymentMethod.id,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.message?.[0] || 'Subscription creation failed');
+            }
+
+            // ✅ Success
+            router.push('/subcontractor/success');
+
+        } catch (err: any) {
+            setError(err.message || 'Something went wrong');
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 500);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    if (!selectedPlan) return null; // loading state if plan not yet loaded
+    if (!selectedPlan) return null;
 
     return (
         <div className="sections overflow-hidden">
@@ -90,25 +193,39 @@ export default function CheckoutPage() {
                                     <div className="input-wrapper-s2">
                                         <div className="input-wrapper d-flex flex-column">
                                             <label className="mb-1 fw-semibold">Full Name *</label>
-                                            <input type="text" placeholder="Jason Doe" />
+                                            <input type="text" placeholder="Jason Doe"
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                            />
                                         </div>
                                         <div className="input-wrapper d-flex flex-column">
                                             <label className="mb-1 fw-semibold">Email Address *</label>
-                                            <input type="email" placeholder="hello@example.com" />
+                                            <input type="email" placeholder="hello@example.com"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                            />
                                         </div>
                                     </div>
 
                                     {/* Category Select */}
                                     <div className="input-wrapper d-flex flex-column position-relative">
-                                        <label className="mb-1 fw-semibold">Category *</label>
+                                        <label className="mb-1 fw-semibold">Select Specializations *</label>
                                         <div className={`custom-select ${isOpen ? 'open' : ''}`} onClick={() => setIsOpen(!isOpen)}>
-                                            <div className="select-selected">{selectedCategory}</div>
+                                            <div className="select-selected">
+                                                {selectedCategories.length > 0 ?
+                                                    selectedCategories.map(c => c.name).join(', ') :
+                                                    'Select Specializations'}
+                                            </div>
                                             <i className="bi bi-chevron-down select-arrow"></i>
                                             {isOpen && (
                                                 <ul className="select-options">
-                                                    {categories.map((cat) => (
-                                                        <li key={cat.id} onClick={() => handleSelect(cat.name)}>
-                                                            {cat.name}
+                                                    {categories.map(cat => (
+                                                        <li key={cat.id} onClick={() => toggleCategory(cat)}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedCategories.some(c => c.id === cat.id)}
+                                                                readOnly
+                                                            /> {cat.name}
                                                         </li>
                                                     ))}
                                                 </ul>
@@ -116,44 +233,54 @@ export default function CheckoutPage() {
                                         </div>
                                     </div>
 
-                                    {/* Extra Selected Categories (Buttons) */}
+                                    {/* Selected Categories Buttons */}
                                     <div className="buttons d-flex align-items-center gap-2 flex-wrap">
-                                        {categories.map((cat) => (
-                                            <Link key={cat.id} href="#" className="btn bg-dark p-2 fs-12 rounded-3">
+                                        {selectedCategories.map(cat => (
+                                            <div
+                                                key={cat.id}
+                                                className="btn bg-dark p-2 fs-12 rounded-3 d-flex align-items-center gap-1"
+                                            >
                                                 <span className="text-gray-light">{cat.name}</span>
-                                                <Image src="/assets/img/cancel_svgrepo.com.svg" width={16} height={16} alt="Cancel" />
-                                            </Link>
+                                                <Image
+                                                    src="/assets/img/cancel_svgrepo.com.svg"
+                                                    width={16}
+                                                    height={16}
+                                                    alt="Cancel"
+                                                    onClick={() => toggleCategory(cat)}
+                                                    style={{ cursor: 'pointer' }}
+                                                />
+                                            </div>
                                         ))}
                                     </div>
 
-                                    {/* Card Info */}
-                                    <div className="input-wrapper-s2">
-                                        <div className="input-wrapper d-flex flex-column">
-                                            <label className="mb-1 fw-semibold">Card Holder Name *</label>
-                                            <input type="text" placeholder="Enter card holder name" />
-                                        </div>
-                                        <div className="input-wrapper d-flex flex-column">
-                                            <label className="mb-1 fw-semibold">Card Number *</label>
-                                            <input type="number" placeholder="4242 4242 4242 4242" />
+
+                                    {/* STRIPE CARD FORM */}
+                                    <div className="input-wrapper d-flex flex-column">
+                                        <label className="mb-1 fw-semibold">Card Details *</label>
+
+                                        <div
+                                            style={{
+                                                border: '1px solid #ddd',
+                                                borderRadius: '8px',
+                                                padding: '12px',
+                                                background: '#fff',
+                                            }}
+                                        >
+                                            <CardElement
+                                                options={{
+                                                    style: {
+                                                        base: {
+                                                            fontSize: '16px',
+                                                            color: '#000',
+                                                            '::placeholder': { color: '#999' },
+                                                        },
+                                                    },
+                                                }}
+                                            />
                                         </div>
                                     </div>
 
                                     <div className="input-wrapper-s2">
-                                        <div className="input-wrapper d-flex flex-column">
-                                            <label className="mb-1 fw-semibold">CVV *</label>
-                                            <input type="number" placeholder="Enter CVV" />
-                                        </div>
-                                        <div className="input-wrapper d-flex flex-column">
-                                            <label className="mb-1 fw-semibold">Expiry Date *</label>
-                                            <input type="date" placeholder="12/25" />
-                                        </div>
-                                    </div>
-
-                                    <div className="input-wrapper-s2">
-                                        <div className="input-wrapper d-flex flex-column">
-                                            <label className="mb-1 fw-semibold">Zip Code *</label>
-                                            <input type="number" placeholder="Enter zip code" />
-                                        </div>
                                         <div className="input-wrapper d-flex flex-column">
                                             <label className="mb-1 fw-semibold">Promo Code</label>
                                             <input type="text" placeholder="Enter promo code" />
@@ -197,12 +324,19 @@ export default function CheckoutPage() {
                                     </div>
 
                                     {/* CONFIRM PAYMENT */}
-                                    <input
-                                        type="button"
-                                        value="Confirm Payment"
+                                    {error && (
+                                        <p className="text-danger mb-3 animate-slide-up">
+                                            {error}
+                                        </p>
+                                    )}
+
+                                    <button
                                         className="btn btn-primary w-100 rounded-3 mt-4"
                                         onClick={handleConfirmPayment}
-                                    />
+                                        disabled={!stripe || loading}
+                                    >
+                                        {loading ? 'Processing...' : 'Confirm Payment'}
+                                    </button>
                                 </div>
                             </div>
                         </div>

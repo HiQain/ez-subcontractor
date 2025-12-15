@@ -35,7 +35,7 @@ export default function SuccessPage() {
                                 Your subscription is active. You now have full access to all contractor tools and features.
                             </p>
                             <Link
-                                href="/sub-contractor/dashboard" // ✅ Updated href
+                                href="/subcontractor/dashboard" // ✅ Updated href
                                 className="btn btn-primary rounded-3 w-100 justify-content-center"
                             >
                                 Go to Dashboard

@@ -94,6 +94,7 @@ export default function LoginPage() {
                 localStorage.setItem('userEmail', email);
                 localStorage.setItem('token', token);
                 localStorage.setItem('role', user.role);
+                localStorage.setItem('userName', user.name);
 
                 const role = user.role;
 
