@@ -196,6 +196,7 @@ export default function CheckoutPage() {
                                             <input type="text" placeholder="Jason Doe"
                                                 value={name}
                                                 onChange={(e) => setName(e.target.value)}
+                                                disabled
                                             />
                                         </div>
                                         <div className="input-wrapper d-flex flex-column">
@@ -203,6 +204,7 @@ export default function CheckoutPage() {
                                             <input type="email" placeholder="hello@example.com"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
+                                                disabled
                                             />
                                         </div>
                                     </div>

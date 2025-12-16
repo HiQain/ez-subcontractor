@@ -236,7 +236,7 @@ export default function PricingPage() {
                     <div className="container-fluid">
                         <div className="tab-content pricing-wrapper">
                             <div className="tab-pane fade show active pricing-content">
-                                <div className="row g-3">
+                                <div className="row g-3 justify-content-center">
                                     {plans.length > 0 ? (
                                         plans.map((plan) => renderPlanCard(plan))
                                     ) : (

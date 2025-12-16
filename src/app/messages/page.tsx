@@ -230,8 +230,8 @@ export default function ChatPage() {
                   <div className="dropdown-container">
                     <button className="more-options">⋯</button>
                     <div className="dropdown-menu">
-                      {/* <div className="dropdown-item">View contact</div>
-                      <div className="dropdown-item">Search</div>
+                      <div className="dropdown-item">View contact</div>
+                      {/*<div className="dropdown-item">Search</div>
                       <div className="dropdown-item">Media</div>
                       <div className="dropdown-item">Mute chat</div> */}
                       <div className="dropdown-item" onClick={handleClearChat}>Clear chat</div>

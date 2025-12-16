@@ -1,72 +1,83 @@
 'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/profile.css';
 import '../../../styles/pricing.css';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-const pricingPlans = [
-    {
-        id: 1,
-        title: '30-Days Free Trial',
-        price: 'Free',
-        features: [
-            'Registration with full company profile, license number, insurance, and workers’ comp details.',
-            'Registration with full company profile, license number, insurance, and workers’ comp details.',
-            'Registration with full company profile, license number, insurance, and workers’ comp details.',
-            'Registration with full company profile, license number, insurance, and workers’ comp details.',
-        ],
-        note: true,
-        btnClass: 's1',
-        expires: null,
-        popular: false,
-        saveText: null,
-        saveColor: null,
-    },
-    {
-        id: 2,
-        title: '30-Days Free Trial',
-        price: 'Free',
-        features: [
-            'Registration with full company profile, license number, insurance, and workers’ comp details.',
-            'Registration with full company profile, license number, insurance, and workers’ comp details.',
-            'Registration with full company profile, license number, insurance, and workers’ comp details.',
-            'Registration with full company profile, license number, insurance, and workers’ comp details.',
-        ],
-        note: true,
-        btnClass: 's2',
-        expires: 'Expires on: December 12, 2025',
-        popular: false,
-        saveText: null,
-        saveColor: null,
-    },
-    {
-        id: 3,
-        title: 'Yearly',
-        price: 'Free',
-        features: [
-            'Registration with full company profile, license number, insurance, and workers’ comp details.',
-            'Registration with full company profile, license number, insurance, and workers’ comp details.',
-            'Registration with full company profile, license number, insurance, and workers’ comp details.',
-            'Registration with full company profile, license number, insurance, and workers’ comp details.',
-        ],
-        note: true,
-        btnClass: 's3 bg-danger',
-        expires: null,
-        popular: true,
-        saveText: 'Save $200',
-        saveColor: '#DC2626',
-    },
-];
+interface Feature {
+    feature: string;
+}
+
+interface Plan {
+    id: number;
+    plan_name: string;
+    price: string;
+    duration_days: string;
+    type: string;
+    features: Feature[];
+}
+
+interface Subscription {
+    id: number;
+    start_date: string;
+    end_date: string;
+    is_active: string;
+    plan: Plan;
+}
 
 export default function SubscriptionPage() {
-    const pathname = usePathname(); // For active link
+    const router = useRouter();
+    const pathname = usePathname();
+    const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            setError('Unauthorized');
+            setLoading(false);
+            return;
+        }
+
+        const fetchSubscriptions = async () => {
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/my-subscriptions`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.message?.[0] || 'Failed to fetch subscriptions');
+                }
+
+                setSubscriptions(data.data.subscriptions || []);
+            } catch (err: any) {
+                setError(err.message || 'Something went wrong');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSubscriptions();
+    }, []);
 
     return (
         <>
-            <Header/>
+            <Header />
             <div className="sections overflow-hidden">
                 <section className="banner-sec profile pricing">
                     <div className="container">
@@ -123,7 +134,7 @@ export default function SubscriptionPage() {
                                             </div>
                                             <Image
                                                 src="/assets/img/icons/arrow-dark.svg"
-                                                style={{objectFit: 'contain'}}
+                                                style={{ objectFit: 'contain' }}
                                                 width={16}
                                                 height={10}
                                                 alt="Arrow"
@@ -149,7 +160,7 @@ export default function SubscriptionPage() {
                                                 </div>
                                                 <Image
                                                     src="/assets/img/icons/angle-right.svg"
-                                                    style={{objectFit: 'contain'}}
+                                                    style={{ objectFit: 'contain' }}
                                                     width={15}
                                                     height={9}
                                                     alt="Icon"
@@ -173,7 +184,7 @@ export default function SubscriptionPage() {
                                                 </div>
                                                 <Image
                                                     src="/assets/img/icons/angle-right.svg"
-                                                    style={{objectFit: 'contain'}}
+                                                    style={{ objectFit: 'contain' }}
                                                     width={15}
                                                     height={9}
                                                     alt="Icon"
@@ -197,7 +208,7 @@ export default function SubscriptionPage() {
                                                 </div>
                                                 <Image
                                                     src="/assets/img/icons/angle-right.svg"
-                                                    style={{objectFit: 'contain'}}
+                                                    style={{ objectFit: 'contain' }}
                                                     width={15}
                                                     height={9}
                                                     alt="Icon"
@@ -221,7 +232,7 @@ export default function SubscriptionPage() {
                                                 </div>
                                                 <Image
                                                     src="/assets/img/icons/angle-right.svg"
-                                                    style={{objectFit: 'contain'}}
+                                                    style={{ objectFit: 'contain' }}
                                                     width={15}
                                                     height={9}
                                                     alt="Icon"
@@ -237,7 +248,7 @@ export default function SubscriptionPage() {
                                             <Link
                                                 href="#"
                                                 className="custom-btn s1 bg-danger"
-                                                style={{borderColor: '#DC2626'}}
+                                                style={{ borderColor: '#DC2626' }}
                                             >
                                                 <div className="d-flex align-items-center gap-2">
                                                     <Image
@@ -251,7 +262,7 @@ export default function SubscriptionPage() {
                                                 </div>
                                                 <Image
                                                     src="/assets/img/icons/angle-right.svg"
-                                                    style={{objectFit: 'contain'}}
+                                                    style={{ objectFit: 'contain' }}
                                                     width={15}
                                                     height={9}
                                                     alt="Arrow"
@@ -266,102 +277,129 @@ export default function SubscriptionPage() {
                             {/* Right Content */}
                             <div className="col-xl-9">
                                 <div className="right-bar">
-                                    <div className="d-flex align-items-center gap-2 justify-content-between flex-wrap mb-5">
-                                        <div className="icon-wrapper d-flex align-items-center gap-3">
-                                            <Link href="#" className="icon">
-                                                <Image
-                                                    src="/assets/img/button-angle.svg"
-                                                    width={10}
-                                                    height={15}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-                                            <span className="fs-4 fw-semibold">Subscription</span>
+
+                                    {/* Loader */}
+                                    {loading ? (
+                                        <div className="d-flex justify-content-center align-items-center py-5"
+                                            style={{ height: '80vh' }}>
+                                            <div className="spinner-border text-primary" role="status" />
                                         </div>
-                                    </div>
-                                    <div className="pricing-sec p-0">
-                                        <div className="row g-2">
-                                            {pricingPlans.map((plan) => (
-                                                <div key={plan.id} className="col-lg-4 col-md-6 col-12">
-                                                    <div className={`price-card ${plan.popular ? 'price-card1' : ''}`}>
-                                                        <div className="pricing-header mb-3">
-                                                            {plan.popular ? (
-                                                                <div className="d-flex align-items-center gap-1 justify-content-between mb-3">
-                                                                    <span className="title1 mb-0">{plan.title}</span>
-                                                                    <div
-                                                                        style={{fontSize: '14px'}}
-                                                                        className="custom-btn bg-white shadow p-2 rounded-pill"
-                                                                    >
-                                                                        🔥 Popular
+                                    ) : error ? (
+                                        /* Error */
+                                        <div className="alert alert-danger"
+                                            style={{ height: '80vh' }}>
+                                            {error}
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {/* Header */}
+                                            <div className="d-flex align-items-center gap-2 justify-content-between flex-wrap mb-5">
+                                                <div className="icon-wrapper d-flex align-items-center gap-3">
+                                                    <button
+                                                        onClick={() => router.back()}
+                                                        className="icon btn btn-link p-0"
+                                                    >
+                                                        <Image
+                                                            src="/assets/img/button-angle.svg"
+                                                            width={10}
+                                                            height={15}
+                                                            alt="Back"
+                                                            loading="lazy"
+                                                        />
+                                                    </button>
+                                                    <span className="fs-4 fw-semibold">Subscription</span>
+                                                </div>
+                                            </div>
+
+                                            {/* No Subscription Found */}
+                                            {subscriptions.length === 0 ? (
+                                                <div
+                                                    className="d-flex flex-column justify-content-center align-items-center text-center"
+                                                    style={{ height: '70vh' }}
+                                                >
+                                                    <h5 className="fw-semibold">No Subscription Found</h5>
+                                                    <p className="text-muted mb-4">
+                                                        You don’t have any active or expired subscriptions yet.
+                                                    </p>
+                                                    <button
+                                                        onClick={() => router.push('/subcontractor/subscription')}
+                                                        className="btn btn-primary"
+                                                    >
+                                                        View Plans
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                /* Subscription Cards */
+                                                <div className="pricing-sec p-0">
+                                                    <div className="row g-3">
+                                                        {subscriptions.map((sub) => (
+                                                            <div
+                                                                key={sub.id}
+                                                                className="col-lg-4 col-md-6 col-12"
+                                                            >
+                                                                <div
+                                                                    className="price-card"
+                                                                >
+                                                                    {/* Header */}
+                                                                    <div className="pricing-header mb-3">
+                                                                        <div className="d-flex align-items-center justify-content-between mb-2">
+                                                                            <span className="title1">
+                                                                                {sub.plan.plan_name}
+                                                                            </span>
+
+                                                                            {sub.is_active === '1' && (
+                                                                                <div className="custom-btn bg-white shadow p-2 rounded-pill fs-14">
+                                                                                    ✅ Active
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+
+                                                                        <div className="d-flex align-items-center gap-2">
+                                                                            <span className="price">
+                                                                                ${sub.plan.price}
+                                                                            </span>
+                                                                            <span className="fs-14 text-muted">
+                                                                                / {sub.plan.type}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Body */}
+                                                                    <div className="pricing-body">
+                                                                        <ul className="m-0 p-0 list-with-icon">
+                                                                            {sub.plan.features.map((f, i) => (
+                                                                                <li key={i}>
+                                                                                    {f.feature}
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    </div>
+
+                                                                    {/* Button */}
+                                                                    <div className="pricing-button mt-3">
+                                                                        <button
+                                                                            className={`btn ${sub.is_active === '1'
+                                                                                ? 'btn-outline-danger'
+                                                                                : 'btn-secondary'
+                                                                                }`}
+                                                                            disabled={sub.is_active !== '1'}
+                                                                        >
+                                                                            {sub.is_active === '1' ? 'Cancel Plan' : 'Expired'}
+                                                                        </button>
+                                                                    </div>
+
+                                                                    {/* Dates */}
+                                                                    <div className="text-center fs-14 mt-3 mb-3 text-muted">
+                                                                        {sub.start_date} → {sub.end_date}
                                                                     </div>
                                                                 </div>
-                                                            ) : (
-                                                                <span className="title1">{plan.title}</span>
-                                                            )}
-                                                            <div className="d-flex align-items-center gap-2">
-                                                                <span className="price">{plan.price}</span>
-                                                                {plan.saveText && (
-                                                                    <button
-                                                                        type="button"
-                                                                        style={{backgroundColor: plan.saveColor}}
-                                                                        className="custom-btn text-white p-2"
-                                                                    >
-                                                                        {plan.saveText}
-                                                                    </button>
-                                                                )}
                                                             </div>
-                                                        </div>
-
-                                                        <div className="pricing-body">
-                                                            <ul className="m-0 p-0 list-with-icon">
-                                                                {plan.features.map((feature, i) => (
-                                                                    <li key={i}>{feature}</li>
-                                                                ))}
-                                                            </ul>
-                                                        </div>
-
-                                                        {plan.note && (
-                                                            <div className="note-card d-flex align-items-start gap-1">
-                                                                <Image
-                                                                    src="/assets/img/icons/note.webp"
-                                                                    width={24}
-                                                                    height={24}
-                                                                    alt="Note"
-                                                                    className="d-block"
-                                                                    loading="lazy"
-                                                                />
-                                                                <div className="content">
-                                                                    <span className="d-block fw-semibold mb-1"
-                                                                          style={{fontSize: '14px'}}>
-                                                                        Note
-                                                                    </span>
-                                                                    <p className="mb-0" style={{fontSize: '12px'}}>
-                                                                        After your trial ends, you’ll need to subscribe
-                                                                        to
-                                                                        keep bidding on projects, chatting with
-                                                                        contractors,
-                                                                        and accessing premium tools.
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-
-                                                        <div className="pricing-button mt-3">
-                                                            <button className={`btn ${plan.btnClass}`}>Get Started
-                                                            </button>
-                                                        </div>
-
-                                                        {plan.expires && (
-                                                            <div className="text-center text-danger fs-14 fw-medium mt-3 pb-3">
-                                                                {plan.expires}
-                                                            </div>
-                                                        )}
+                                                        ))}
                                                     </div>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                            )}
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -369,7 +407,7 @@ export default function SubscriptionPage() {
                     </div>
                 </section>
             </div>
-            <Footer/>
+            <Footer />
         </>
     );
 }
