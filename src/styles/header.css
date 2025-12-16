@@ -92,6 +92,18 @@
   transform: translateY(-10px) rotate(-45deg);
 }
 
+.header.header-show-logo {
+  position: absolute;
+  background-color: transparent;
+  box-shadow: none !important;
+}
+.header.header-show-logo .logo {
+  text-align: center;
+}
+.header.header-show-logo #primary-navigation, .header.header-show-logo .hamburger {
+  display: none !important;
+}
+
 .notification-dropdown-wrapper {
   position: relative;
 }
@@ -249,7 +261,7 @@
     gap: 20px;
     align-items: flex-start;
     background-color: #F9F9F9 !important;
-    max-height: 278px;
+    max-height: 500px;
     overflow-y: auto;
     display: none;
   }
@@ -265,9 +277,20 @@
   .header .header-wrapper nav .menu-links li a {
     padding: 10px 0 0 0;
   }
+  .header .header-wrapper nav .menu-links li a:hover, .header .header-wrapper nav .menu-links li a.active {
+    background-color: transparent !important;
+    color: #C9DA2B !important;
+  }
   .header .header-wrapper nav .buttons {
     display: flex !important;
     justify-content: start;
+  }
+  .header-dashboard .header-wrapper #primary-navigation .menu-links li a.active {
+    background-color: transparent !important;
+    color: #C9DA2B !important;
+  }
+  .header-dashboard .header-wrapper #primary-navigation .buttons {
+    flex: unset;
   }
   .notification-dropdown-wrapper .notification-dropdown {
     right: unset;

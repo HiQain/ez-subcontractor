@@ -8,37 +8,73 @@ $danger: #DC2626;
     padding-top: 160px;
     padding-bottom: 70px;
 
-    .tab {
-        .nav-tabs {
-            border: 1px solid $dark;
-            padding: 2px;
-            border-radius: 30px;
-            width: fit-content;
-            overflow: hidden;
-            margin-bottom: 30px;
-            display: flex;
+    .nav.nav-tabs {
+        position: relative;
+        outline: 1px solid #272727;
+        border: 3px solid white;
+        border-top: 3.5px solid white;
+        border-right: 5px solid white;
+        border-left: 5px solid white;
+        border-radius: 30px;
+        padding: 2px;
+        width: fit-content;
+        display: flex;
+        overflow: hidden;
 
-            .nav-item {
-                .nav-link {
-                    background-color: transparent;
-                    border-radius: 30px;
-                    font-size: 18px;
-                    font-weight: 600;
-                    padding: 9px 27px;
-                    color: $dark;
-                    transition: all .3s ease;
+        .nav-item {
+            z-index: 2;
+            flex: 1;
+            width: 50%;
+            .nav-link {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 5px;
+                width: 100%;
+                padding: 8px 28px;
+                font-size: 18px;
+                font-weight: 600;
+                border: none;
+                background: transparent !important;
+                border-radius: 30px !important;
+                color: $dark;
+                cursor: pointer;
+                white-space: nowrap;
+                text-align: center;
 
-                    &.active {
-                        background: $dark;
-                        color: #fff !important;
-                    }
-                    &:hover {
-                        background: $dark;
-                        color: #fff !important;
-                    }
+
+
+                // Optional: improve contrast when active
+                &.active {
+                    color: white; // against green slider
+                    box-shadow: none !important;
+                    outline: none !important;
                 }
             }
         }
+
+        // 🟢 Green slider — matches your screenshot
+        .slider {
+            position: absolute;
+            top: 2px;
+            height: calc(100% - 4px);
+            background: $primary; // ✅ Light green from your screenshot
+            border-radius: 30px;
+            z-index: 1;
+            width: calc(100% / 2);
+            transition: left 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+            pointer-events: none;
+        }
+
+        // Position slider based on active tab
+        &:has(.nav-item:nth-child(1) .nav-link.active) .slider {
+            left: 0;
+        }
+        &:has(.nav-item:nth-child(2) .nav-link.active) .slider {
+            left: calc(100% / 2);
+        }
+    }
+    .tab {
 
         .content {
             display: flex;

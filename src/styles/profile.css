@@ -28,6 +28,22 @@
   gap: 10px;
   flex-wrap: wrap;
 }
+.banner-sec.profile .right-bar .image-wrapper-s1 {
+  position: relative;
+}
+.banner-sec.profile .right-bar .image-wrapper-s1 .icon {
+  background-color: #272727;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 45px;
+  height: 45px;
+  border: 1px solid white;
+  position: absolute;
+  bottom: 24px;
+  left: 190px;
+}
 .banner-sec.profile .right-bar .icon-wrapper .icon {
   width: 45px;
   height: 45px;
@@ -485,6 +501,17 @@
   background: #F9F9F9;
 }
 
+@media (max-width: 1200px) {
+  .banner-sec.profile .sidebar {
+    min-height: 100%;
+  }
+  .banner-sec.profile .sidebar .main-wrapper {
+    gap: 40px;
+  }
+  .banner-sec.profile .sidebar .main-wrapper .topbar {
+    margin-bottom: 0 !important;
+  }
+}
 @media (max-width: 768px) {
   .table-responsive {
     border-radius: 6px;

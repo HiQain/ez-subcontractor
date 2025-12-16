@@ -9,14 +9,12 @@ $danger: #DC2626;
     margin: 150px 0 50px 0;
     border: 1px solid #DADADA;
     border-radius: 6px;
-
     .sidebar {
         width: 400px;
         border-right: 1px solid #DADADA;
         display: flex;
         flex-direction: column;
     }
-
     .search-bar {
         padding: 12px;
         padding-bottom: 0;
@@ -51,7 +49,6 @@ $danger: #DC2626;
             }
         }
     }
-
     .filter-tabs {
         padding: 12px;
         display: flex;
@@ -82,12 +79,10 @@ $danger: #DC2626;
             }
         }
     }
-
     .chat-list {
         flex-grow: 1;
         overflow-y: auto;
     }
-
     .chat-item {
         display: flex;
         align-items: center;
@@ -167,13 +162,11 @@ $danger: #DC2626;
             }
         }
     }
-
     .main-chat {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
     }
-
     .chat-header {
         display: flex;
         justify-content: space-between;
@@ -271,7 +264,6 @@ $danger: #DC2626;
             }
         }
     }
-
     .chat-messages {
         flex-grow: 1;
         padding: 20px;
@@ -280,7 +272,6 @@ $danger: #DC2626;
         flex-direction: column;
         gap: 15px;
     }
-
     .message {
         display: flex;
 
@@ -305,7 +296,6 @@ $danger: #DC2626;
             }
         }
     }
-
     .message-content {
         max-width: 80%;
 
@@ -488,19 +478,16 @@ $danger: #DC2626;
             }
         }
     }
-
     .message-input {
         display: flex;
         gap: 12px;
         padding: 12px;
         border-top: 1px solid #DADADA;
         background-color: white;
-
         .input-actions {
             display: flex;
             align-items: center;
             gap: 8px;
-
             button {
                 background: none;
                 border: none;
@@ -510,13 +497,11 @@ $danger: #DC2626;
                 padding: 8px;
                 border-radius: 50%;
                 transition: all 0.3s ease;
-
                 &:hover {
                     background-color: #EEF4BD;
                     color: $primary;
                 }
             }
-
             .send-btn {
                 background-color: $primary;
                 color: $dark;
@@ -525,7 +510,6 @@ $danger: #DC2626;
                 font-size: 24px;
                 width: 50px;
                 height: 50px;
-
                 &:hover {
                     background-color: $primary;
                     color: $dark;
@@ -569,19 +553,23 @@ $danger: #DC2626;
     .chat-wrapper {
         display: grid;
         grid-template-columns: 1fr;
-
         .sidebar {
             max-width: 100%;
         }
-
         .chat-header {
             border-top: 1px solid #DADADA;
         }
-
         .chat-item {
             flex-wrap: wrap;
             gap: 6px;
             justify-content: end;
+        }
+        .message-input{
+            flex-direction: column;
+            align-items: end;
+            .form-wrapper{
+                padding: 4px 12px;
+            }
         }
     }
 

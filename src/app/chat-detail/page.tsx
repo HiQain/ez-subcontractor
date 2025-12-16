@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Header from './../../components/Header';
-import '../../../styles/chat.css';
-import '../../../styles/chat-1.css';
-import '../../../styles/chat-2.css';
+import Header from './../components/Header';
+import '../../styles/chat.css';
+import '../../styles/chat-1.css';
+import '../../styles/chat-2.css';
 import Link from 'next/link';
 
 // ✅ Block User Modal Component
@@ -43,7 +43,7 @@ const BlockUserModal = ({
           <div className="modal-body p-4">
             <div className="d-flex mb-3 justify-content-start">
               <Image
-                src="/assets/img/block-icon.svg"
+                src="/assets/img/icons/block-icon.svg"
                 width={48}
                 height={48}
                 alt="Block Icon"

@@ -1,4 +1,4 @@
-// app/success/page.tsx
+// app/thank-you/page.tsx
 'use client';
 
 import Link from 'next/link';
@@ -12,7 +12,7 @@ export default function SuccessPage() {
             <div
                 className="sections overflow-hidden"
                 style={{
-                    background: "url('/assets/img/success-img.webp') center / cover no-repeat",
+                    background: "url('/assets/img/thank-you-img.webp') center / cover no-repeat",
                 }}
             >
                 <section className="hero-sec h-100">

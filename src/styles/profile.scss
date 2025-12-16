@@ -36,6 +36,22 @@ $danger: #DC2626;
     }
   }
   .right-bar {
+    .image-wrapper-s1{
+      position: relative;
+      .icon{
+        background-color: #272727;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 45px;
+        height: 45px;
+        border: 1px solid white;
+        position: absolute;
+        bottom: 24px;
+        left: 190px;
+      }
+    }
     .icon-wrapper {
       .icon {
         width: 45px;
@@ -500,6 +516,21 @@ $danger: #DC2626;
     border-radius: 8px;
     border: 1px solid #DADADA;
     background: #F9F9F9;
+  }
+}
+
+// Media Query
+@media (max-width:1200px) {
+  .banner-sec.profile{
+    .sidebar{
+      min-height: 100%;
+      .main-wrapper{
+        gap: 40px;
+        .topbar{
+          margin-bottom: 0 !important;
+        }
+      }
+    }
   }
 }
 @media (max-width: 768px) {

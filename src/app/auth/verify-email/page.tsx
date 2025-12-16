@@ -14,10 +14,54 @@ export default function VerifyEmail() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
+    // 🔹 Show non-blocking toast notification
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
+
     // ✅ Initialize email & timer on mount
     useEffect(() => {
         const savedEmail = localStorage.getItem('forgotPasswordEmail');
         if (!savedEmail) {
+            showToast('Please enter your email first.', 'error');
             router.push('/auth/forgot-password');
             return;
         }
@@ -61,13 +105,13 @@ export default function VerifyEmail() {
         setIsSubmitting(true);
 
         if (!email) {
-            setError('Email not found. Please try again.');
+            showToast('Email not found. Please try again.', 'error');
             setIsSubmitting(false);
             return;
         }
 
         if (otp.some((d) => d === '')) {
-            setError('Please enter all OTP digits');
+            showToast('Please enter all OTP digits', 'error');
             setIsSubmitting(false);
             return;
         }
@@ -87,7 +131,10 @@ export default function VerifyEmail() {
 
             if (response.ok) {
                 localStorage.setItem('verifiedOtp', enteredOtp);
-                router.push('/auth/create-new-password');
+                showToast('OTP verified successfully!');
+                setTimeout(() => {
+                    router.push('/auth/create-new-password');
+                }, 1000);
             } else {
                 let errorMessage = 'Invalid OTP, please try again.';
                 if (typeof data.message === 'string') {
@@ -95,10 +142,10 @@ export default function VerifyEmail() {
                 } else if (Array.isArray(data.message)) {
                     errorMessage = data.message[0];
                 }
-                setError(errorMessage);
+                showToast(errorMessage, 'error');
             }
         } catch (err) {
-            setError('Network error. Please check your internet connection.');
+            showToast('Network error. Please check your internet connection.', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -106,7 +153,7 @@ export default function VerifyEmail() {
 
     const handleResend = async () => {
         if (!email) {
-            setError('Email not found. Please go back and try again.');
+            showToast('Email not found. Please go back and try again.', 'error');
             return;
         }
 
@@ -125,6 +172,7 @@ export default function VerifyEmail() {
                 setTimer(59);
                 setOtp(['', '', '', '']);
                 setError('');
+                showToast('OTP resent successfully!');
                 // Refocus first input
                 setTimeout(() => {
                     const firstInput = document.getElementById('otp-0');
@@ -137,17 +185,17 @@ export default function VerifyEmail() {
                 } else if (Array.isArray(data.message)) {
                     errorMessage = data.message[0];
                 }
-                setError(errorMessage);
+                showToast(errorMessage, 'error');
             }
         } catch (err) {
-            setError('Network error. Please try again.');
+            showToast('Network error. Please try again.', 'error');
         }
     };
 
     const isOtpComplete = otp.every(d => d !== '');
 
     return (
-        <section className="hero-sec login overflow-hidden position-static">
+        <section className="hero-sec login login-s1 overflow-hidden position-static">
             <div className="image-wrapper">
                 <Image
                     src="/assets/img/left-image.webp"
@@ -220,7 +268,7 @@ export default function VerifyEmail() {
                                     style={{ marginBottom: 20 }}
                                     className="detail fw-medium text-center text-gray-light"
                                 >
-                                    Didn’t receive a code?{' '}
+                                    Didn't receive a code?{' '}
                                     <button
                                         type="button"
                                         onClick={handleResend}
@@ -232,8 +280,6 @@ export default function VerifyEmail() {
                                     </button>
                                 </div>
                             )}
-
-                            {error && <p className="text-danger text-center mb-2">{error}</p>}
 
                             <div className="buttons-wrapper d-flex align-items-center gap-4">
                                 <button

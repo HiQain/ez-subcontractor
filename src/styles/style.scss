@@ -1,5 +1,6 @@
 $primary: #C9DA2B;
 $gray: #F9F9F9;
+$white: #fff;
 $gray-light: #9A9A9A;
 $dark: #272727;
 $danger: #DC2626;
@@ -113,7 +114,7 @@ h2 {
 
 /* Styling */
 
-.custom-select {
+.custom-select{
       position: relative;
       width: 100%;
       user-select: none;
@@ -273,55 +274,103 @@ li {
 }
 
 body {
-  .search-wrapper {
-    min-width: 500px;
-  }
-  .search-contractors {
-    .select2-container {
-      min-width: 500px;
-    }
-  }
-  .select2-container {
-    .select2-selection {
-      height: 40px;
-      border-color: #DADADA;
-      border-radius: 10px;
-      .select2-selection__rendered {
-        padding: 5px 10px;
+  //.search-wrapper {
+  //  min-width: 500px;
+  //}
+  //.search-contractors {
+  //  .select2-container {
+  //    min-width: 500px;
+  //  }
+  //}
+  //.select2-container {
+  //  .select2-selection {
+  //    height: 40px;
+  //    border-color: #DADADA;
+  //    border-radius: 10px;
+  //    .select2-selection__rendered {
+  //      padding: 5px 10px;
+  //    }
+  //  }
+  //  .select2-selection__arrow {
+  //    top: 50% !important;
+  //    transform: translate(-50%, -50%)
+  //  }
+  //}
+  //.select2-dropdown--below {
+  //  border-color: #DADADA;
+  //  .select2-search__field {
+  //    border-radius: 8px;
+  //    border-color: #DADADA !important;
+  //    background-color: #efefef;
+  //  }
+  //  .select2-results__options {
+  //    .select2-results__option {
+  //      color: #333342;
+  //      background-color: #F8F9FA;
+  //      margin: 2px 0;
+  //      padding: 5px 10px;
+  //      > span {
+  //        display: flex;
+  //        justify-content: space-between;
+  //        font-weight: 500;
+  //      }
+  //      .btn {
+  //        font-size: 12px;
+  //        padding: 5px 15px;
+  //        &:hover,
+  //        &:focus {
+  //          background-color: $primary !important;
+  //        }
+  //      }
+  //    }
+  //  }
+  //}
+
+  .react-datepicker__month-container {
+    .react-datepicker__header {
+      .react-datepicker__current-month {
+        font-size: 14px !important;
       }
     }
-    .select2-selection__arrow {
-      top: 50% !important;
-      transform: translate(-50%, -50%)
-    }
   }
-  .select2-dropdown--below {
-    border-color: #DADADA;
-    .select2-search__field {
-      border-radius: 8px;
-      border-color: #DADADA !important;
-      background-color: #efefef;
+  .react-datepicker__day--selected,
+  .react-datepicker__day--in-selecting-range,
+  .react-datepicker__day--in-range,
+  .react-datepicker__month-text--selected,
+  .react-datepicker__month-text--in-selecting-range,
+  .react-datepicker__month-text--in-range,
+  .react-datepicker__quarter-text--selected,
+  .react-datepicker__quarter-text--in-selecting-range,
+  .react-datepicker__quarter-text--in-range,
+  .react-datepicker__year-text--selected,
+  .react-datepicker__year-text--in-selecting-range,
+  .react-datepicker__year-text--in-range {
+    color: $dark;
+    background-color: $primary;
+  }
+  .react-datepicker__day--selected:not([aria-disabled=true]):hover,
+  .react-datepicker__day--in-selecting-range:not([aria-disabled=true]):hover,
+  .react-datepicker__day--in-range:not([aria-disabled=true]):hover,
+  .react-datepicker__month-text--selected:not([aria-disabled=true]):hover,
+  .react-datepicker__month-text--in-selecting-range:not([aria-disabled=true]):hover,
+  .react-datepicker__month-text--in-range:not([aria-disabled=true]):hover,
+  .react-datepicker__quarter-text--selected:not([aria-disabled=true]):hover,
+  .react-datepicker__quarter-text--in-selecting-range:not([aria-disabled=true]):hover,
+  .react-datepicker__quarter-text--in-range:not([aria-disabled=true]):hover,
+  .react-datepicker__year-text--selected:not([aria-disabled=true]):hover,
+  .react-datepicker__year-text--in-selecting-range:not([aria-disabled=true]):hover,
+  .react-datepicker__year-text--in-range:not([aria-disabled=true]):hover {
+    color: $white;
+    background-color: rgb(28.75, 93.2196969697, 143.75);
+  }
+  .quill {
+    .ql-toolbar {
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
     }
-    .select2-results__options {
-      .select2-results__option {
-        color: #333342;
-        background-color: #F8F9FA;
-        margin: 2px 0;
-        padding: 5px 10px;
-        > span {
-          display: flex;
-          justify-content: space-between;
-          font-weight: 500;
-        }
-        .btn {
-          font-size: 12px;
-          padding: 5px 15px;
-          &:hover,
-          &:focus {
-            background-color: $primary !important;
-          }
-        }
-      }
+    .ql-container {
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
     }
   }
 }
@@ -331,7 +380,6 @@ body {
   opacity: 1;
   pointer-events: auto;
 }
-
 .modal-backdrop.show {
   opacity: 0.5;
 }
@@ -342,4 +390,48 @@ body {
 .form-check-input:focus {
   border-color: #8F9B1F;
   box-shadow: 0 0 0 .25rem rgba(174, 253, 75, 0.25);
+}
+.input-wrapper {
+  .react-datepicker-wrapper {
+    display: block;
+    width: 100%;
+  }
+}
+.form-control{
+  .select2-selection__rendered{
+    display: none;
+  }
+}
+.select2-selection{
+  height: 45px !important;
+  padding: 8px;
+  outline: none !important;
+  font-size: 14px !important;
+  transition: all 0.3s
+  ease !important;
+  border-radius: 10px !important;
+  border: 1px solid #DADADA !important;
+  &:hover{
+    border: 1px solid $primary;
+  }
+}
+.select2-results__option{
+  background-color: transparent !important;
+  padding: 10px 16px !important;
+  font-size: 14px !important;
+  color: #272727 !important;
+}
+.select2-results__option--highlighted.select2-results__option--selectable{
+  background-color: #EEF4BD !important;
+}
+.select2-search__field{
+  padding: 10px 16px !important;
+  font-size: 14px !important;
+  color: #272727 !important;
+  outline: none !important;
+  border: 1px solid #dadada !important;
+}
+.select2-selection__arrow{
+  top: 8px !important;
+  right: 8px !important;
 }

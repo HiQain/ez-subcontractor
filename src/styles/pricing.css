@@ -4,7 +4,7 @@
   z-index: 1;
   padding-top: 160px !important;
   padding-bottom: 70px !important;
-  border-radius: 24px;
+  border-radius: 0 0 24px 24px;
   overflow: hidden;
 }
 .hero-sec.pricing::before {
@@ -102,6 +102,7 @@
   padding: 25px;
   border-radius: 25px;
   margin-bottom: 25px;
+  box-shadow: 0 4px 0 4px #C9DA2B;
 }
 .pricing-sec .price-card .pricing-header .title1,
 .hero-sec.pricing .price-card .pricing-header .title1 {
@@ -112,7 +113,7 @@
 }
 .pricing-sec .price-card .pricing-header .price,
 .hero-sec.pricing .price-card .pricing-header .price {
-  font-size: clamp(28px, 4vw, 32px);
+  font-size: clamp(36px, 4vw, 48px);
   font-weight: 400;
   color: #000;
 }
@@ -183,16 +184,17 @@
   color: white;
   opacity: 0.8;
 }
-.pricing-sec .price-card1,
-.hero-sec.pricing .price-card1 {
+.pricing-sec .popular,
+.hero-sec.pricing .popular {
   border-color: #f3705a !important;
 }
-.pricing-sec .price-card1 .pricing-header,
-.hero-sec.pricing .price-card1 .pricing-header {
+.pricing-sec .popular .pricing-header,
+.hero-sec.pricing .popular .pricing-header {
   border-color: #f3705a !important;
+  box-shadow: 0 4px 0 4px #f3705a;
 }
-.pricing-sec .price-card1 .pricing-body .list-with-icon li::before,
-.hero-sec.pricing .price-card1 .pricing-body .list-with-icon li::before {
+.pricing-sec .popular .pricing-body .list-with-icon li::before,
+.hero-sec.pricing .popular .pricing-body .list-with-icon li::before {
   background-image: url("/assets/img/icons/check-red.svg") !important;
 }
 

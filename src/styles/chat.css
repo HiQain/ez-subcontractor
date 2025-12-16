@@ -477,6 +477,13 @@
     gap: 6px;
     justify-content: end;
   }
+  .chat-wrapper .message-input {
+    flex-direction: column;
+    align-items: end;
+  }
+  .chat-wrapper .message-input .form-wrapper {
+    padding: 4px 12px;
+  }
   .chat-list:has(.chat-item.active) .chat-item:not(.active) {
     display: none !important;
   }

@@ -17,10 +17,52 @@ export default function ChangePassword() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
 
     const pathname = usePathname();
     const router = useRouter();
+
+    // 🔹 Show non-blocking toast notification
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
 
     // Fetch user info for sidebar (optional, can be skipped if not needed)
     const [user, setUser] = useState<{ name: string; email: string; phone: string } | null>(null);
@@ -54,6 +96,7 @@ export default function ChangePassword() {
                 }
             } catch (err) {
                 console.warn('Failed to load sidebar user info');
+                showToast('Failed to load user information.', 'error');
             }
         };
 
@@ -90,23 +133,22 @@ export default function ChangePassword() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
-        setSuccess(null);
 
         // Validation
         if (!oldPassword.trim()) {
-            setError('Old password is required.');
+            showToast('Old password is required.', 'error');
             return;
         }
         if (!newPassword.trim()) {
-            setError('New password is required.');
+            showToast('New password is required.', 'error');
             return;
         }
         if (newPassword.length < 6) {
-            setError('New password must be at least 6 characters.');
+            showToast('New password must be at least 6 characters.', 'error');
             return;
         }
         if (newPassword !== confirmPassword) {
-            setError('New password and confirmation do not match.');
+            showToast('New password and confirmation do not match.', 'error');
             return;
         }
 
@@ -141,7 +183,7 @@ export default function ChangePassword() {
             }
 
             if (response.ok) {
-                setSuccess('Password updated successfully!');
+                showToast('Password updated successfully!');
                 // Optional: auto-logout & redirect to login (recommended for security)
                 setTimeout(() => {
                     localStorage.removeItem('token');
@@ -150,11 +192,11 @@ export default function ChangePassword() {
                     router.push('/auth/login');
                 }, 1500);
             } else {
-                setError(data.message || 'Failed to change password. Please try again.');
+                showToast(data.message || 'Failed to change password. Please try again.', 'error');
             }
         } catch (err) {
             console.error('Change password error:', err);
-            setError('Network error. Please check your connection and try again.');
+            showToast('Network error. Please check your connection and try again.', 'error');
         } finally {
             setLoading(false);
         }
@@ -171,57 +213,6 @@ export default function ChangePassword() {
                             <div className="col-xl-3">
                                 <div className="sidebar h-100">
                                     <div className="main-wrapper bg-dark p-0 h-100 d-flex flex-column justify-content-between">
-                                        <div className="topbar mb-5 d-flex justify-content-between align-items-start">
-                                            <div className="icon-wrapper d-flex align-items-start gap-3">
-                                                <Image
-                                                    src="/assets/img/profile-img.webp"
-                                                    width={80}
-                                                    height={80}
-                                                    alt="Worker Icon"
-                                                />
-                                                <div className="content-wrapper">
-                                                    <div className="title text-black fs-5 fw-medium mb-2">
-                                                        {user?.name || 'Loading...'}
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/message-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Message Icon"
-                                                        />
-                                                        <Link
-                                                            href={`mailto:${user?.email || ''}`}
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            {user?.email || '—'}
-                                                        </Link>
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/call-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Call Icon"
-                                                        />
-                                                        <Link
-                                                            href={`tel:${user?.phone || ''}`}
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            {user?.phone || '—'}
-                                                        </Link>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <Image
-                                                src="/assets/img/icons/arrow-dark.svg"
-                                                width={16}
-                                                height={10}
-                                                alt="Arrow"
-                                                style={{ objectFit: 'contain' }}
-                                            />
-                                        </div>
 
                                         {/* Sidebar Links */}
                                         <div className="buttons-wrapper">
@@ -313,18 +304,6 @@ export default function ChangePassword() {
                                             <span className="fs-4 fw-semibold">Change Password</span>
                                         </div>
                                     </div>
-
-                                    {error && (
-                                        <div className="alert alert-danger mb-4" role="alert">
-                                            {error}
-                                        </div>
-                                    )}
-
-                                    {success && (
-                                        <div className="alert alert-success mb-4" role="alert">
-                                            {success}
-                                        </div>
-                                    )}
 
                                     <form onSubmit={handleSubmit}>
                                         {/* Old Password */}
