@@ -309,6 +309,18 @@ export default function SubscriptionPage() {
                                                     </button>
                                                     <span className="fs-4 fw-semibold">Subscription</span>
                                                 </div>
+                                                {
+                                                    subscriptions.length !== 0 ? (
+                                                        <button
+                                                            onClick={() => router.push('/subcontractor/subscription')}
+                                                            className="btn btn-primary"
+                                                        >
+                                                            View Plans
+                                                        </button>
+                                                    ) : (
+                                                        <div></div>
+                                                    )
+                                                }
                                             </div>
 
                                             {/* No Subscription Found */}
