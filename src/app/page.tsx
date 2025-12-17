@@ -12,6 +12,9 @@ import Footer from "./components/Footer";
 import "../styles/home.css";
 import "../styles/cards.css";
 import "../styles/slick-slider.css";
+import { generateToken, messaging } from "./notification/firebase";
+import { onMessage } from "firebase/messaging";
+import { showNotificationToast } from "./notification/toast";
 
 export default function HomePage() {
     const sliderRef = useRef(null);
@@ -46,6 +49,17 @@ export default function HomePage() {
             document.addEventListener('click', attemptPlay, { once: true });
             document.addEventListener('touchstart', attemptPlay, { once: true });
         }
+
+        generateToken();
+        onMessage(messaging, (payload) => {
+            if (payload.notification) {
+                showNotificationToast(
+                    payload.notification.title || 'New Notification',
+                    payload.notification.body || '',
+                    'info'
+                );
+            }
+        })
     }, []);
 
     const banners = [
@@ -178,7 +192,7 @@ export default function HomePage() {
                                             zIndex: -1,
                                         }}
                                     >
-                                        <source src={banner.video} type="video/mp4"/>
+                                        <source src={banner.video} type="video/mp4" />
                                     </video>
                                     <div className="content-wrapper text-center text-white px-3">
                                         {/* ✅ First slide <h1>, others <h2> */}
