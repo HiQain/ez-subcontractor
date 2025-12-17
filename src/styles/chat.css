@@ -313,6 +313,7 @@
   word-wrap: break-word;
   position: relative;
   padding-bottom: 22px;
+  min-width: 80px;
 }
 
 .chat-wrapper .message-content .message-meta {

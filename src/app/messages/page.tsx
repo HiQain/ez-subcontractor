@@ -22,6 +22,7 @@ export default function ChatPage() {
   const [activePanel, setActivePanel] = useState<null | 'contact' | 'media'>(null);
   const [showSearchBarInChat, setShowSearchBarInChat] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
+  const [messageSearchTerm, setMessageSearchTerm] = useState("");
 
   const handleMenuClick = (panelType: 'contact' | 'media' | 'search') => {
     setActivePanel(null);
@@ -132,12 +133,15 @@ export default function ChatPage() {
     }
   };
 
-
   const filteredResults = Array.isArray(results)
     ? results.filter(item =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     : [];
+
+  const filteredMessages = messages.filter(msg =>
+    msg.message?.toLowerCase().includes(messageSearchTerm.toLowerCase())
+  );
 
   const handleClearChat = async () => {
     if (!selectedChatId || messages.length === 0) return;
@@ -233,7 +237,6 @@ export default function ChatPage() {
               </div>
             </div>
 
-
             {/* Main Chat Area */}
             <div className="main-chat">
 
@@ -321,6 +324,8 @@ export default function ChatPage() {
                       flex: 1,
                       minWidth: 0,
                     }}
+                    value={messageSearchTerm}
+                    onChange={(e) => setMessageSearchTerm(e.target.value)}
                   />
                   <button
                     className="btn p-0 ms-2"
@@ -343,10 +348,10 @@ export default function ChatPage() {
                 {selectedUser ? (
                   loadingMessages ? (
                     <div className="text-center p-4">Loading messages...</div>
-                  ) : messages.length === 0 ? (
-                    <div className="text-center p-4">No messages</div>
+                  ) : filteredMessages.length === 0 ? (
+                    <div className="text-center p-4">No messages found</div>
                   ) : (
-                    messages.map((msg) => (
+                    filteredMessages.map((msg) => (
                       <div
                         key={msg.id}
                         className={`message ${msg.sender_id === selectedChatId ? 'incoming' : 'outgoing'}`}
@@ -389,7 +394,7 @@ export default function ChatPage() {
               </div>
 
               {/* 🔥 SHOW ATTACHMENT PREVIEW HERE */}
-              {selectedUser && (
+              {selectedUser && files.length > 0 && (
                 <div className="message-input">
                   {files.length > 0 && (
                     <div className="attachments-preview p-2">
@@ -400,6 +405,8 @@ export default function ChatPage() {
                             className="btn btn-sm btn-danger"
                             onClick={() => {
                               setFiles(files.filter((_, i) => i !== idx));
+                              const fileInput = document.getElementById("fileInput") as HTMLInputElement;
+                              if (fileInput) fileInput.value = "";
                             }}
                           >
                             x
@@ -444,6 +451,7 @@ export default function ChatPage() {
                           if (e.target.files) {
                             setFiles(Array.from(e.target.files));
                           }
+                          e.target.value = "";
                         }}
                       />
                     </div>
