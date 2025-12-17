@@ -147,16 +147,10 @@ export default function ChatPage() {
     : [];
 
   const filteredMessages = messages.filter(msg => {
-    // OLD CODE
-    // msg.message?.toLowerCase().includes(messageSearchTerm.toLowerCase())
-
-    // NEW CODE
     if (!messageSearchTerm.trim()) return true;
-
-    if (msg.message?.toLowerCase().includes(messageSearchTerm.toLowerCase())) return true;
-
-    if (msg.attachment && msg.attachment.length > 0) return true;
-
+    if (msg.message?.toLowerCase().includes(messageSearchTerm.toLowerCase())) {
+      return true;
+    }
     return false;
   });
 
