@@ -1,5 +1,6 @@
 $primary: #C9DA2B !important;
 $gray: #F9F9F9 !important;
+$white: #fff !important;
 $gray-light: #9A9A9A !important;
 $dark: #272727 !important;
 $danger: #DC2626;
@@ -47,6 +48,73 @@ $danger: #DC2626;
         .btn {
             padding: 10px 20px;
         }
+    }
+}
+.nav.nav-tabs {
+    position: relative;
+    outline: 1px solid #272727;
+    border: 3px solid white;
+    border-top: 3.5px solid white;
+    border-right: 5px solid white;
+    border-left: 5px solid white;
+    border-radius: 30px;
+    padding: 2px;
+    width: fit-content;
+    display: flex;
+    overflow: hidden;
+    border: 2px solid $white;
+    .nav-item {
+        z-index: 2;
+        flex: 1;
+        width: 33.33%;
+        .nav-link {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            width: 100%;
+            padding: 8px 28px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            background: transparent !important;
+            border-radius: 30px !important;
+            color: $dark;
+            cursor: pointer;
+            white-space: nowrap;
+            text-align: center;
+
+
+
+            // Optional: improve contrast when active
+            &.active {
+                color: white; // against green slider
+                box-shadow: none !important;
+                outline: none !important;
+            }
+        }
+    }
+
+    // 🟢 Green slider — matches your screenshot
+    .slider {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background: $primary; // ✅ Light green from your screenshot
+        border-radius: 30px;
+        z-index: 1;
+        width: calc(100% / 2);
+        transition: left 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+        pointer-events: none;
+    }
+
+    // Position slider based on active tab
+    &:has(.nav-item:nth-child(1) .nav-link.active) .slider {
+        left: 0;
+    }
+    &:has(.nav-item:nth-child(2) .nav-link.active) .slider {
+        left: calc(100% / 2);
     }
 }
 

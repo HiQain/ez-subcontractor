@@ -7,7 +7,7 @@ import Image from 'next/image';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/profile.css';
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface Contractor {
     id: number;
@@ -29,8 +29,8 @@ export default function ReviewsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // ✅ Options include "All Ratings"
-    const options = ['All Ratings', '1 Star', '2 Star', '3 Star', '4 Star', '5 Star'];
+    // ✅ Updated options - All Ratings followed by 5 Star to 1 Star
+    const options = ['All Ratings', '5 Star', '4 Star', '3 Star', '2 Star', '1 Star'];
 
     // 🔹 Handle filter selection
     const handleSelect = (option: string) => {
@@ -44,6 +44,15 @@ export default function ReviewsPage() {
             const rating = match ? parseInt(match[1], 10) : null;
             setFilterRating(rating);
         }
+    };
+
+    // 🔹 Sort contractors by average_rating (highest to lowest)
+    const sortContractorsByRating = (contractorsToSort: Contractor[]) => {
+        return [...contractorsToSort].sort((a, b) => {
+            const ratingA = parseFloat(a.average_rating) || 0;
+            const ratingB = parseFloat(b.average_rating) || 0;
+            return ratingB - ratingA; // descending order (highest first)
+        });
     };
 
     // 🔹 Fetch contractors
@@ -82,7 +91,8 @@ export default function ReviewsPage() {
                 }
 
                 if (data?.success) {
-                    setContractors(data.data);
+                    // ✅ Sort contractors by rating when initially loaded
+                    setContractors(sortContractorsByRating(data.data));
                 } else {
                     throw new Error('Invalid response format');
                 }
@@ -96,14 +106,16 @@ export default function ReviewsPage() {
         fetchContractors();
     }, []);
 
-    // 🔹 ✅ EXACT STAR-BAND FILTER:
-    // "3 Star" → 3.0 ≤ avg < 4.0
+    // 🔹 Filter and sort contractors
     const filteredContractors = contractors.filter(contractor => {
         if (filterRating === null) return true;
 
         const avg = parseFloat(contractor.average_rating) || 0;
         return avg >= filterRating && avg < filterRating + 1;
     });
+
+    // ✅ Always sort the filtered list by rating (highest to lowest)
+    const sortedFilteredContractors = sortContractorsByRating(filteredContractors);
 
     // 🔹 Format date
     const formatDate = (dateStr: string) => {
@@ -125,7 +137,7 @@ export default function ReviewsPage() {
                                     onClick={() => router.back()}
                                     className="icon"
                                     aria-label="Go back"
-                                    style={{background: 'none', border: 'none', padding: 0, cursor: 'pointer'}}
+                                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
                                 >
                                     <Image
                                         src="/assets/img/button-angle.svg"
@@ -169,7 +181,7 @@ export default function ReviewsPage() {
                             </div>
                         </div>
 
-                        {/* ✅ Review Cards — now correctly filtered */}
+                        {/* ✅ Review Cards — now correctly filtered and sorted */}
                         <div className="review-card-s1 p-0 bg-transparent">
                             {loading ? (
                                 <div className="text-center py-5">
@@ -187,8 +199,8 @@ export default function ReviewsPage() {
                                 </div>
                             ) : (
                                 <div className="row g-4 mb-5">
-                                    {filteredContractors.length > 0 ? (
-                                        filteredContractors.map((contractor) => (
+                                    {sortedFilteredContractors.length > 0 ? (
+                                        sortedFilteredContractors.map((contractor) => (
                                             <div className="col-lg-4 col-md-6" key={contractor.id}>
                                                 <div className="review-inner-card">
                                                     <div className="top d-flex align-items-center gap-2 justify-content-between flex-wrap mb-2">
@@ -247,7 +259,7 @@ export default function ReviewsPage() {
                                                                     })}
                                                             </div>
                                                             <div className="content">
-                                                                <div className="fs-12">{contractor.average_rating}/5</div>
+                                                                <div className="fs-12">{parseFloat(contractor.average_rating).toFixed(1)}/5</div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -266,7 +278,7 @@ export default function ReviewsPage() {
                                                 />
                                                 <p className="text-muted">
                                                     {filterRating
-                                                        ? `No subcontractors with ${filterRating}★ ratings found.`
+                                                        ? `No subcontractors with ${filterRating}-star ratings found.`
                                                         : 'No subcontractors found.'}
                                                 </p>
                                             </div>

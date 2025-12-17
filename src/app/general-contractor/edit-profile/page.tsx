@@ -1,6 +1,6 @@
+// app/general-contractor/edit-profile/page.tsx
 'use client';
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -14,16 +14,67 @@ const links = [
     { href: '/general-contractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
 ];
 
+// 🔹 Default profile placeholder
+const DEFAULT_PROFILE_IMAGE = '/assets/img/profile-placeholder.webp';
+
 export default function EditProfile() {
     const [loading, setLoading] = useState(true); // For initial fetch
     const [submitting, setSubmitting] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false); // For image upload state
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+
+    // Ref for hidden file input
+    const imageFileInputRef = useRef<HTMLInputElement>(null);
+
+    // 🔹 Show non-blocking toast notification
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
 
     // Form state
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
+        profile_image: DEFAULT_PROFILE_IMAGE,
         company_name: '',
         license_number: '',
         zip: '',
@@ -37,6 +88,43 @@ export default function EditProfile() {
 
     const pathname = usePathname();
     const router = useRouter();
+
+    // 🔹 Refetch profile data
+    const refetchProfile = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/auth/login');
+            return;
+        }
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/get-profile`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+
+            console.log('Profile refetched:', data);
+            if (res.ok && data.data) {
+                setFormData({
+                    name: data.data.name || '',
+                    phone: data.data.phone || '',
+                    profile_image: data.data.profile_image || DEFAULT_PROFILE_IMAGE,
+                    company_name: data.data.company_name || '',
+                    license_number: data.data.license_number || '',
+                    zip: data.data.zip || '',
+                    work_radius: data.data.work_radius || 0,
+                    category: data.data.category || 1,
+                    address: data.data.address || '',
+                    city: data.data.city || '',
+                    state: data.data.state || '',
+                    email: data.data.email || '',
+                });
+            }
+        } catch (err) {
+            console.error('Failed to refetch profile:', err);
+            showToast('Failed to refresh profile data. Please try again.', 'error');
+        }
+    };
 
     // Fetch current profile data
     useEffect(() => {
@@ -52,10 +140,13 @@ export default function EditProfile() {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 const data = await res.json();
+
+                console.log(data);
                 if (res.ok && data.data) {
                     setFormData({
                         name: data.data.name || '',
                         phone: data.data.phone || '',
+                        profile_image: data.data.profile_image || DEFAULT_PROFILE_IMAGE,
                         company_name: data.data.company_name || '',
                         license_number: data.data.license_number || '',
                         zip: data.data.zip || '',
@@ -69,7 +160,7 @@ export default function EditProfile() {
                 }
             } catch (err) {
                 console.error('Failed to load profile:', err);
-                setError('Failed to load profile data. Please try again.');
+                showToast('Failed to load profile data. Please try again.', 'error');
             } finally {
                 setLoading(false);
             }
@@ -83,6 +174,52 @@ export default function EditProfile() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // 👇 NEW: Handle profile image upload with automatic refetch
+    const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showToast('Authentication required. Please log in.', 'error');
+            router.push('/auth/login');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('profile_image', file);
+
+        setUploadingImage(true);
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/profile/update-image`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showToast('Profile image updated successfully!');
+                // ✅ Refetch profile data to update the image URL
+                await refetchProfile();
+            } else {
+                showToast(result.message || 'Failed to upload image. Please try again.', 'error');
+            }
+        } catch (err) {
+            console.error('Image upload error:', err);
+            showToast('Network error. Please check your connection.', 'error');
+        } finally {
+            setUploadingImage(false);
+            // Reset input so same file can be re-selected
+            if (imageFileInputRef.current) {
+                imageFileInputRef.current.value = '';
+            }
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -90,15 +227,15 @@ export default function EditProfile() {
 
         // Validation
         if (!formData.name.trim()) {
-            setError('Full Name is required.');
+            showToast('Full Name is required.', 'error');
             return;
         }
         if (!formData.email.trim()) {
-            setError('Email is required.');
+            showToast('Email is required.', 'error');
             return;
         }
         if (!formData.phone.trim()) {
-            setError('Phone Number is required.');
+            showToast('Phone Number is required.', 'error');
             return;
         }
 
@@ -140,17 +277,17 @@ export default function EditProfile() {
             }
 
             if (response.ok) {
-                setSuccess('Profile updated successfully!');
-                // Optional: refetch or redirect after delay
+                showToast('Profile updated successfully!');
+                // Redirect to profile page after thank-you
                 setTimeout(() => {
-                    setSuccess(null);
-                }, 3000);
+                    router.push('/general-contractor/profile');
+                }, 1500);
             } else {
-                setError(data.message || 'Failed to update profile. Please try again.');
+                showToast(data.message || 'Failed to update profile. Please try again.', 'error');
             }
         } catch (err) {
             console.error('Update profile error:', err);
-            setError('Network error. Please check your connection.');
+            showToast('Network error. Please check your connection.', 'error');
         } finally {
             setSubmitting(false);
         }
@@ -213,59 +350,6 @@ export default function EditProfile() {
                             <div className="col-xl-3">
                                 <div className="sidebar h-100">
                                     <div className="main-wrapper bg-dark p-0 h-100 d-flex flex-column justify-content-between">
-                                        {/* Topbar */}
-                                        <div className="topbar mb-5 d-flex justify-content-between align-items-start">
-                                            <div className="icon-wrapper d-flex align-items-start gap-3">
-                                                <Image
-                                                    src="/assets/img/profile-img.webp"
-                                                    width={80}
-                                                    height={80}
-                                                    alt="Worker Icon"
-                                                />
-                                                <div className="content-wrapper">
-                                                    <div className="title text-black fs-5 fw-medium mb-2">
-                                                        {formData.name || 'N/A'}
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/message-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Message Icon"
-                                                        />
-                                                        <Link
-                                                            href={`mailto:${formData.email || ''}`}
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            {formData.email || '—'}
-                                                        </Link>
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/call-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Call Icon"
-                                                        />
-                                                        <Link
-                                                            href={`tel:${formData.phone || ''}`}
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            {formData.phone || '—'}
-                                                        </Link>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <Image
-                                                src="/assets/img/icons/arrow-dark.svg"
-                                                width={16}
-                                                height={10}
-                                                alt="Arrow"
-                                                style={{ objectFit: 'contain' }}
-                                            />
-                                        </div>
-
                                         {/* Sidebar Links */}
                                         <div className="buttons-wrapper">
                                             {links.map((link) => (
@@ -335,35 +419,42 @@ export default function EditProfile() {
                                             </Link>
                                             <span className="fs-4 fw-semibold">Edit Profile</span>
                                         </div>
-                                        <button
-                                            onClick={handleSubmit}
-                                            disabled={submitting}
-                                            className="btn btn-primary rounded-3"
-                                        >
-                                            {submitting ? 'Saving...' : 'Save Changes'}
-                                        </button>
                                     </div>
 
-                                    {error && (
-                                        <div className="alert alert-danger mb-4" role="alert">
-                                            {error}
-                                        </div>
-                                    )}
-
-                                    {success && (
-                                        <div className="alert alert-success mb-4" role="alert">
-                                            {success}
-                                        </div>
-                                    )}
-
-                                    <Image
-                                        src="/assets/img/profile-img.webp"
-                                        width={234}
-                                        height={234}
-                                        alt="Worker Image"
-                                        className="d-block mb-4 img-fluid w-100"
-                                        style={{ maxWidth: '234px' }}
-                                    />
+                                    {/* 👇 Image Upload Section (NEW) */}
+                                    <div className="image-wrapper-s1">
+                                        <Image
+                                            src={formData.profile_image}
+                                            width={234}
+                                            height={234}
+                                            alt="Worker Image"
+                                            className="d-block mb-4 img-fluid rounded-circle"
+                                            style={{ width: '234px', height: '234px' }}
+                                        />
+                                        <button
+                                            type="button" // Important: not "submit"
+                                            className="icon"
+                                            onClick={() => imageFileInputRef.current?.click()}
+                                            disabled={uploadingImage}
+                                            aria-label="Upload profile image"
+                                        >
+                                            <Image
+                                                src="/assets/img/camera-icon.svg"
+                                                width={24}
+                                                height={24}
+                                                alt="Camera Icon"
+                                                style={{ maxWidth: '24px' }}
+                                            />
+                                        </button>
+                                        {/* Hidden file input */}
+                                        <input
+                                            type="file"
+                                            ref={imageFileInputRef}
+                                            accept="image/*"
+                                            onChange={handleProfileImageUpload}
+                                            style={{ display: 'none' }}
+                                        />
+                                    </div>
 
                                     <form onSubmit={handleSubmit}>
                                         <div className="form">
@@ -436,58 +527,15 @@ export default function EditProfile() {
                                                 />
                                             </div>
 
-                                            {/*<div className="input-wrapper d-flex flex-column">*/}
-                                            {/*    <label htmlFor="address" className="mb-1 fw-semibold">Address</label>*/}
-                                            {/*    <input*/}
-                                            {/*        type="text"*/}
-                                            {/*        id="address"*/}
-                                            {/*        name="address"*/}
-                                            {/*        className="form-control"*/}
-                                            {/*        placeholder="abc street"*/}
-                                            {/*        value={formData.address}*/}
-                                            {/*        onChange={handleChange}*/}
-                                            {/*    />*/}
-                                            {/*</div>*/}
-
-                                            {/*<div className="input-wrapper d-flex flex-column">*/}
-                                            {/*    <label htmlFor="city" className="mb-1 fw-semibold">City</label>*/}
-                                            {/*    <input*/}
-                                            {/*        type="text"*/}
-                                            {/*        id="city"*/}
-                                            {/*        name="city"*/}
-                                            {/*        className="form-control"*/}
-                                            {/*        placeholder="New York"*/}
-                                            {/*        value={formData.city}*/}
-                                            {/*        onChange={handleChange}*/}
-                                            {/*    />*/}
-                                            {/*</div>*/}
-
-                                            {/*<div className="input-wrapper d-flex flex-column">*/}
-                                            {/*    <label htmlFor="state" className="mb-1 fw-semibold">State</label>*/}
-                                            {/*    <input*/}
-                                            {/*        type="text"*/}
-                                            {/*        id="state"*/}
-                                            {/*        name="state"*/}
-                                            {/*        className="form-control"*/}
-                                            {/*        placeholder="Texas"*/}
-                                            {/*        value={formData.state}*/}
-                                            {/*        onChange={handleChange}*/}
-                                            {/*    />*/}
-                                            {/*</div>*/}
-
-                                            {/*<div className="input-wrapper d-flex flex-column">*/}
-                                            {/*    <label htmlFor="zip" className="mb-1 fw-semibold">ZIP Code</label>*/}
-                                            {/*    <input*/}
-                                            {/*        type="text"*/}
-                                            {/*        id="zip"*/}
-                                            {/*        name="zip"*/}
-                                            {/*        className="form-control"*/}
-                                            {/*        placeholder="12345"*/}
-                                            {/*        value={formData.zip}*/}
-                                            {/*        onChange={handleChange}*/}
-                                            {/*    />*/}
-                                            {/*</div>*/}
                                         </div>
+                                        <br/>
+                                        <button
+                                            type="submit"
+                                            disabled={submitting}
+                                            className="btn btn-primary rounded-3"
+                                        >
+                                            {submitting ? 'Saving...' : 'Save Changes'}
+                                        </button>
                                     </form>
                                 </div>
                             </div>

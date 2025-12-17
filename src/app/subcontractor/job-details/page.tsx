@@ -8,7 +8,7 @@ import Footer from '../../components/Footer';
 
 import '../../../styles/job-single.css';
 
-export default function JobDetailsPage() {
+export default function ProjectSubcontractorDetailsPage() {
     return (
         <>
             <Header />

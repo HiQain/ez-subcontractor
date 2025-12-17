@@ -13,6 +13,49 @@ export default function ForgotPassword() {
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
+    // 🔹 Show non-blocking toast notification
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
+
     // ✅ Helper: Check if email is valid
     const isEmailValid = (email: string) => {
         return /\S+@\S+\.\S+/.test(email.trim());
@@ -28,13 +71,13 @@ export default function ForgotPassword() {
 
         // Validation already ensured by button disable, but keep for safety
         if (!email.trim()) {
-            setError('Email is required');
+            showToast('Email is required', 'error');
             setIsLoading(false);
             return;
         }
 
         if (!isEmailValid(email)) {
-            setError('Please enter a valid email address');
+            showToast('Please enter a valid email address', 'error');
             setIsLoading(false);
             return;
         }
@@ -51,7 +94,7 @@ export default function ForgotPassword() {
             const data = await response.json();
 
             if (response.ok) {
-                setMessage('Password reset link has been sent to your email!');
+                showToast('Password reset link has been sent to your email!');
                 setEmail('');
                 localStorage.setItem('forgotPasswordEmail', email);
                 setTimeout(() => {
@@ -64,17 +107,17 @@ export default function ForgotPassword() {
                 } else if (typeof data.message === 'string') {
                     errorMessage = data.message;
                 }
-                setError(errorMessage);
+                showToast(errorMessage, 'error');
             }
         } catch (err) {
-            setError('Network error. Please check your internet connection.');
+            showToast('Network error. Please check your internet connection.', 'error');
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <section className="hero-sec login overflow-hidden position-static">
+        <section className="hero-sec login login-s1 overflow-hidden position-static">
             <div className="image-wrapper">
                 <Image
                     src="/assets/img/left-image.webp"
@@ -119,13 +162,14 @@ export default function ForgotPassword() {
                                         placeholder="hello@example.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
+                                        className="form-control"
                                     />
                                 </div>
 
-                                {error && <p className="text-danger mt-2">{error}</p>}
-                                {message && <p className="text-success mt-2">{message}</p>}
-
                                 <div className="buttons-wrapper d-flex align-items-center gap-4 mt-3">
+                                    <button onClick={() => router.back()} className="btn btn-outline-dark rounded-3 justify-content-center w-100">
+                                        Back
+                                    </button>
                                     <button
                                         type="submit"
                                         className="btn btn-primary rounded-3 justify-content-center w-100"

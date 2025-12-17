@@ -108,6 +108,7 @@ const pricingPlans = {
 };
 
 export default function PricingPage() {
+    const [activeTab, setActiveTab] = useState("all");
     const renderNoteCard = () => (
         <div className="note-card d-flex align-items-start gap-1">
             <Image
@@ -223,59 +224,56 @@ export default function PricingPage() {
                                 Unlock full access to jobs, messaging, and contractor tools no hidden fees.
                             </p>
 
-                            <ul className="nav nav-tabs justify-content-center" id="pricingTab" role="tablist">
-                                <li className="nav-item tabs" role="presentation">
+                            <ul className="nav nav-tabs mb-4" role="tablist" style={{minWidth: 400}}>
+                                <li className="nav-item" role="presentation">
                                     <button
-                                        className="tab-btn active"
-                                        id="sub-contractor-tab"
-                                        data-bs-toggle="tab"
-                                        data-bs-target="#sub-contractor"
+                                        className={`nav-link ${activeTab === "Sub Contractor" ? "active" : ""}`}
                                         type="button"
-                                        role="tab"
+                                        onClick={() => setActiveTab("sub-contractor")}
                                     >
                                         Sub Contractor
                                     </button>
                                 </li>
-                                <li className="nav-item tabs" role="presentation">
+                                <li className="nav-item" role="presentation">
                                     <button
-                                        className="tab-btn"
-                                        id="affiliate-tab"
-                                        data-bs-toggle="tab"
-                                        data-bs-target="#affiliate"
+                                        className={`nav-link ${activeTab === "affiliate" ? "active" : ""}`}
                                         type="button"
-                                        role="tab"
+                                        onClick={() => setActiveTab("affiliate")}
                                     >
                                         Affiliate
                                     </button>
                                 </li>
+                                <div className="slider"></div>
                             </ul>
+
                         </div>
                     </div>
                 </section>
 
                 {/* Pricing Section */}
+                {/* Pricing Section */}
                 <section className="pricing-sec">
                     <div className="container-fluid">
                         <div className="tab-content pricing-wrapper" id="pricingTabContent">
-                            {/* Sub Contractor Tab */}
-                            <div
-                                className="tab-pane fade show active pricing-content"
-                                id="sub-contractor"
-                                role="tabpanel"
-                            >
-                                <div className="row g-3">
-                                    {pricingPlans['sub-contractor'].map((plan, index) =>
-                                        renderPlanCard(plan, index)
-                                    )}
+                            {/* Sub Contractor Tab — shown when activeTab === 'sub-contractor' */}
+                            {activeTab === "sub-contractor" && (
+                                <div className="tab-pane fade show active pricing-content" role="tabpanel">
+                                    <div className="row g-3 justify-content-center">
+                                        {pricingPlans['sub-contractor'].map((plan, index) =>
+                                            renderPlanCard(plan, index)
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Affiliate Tab */}
-                            <div className="tab-pane fade pricing-content" id="affiliate" role="tabpanel">
-                                <div className="row g-3">
-                                    {pricingPlans.affiliate.map((plan) => renderPlanCard(plan, -1))}
+                            {/* Affiliate Tab — shown when activeTab === 'affiliate' */}
+                            {activeTab === "affiliate" && (
+                                <div className="tab-pane fade show active pricing-content" role="tabpanel">
+                                    <div className="row g-3 justify-content-center">
+                                        {pricingPlans.affiliate.map((plan) => renderPlanCard(plan, -1))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </section>

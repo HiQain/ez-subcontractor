@@ -76,6 +76,7 @@ export default function Header() {
             onMouseEnter={() => typeof window !== 'undefined' && window.innerWidth >= 992 && setIsNotificationOpen(true)}
             onMouseLeave={() => typeof window !== 'undefined' && window.innerWidth >= 992 && setIsNotificationOpen(false)}
         >
+
             <Link
                 href="#"
                 className="icon-link notification-icon-link"
@@ -99,7 +100,7 @@ export default function Header() {
                                 {filteredNotifications.map((notification, index) => (
                                     <div
                                         key={index}
-                                        className={`notification-item ${notification.isHighlight ? 'success-highlight' : ''}`}
+                                        className={`notification-item ${notification.isHighlight ? 'thank-you-highlight' : ''}`}
                                     >
                                         <div className="d-flex align-items-start gap-2">
                                             {notification.isHighlight ? (
@@ -211,8 +212,16 @@ export default function Header() {
 
     const headerClass = getRoleForCurrentPath() ? 'header header-dashboard' : 'header header-public';
 
+    // At the top of your component, add this helper
+    const isTransparentHeaderPage = () => {
+        return (
+            pathname.includes('/subcontractor/subscription'), // optional: catch all subscription variants
+            pathname.includes('/subcontractor/thank-you') // optional: catch all subscription variants
+        );
+    };
+
     return (
-        <header className={headerClass}>
+        <header className={isTransparentHeaderPage() ? 'header header-show-logo' : headerClass}>
             <div className="container">
                 <div className="header-wrapper">
                     <Link href="/" className="logo" aria-label="Home">

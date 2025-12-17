@@ -18,7 +18,12 @@ interface ProfileData {
     state: string;
     zipCode: string;
     workRadius: number;
-    categories: string[];
+    category: number | null; // ← Now stores ID (e.g., 17), not name
+}
+
+interface Category {
+    id: string;
+    name: string;
 }
 
 export default function ProfilePage() {
@@ -29,6 +34,10 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // ✅ Categories state
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
+
     const links = [
         { href: '/subcontractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
         { href: '/subcontractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/lock.svg' },
@@ -37,7 +46,54 @@ export default function ProfilePage() {
         { href: '/subcontractor/transaction-history', label: 'Transaction History', icon: '/assets/img/icons/saved.svg' },
     ];
 
-    // 🔁 Fetch profile after confirming token on client
+    // 🔁 Fetch categories
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/specializations`, {
+                    headers: { 'Accept': 'application/json' },
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                let fetchedCategories: Category[] = [];
+
+                if (Array.isArray(data)) {
+                    fetchedCategories = data.map(item => ({ id: String(item.id), name: item.name }));
+                } else if (data?.data?.specializations && Array.isArray(data.data.specializations)) {
+                    fetchedCategories = data.data.specializations.map((item: any) => ({
+                        id: String(item.id),
+                        name: item.name,
+                    }));
+                } else if (data?.data && Array.isArray(data.data)) {
+                    fetchedCategories = data.data.map((item: any) => ({
+                        id: String(item.id),
+                        name: item.name,
+                    }));
+                }
+
+                setCategories(fetchedCategories.length > 0 ? fetchedCategories : [
+                    { id: '1', name: 'Plumbing' },
+                    { id: '2', name: 'Electric Work' },
+                    { id: '3', name: 'Framing' },
+                    { id: '4', name: 'Roofing' },
+                ]);
+            } catch (err) {
+                console.error('Failed to load categories:', err);
+                setCategories([
+                    { id: '1', name: 'Plumbing' },
+                    { id: '2', name: 'Electric Work' },
+                    { id: '3', name: 'Framing' },
+                    { id: '4', name: 'Roofing' },
+                ]);
+            } finally {
+                setCategoriesLoading(false);
+            }
+        };
+
+        fetchCategories();
+    }, []);
+
+    // 🔁 Fetch profile
     useEffect(() => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -59,7 +115,6 @@ export default function ProfilePage() {
 
                 const data = await response.json();
                 console.log(data);
-
                 if (response.ok) {
                     setProfile({
                         fullName: data.data.name || 'N/A',
@@ -69,9 +124,10 @@ export default function ProfilePage() {
                         role: data.data.role || 'N/A',
                         city: data.data.city || 'N/A',
                         state: data.data.state || 'N/A',
-                        zipCode: data.data.zipCode || 'N/A',
-                        workRadius: data.data.workRadius || 0,
-                        categories: data.data.categories || [],
+                        zipCode: data.data.zip || 'N/A',
+                        workRadius: data.data.work_radius || 0,
+                        // ✅ Store category as number | null
+                        category: data.data.specialization ? Number(data.data.specialization) : null,
                     });
                 } else {
                     setError(data.message || 'Failed to load profile');
@@ -134,7 +190,7 @@ export default function ProfilePage() {
     };
 
     // 🌀 Loading State
-    if (loading) {
+    if (loading || (profile && categoriesLoading)) {
         return (
             <>
                 <Header />
@@ -181,9 +237,17 @@ export default function ProfilePage() {
             </>
         );
     }
+
     if (!profile) {
         return null;
     }
+
+    // ✅ Helper: Get category name from ID
+    const getCategoryName = (categoryId: number | null): string => {
+        if (categoryId === null) return 'Not Set';
+        const cat = categories.find(c => c.id === String(categoryId));
+        return cat ? cat.name : 'Unknown';
+    };
 
     return (
         <>
@@ -196,57 +260,6 @@ export default function ProfilePage() {
                             <div className="col-xl-3">
                                 <div className="sidebar">
                                     <div className="main-wrapper bg-dark p-0">
-                                        <div className="topbar mb-5 d-flex justify-content-between align-items-start">
-                                            <div className="icon-wrapper d-flex align-items-start gap-3">
-                                                <Image
-                                                    src="/assets/img/profile-img.webp"
-                                                    width={80}
-                                                    height={80}
-                                                    alt="Worker Icon"
-                                                />
-                                                <div className="content-wrapper">
-                                                    <div className="title text-black fs-5 fw-medium mb-2">
-                                                        {profile.fullName}
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/message-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Message Icon"
-                                                        />
-                                                        <Link
-                                                            href={`mailto:${profile.email}`}
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            {profile.email}
-                                                        </Link>
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/call-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Call Icon"
-                                                        />
-                                                        <Link
-                                                            href={`tel:${profile.phone}`}
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            {profile.phone}
-                                                        </Link>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <Image
-                                                src="/assets/img/icons/arrow-dark.svg"
-                                                width={16}
-                                                height={10}
-                                                alt="Arrow"
-                                                style={{ objectFit: 'contain' }}
-                                            />
-                                        </div>
-
                                         {/* Sidebar Links */}
                                         <div className="buttons-wrapper">
                                             {links.map((link) => (
@@ -317,7 +330,7 @@ export default function ProfilePage() {
                                             <span className="fs-4 fw-semibold">Profile Details</span>
                                         </div>
                                         <div className="icon-wrapper d-flex align-items-center gap-3">
-                                            <Link href="/sub-contractor/edit-profile" className="icon">
+                                            <Link href="/subcontractor/edit-profile" className="icon">
                                                 <Image
                                                     src="/assets/img/icons/edit.svg"
                                                     width={24}
@@ -327,7 +340,7 @@ export default function ProfilePage() {
                                             </Link>
                                             <Link
                                                 href="#"
-                                                className="icon"
+                                                className="icon delete"
                                                 style={{ backgroundColor: '#DC2626 !important' }}
                                             >
                                                 <Image
@@ -351,7 +364,7 @@ export default function ProfilePage() {
                                             />
                                             <div className="content">
                                                 <div className="title fw-semibold fs-4 mb-2">{profile.fullName}</div>
-                                                <p className="mb-1 text-gray-light">{profile.role}</p>
+                                                <p className="mb-1 text-gray-light text-capitalize">{profile.role}</p>
                                                 <p className="mb-1 text-gray-light">
                                                     {profile.city}, {profile.state} {profile.zipCode}
                                                 </p>
@@ -394,7 +407,7 @@ export default function ProfilePage() {
                                             <div className="col-xl-3 col-sm-6">
                                                 <div className="content">
                                                     <div className="text-gray-light fw-medium mb-2">Full Name</div>
-                                                    <div className="fw-semibold fs-18">{profile.fullName}</div>
+                                                    <div className="fw-semibold fs-18 text-truncate">{profile.fullName}</div>
                                                 </div>
                                             </div>
                                             <div className="col-xl-3 col-sm-6">
@@ -402,7 +415,7 @@ export default function ProfilePage() {
                                                     <div className="text-gray-light fw-medium mb-2">
                                                         Company Name
                                                     </div>
-                                                    <div className="fw-semibold fs-18">{profile.companyName}</div>
+                                                    <div className="fw-semibold fs-18 text-truncate">{profile.companyName}</div>
                                                 </div>
                                             </div>
                                             <div className="col-xl-3 col-sm-6">
@@ -412,7 +425,7 @@ export default function ProfilePage() {
                                                     </div>
                                                     <Link
                                                         href={`mailto:${profile.email}`}
-                                                        className="fw-semibold fs-18 text-dark"
+                                                        className="fw-semibold fs-18 text-dark text-truncate"
                                                     >
                                                         {profile.email}
                                                     </Link>
@@ -425,7 +438,7 @@ export default function ProfilePage() {
                                                     </div>
                                                     <Link
                                                         href={`tel:${profile.phone}`}
-                                                        className="fw-semibold fs-18 text-dark"
+                                                        className="fw-semibold fs-18 text-dark text-truncate"
                                                     >
                                                         {profile.phone}
                                                     </Link>
@@ -433,18 +446,10 @@ export default function ProfilePage() {
                                             </div>
                                         </div>
 
-                                        <div className="text-gray-light fw-medium mb-2">Categories</div>
+                                        {/* ✅ FIXED: Show category name instead of ID */}
+                                        <div className="text-gray-light fw-medium mb-2">Category</div>
                                         <div className="d-flex align-items-center gap-2 flex-wrap mb-4">
-                                            {profile.categories.map((cat, i) => (
-                                                <Link
-                                                    href="#"
-                                                    key={i}
-                                                    className="btn bg-dark rounded-3 p-2 fs-18 fw-semibold"
-                                                    style={{ color: 'white' }}
-                                                >
-                                                    {cat}
-                                                </Link>
-                                            ))}
+                                            <div className="fw-semibold  bg-dark text-white fs-14 px-2 py-1 rounded-1">{getCategoryName(profile.category)}</div>
                                         </div>
 
                                         <div className="row g-2">

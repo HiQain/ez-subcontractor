@@ -19,16 +19,16 @@ export default function RegisterPage() {
 
     // 🔑 Form state
     const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        company_name: '',
-        password: '',
-        password_confirmation: '',
-        license_number: '',
-        zip: '',
-        work_radius: '',
-        category: '',
+        name: 'John Doe',
+        email: 'johndoe@gmail.com',
+        phone: '(342) 432-4324',
+        company_name: 'ABC Corporation',
+        password: 'Password123!',
+        password_confirmation: 'Password123!',
+        license_number: 'LC22442',
+        zip: '10000',
+        work_radius: '5',
+        category: '123',
     });
 
     const [currentStep, setCurrentStep] = useState(1); // 1 = Personal, 2 = Business
@@ -105,23 +105,28 @@ export default function RegisterPage() {
         }
     };
 
-    // ✅ Fetch categories
     useEffect(() => {
-        if (!['general-contractor', 'sub-contractor'].includes(accountType)) return;
-
         const fetchCategories = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/specializations`);
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/specializations`, {
+                    headers: { 'Accept': 'application/json' },
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
-
                 let fetchedCategories: Category[] = [];
-                if (data?.data?.specializations && Array.isArray(data.data.specializations)) {
+                if (Array.isArray(data)) {
+                    fetchedCategories = data.map(item => ({ id: String(item.id), name: item.name }));
+                } else if (data?.data?.specializations && Array.isArray(data.data.specializations)) {
                     fetchedCategories = data.data.specializations.map((item: any) => ({
                         id: String(item.id),
                         name: item.name,
                     }));
+                } else if (data?.data && Array.isArray(data.data)) {
+                    fetchedCategories = data.data.map((item: any) => ({
+                        id: String(item.id),
+                        name: item.name,
+                    }));
                 }
-
                 setCategories(fetchedCategories.length > 0 ? fetchedCategories : [
                     { id: '1', name: 'Plumbing' },
                     { id: '2', name: 'Electric Work' },
@@ -140,13 +145,127 @@ export default function RegisterPage() {
                 setCategoriesLoading(false);
             }
         };
-
         fetchCategories();
-    }, [accountType]);
+    }, []);
+
+
+    // ✅ Initialize Select2 ONLY when Step 2 is active AND categories are ready
+    useEffect(() => {
+        // Skip if not on Step 2, or not a contractor, or still loading
+        if (
+            typeof window === 'undefined' ||
+            currentStep !== 2 ||
+            !['general-contractor', 'sub-contractor'].includes(accountType) ||
+            categoriesLoading
+        ) {
+            return;
+        }
+
+        // Ensure the element exists before initializing
+        const $ = require('jquery');
+        require('select2');
+        require('select2/dist/css/select2.min.css');
+
+        const $select = $('#category-select');
+        if ($select.length === 0) return; // not in DOM yet
+
+        // Destroy if already initialized (prevent duplicate)
+        if ($select.data('select2')) {
+            $select.select2('destroy');
+        }
+
+        // Initialize Select2
+        $select.select2({
+            placeholder: 'Select category',
+            allowClear: false,
+            width: '100%',
+        }).on('change', function () {
+            const val = $(this).val() as string;
+            setFormData(prev => ({ ...prev, category: val || '' }));
+            if (errors.category) {
+                setErrors(prev => {
+                    const { category: _, ...rest } = prev;
+                    return rest;
+                });
+            }
+        });
+
+        // Cleanup on unmount or step change
+        return () => {
+            if ($select.data('select2')) {
+                $select.select2('destroy');
+            }
+        };
+    }, [currentStep, categoriesLoading, categories, accountType, errors.category]);
+
+    const showErrorToast = (message: string) => {
+        const toast = document.createElement('div');
+        toast.innerHTML = `
+        <div class="toast show" role="alert" style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 12px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        ">
+            <span>${message}</span>
+            <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;"></button>
+        </div>
+    `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 5000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
 
     // ✅ Next step
     const goToNextStep = () => {
         if (accountType === 'affiliate') return;
+
+        // 🔹 Validate only Step 1 fields
+        const step1Errors: Record<string, string> = {};
+
+        if (!formData.name.trim()) step1Errors.name = 'Full Name is required';
+        if (!formData.email.trim()) step1Errors.email = 'Email is required';
+        else if (!/\S+@\S+\.\S+/.test(formData.email)) step1Errors.email = 'Email is invalid';
+        if (!formData.phone.trim()) step1Errors.phone = 'Phone Number is required';
+        if (!formData.password.trim()) step1Errors.password = 'Password is required';
+        else if (formData.password.length < 6) step1Errors.password = 'Password must be at least 6 characters';
+        if (!formData.password_confirmation.trim()) step1Errors.password_confirmation = 'Confirm Password is required';
+        else if (formData.password !== formData.password_confirmation) {
+            step1Errors.password_confirmation = 'Passwords do not match';
+        }
+        if (!isAgreed) step1Errors.agreement = 'You must agree to the terms and conditions';
+
+        if (Object.keys(step1Errors).length > 0) {
+            setErrors(step1Errors);
+            const firstError = Object.values(step1Errors)[0];
+            showErrorToast(`Please fix: ${firstError}`);
+            // Optional: scroll to first error
+            setTimeout(() => {
+                document.querySelector('.text-danger')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+            return;
+        }
+
+        // ✅ All valid → go to Step 2
         setCurrentStep(2);
     };
 
@@ -163,7 +282,6 @@ export default function RegisterPage() {
         if (!formData.email.trim()) newErrors.email = 'Email is required';
         else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
         if (!formData.phone.trim()) newErrors.phone = 'Phone Number is required';
-        if (!formData.company_name.trim()) newErrors.company_name = 'Company Name is required';
         if (!formData.password.trim()) newErrors.password = 'Password is required';
         else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
         if (!formData.password_confirmation.trim()) newErrors.password_confirmation = 'Confirm Password is required';
@@ -202,6 +320,7 @@ export default function RegisterPage() {
             category: parseInt(formData.category) || 1,
             role: role,
         };
+
 
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/register`, {
@@ -299,7 +418,7 @@ export default function RegisterPage() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column mb-3">
-                                                <label htmlFor="name" className="mb-1 fw-semibold">Full Name</label>
+                                                <label htmlFor="name" className="mb-1 fw-semibold">Full Name <span className="text-danger">*</span></label>
                                                 <input
                                                     type="text"
                                                     id="name"
@@ -314,7 +433,21 @@ export default function RegisterPage() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column mb-3">
-                                                <label htmlFor="email" className="mb-1 fw-semibold">Email Address</label>
+                                                <label htmlFor="company_name" className="mb-1 fw-semibold">Company Name</label>
+                                                <input
+                                                    type="text"
+                                                    id="company_name"
+                                                    name="company_name"
+                                                    placeholder="JD Construction"
+                                                    value={formData.company_name}
+                                                    onChange={handleChange}
+                                                    className="form-control"
+                                                    disabled={isLoading}
+                                                />
+                                            </div>
+
+                                            <div className="input-wrapper d-flex flex-column mb-3">
+                                                <label htmlFor="email" className="mb-1 fw-semibold">Email Address <span className="text-danger">*</span></label>
                                                 <input
                                                     type="email"
                                                     id="email"
@@ -329,7 +462,7 @@ export default function RegisterPage() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column mb-3">
-                                                <label htmlFor="phone" className="mb-1 fw-semibold">Phone Number</label>
+                                                <label htmlFor="phone" className="mb-1 fw-semibold">Phone Number <span className="text-danger">*</span></label>
                                                 <input
                                                     type="tel"
                                                     id="phone"
@@ -344,24 +477,9 @@ export default function RegisterPage() {
                                                 {errors.phone && <span className="text-danger animate-slide-up">{errors.phone}</span>}
                                             </div>
 
-                                            <div className="input-wrapper d-flex flex-column mb-3">
-                                                <label htmlFor="company_name" className="mb-1 fw-semibold">Company Name</label>
-                                                <input
-                                                    type="text"
-                                                    id="company_name"
-                                                    name="company_name"
-                                                    placeholder="JD Construction"
-                                                    value={formData.company_name}
-                                                    onChange={handleChange}
-                                                    className="form-control"
-                                                    disabled={isLoading}
-                                                />
-                                                {errors.company_name && <span className="text-danger animate-slide-up">{errors.company_name}</span>}
-                                            </div>
-
                                             {/* ✅ Password Field — identical to ChangePassword page */}
                                             <div className="input-wrapper d-flex flex-column position-relative mb-3">
-                                                <label htmlFor="password" className="mb-1 fw-semibold">Password</label>
+                                                <label htmlFor="password" className="mb-1 fw-semibold">Password <span className="text-danger">*</span></label>
                                                 <input
                                                     type={showPassword ? 'text' : 'password'}
                                                     id="password"
@@ -384,7 +502,7 @@ export default function RegisterPage() {
 
                                             {/* ✅ Confirm Password — identical to ChangePassword page */}
                                             <div className="input-wrapper d-flex flex-column position-relative mb-3">
-                                                <label htmlFor="password_confirmation" className="mb-1 fw-semibold">Confirm Password</label>
+                                                <label htmlFor="password_confirmation" className="mb-1 fw-semibold">Confirm Password <span className="text-danger">*</span></label>
                                                 <input
                                                     type={showConfirmPassword ? 'text' : 'password'}
                                                     id="password_confirmation"
@@ -414,10 +532,10 @@ export default function RegisterPage() {
                                                     onChange={handleAgreementChange}
                                                     disabled={isLoading}
                                                 />
-                                                <label className="form-check-label fw-semibold fs-12" htmlFor="agreement">
+                                                <label className="form-check-label fs-12" htmlFor="agreement">
                                                     By registering, you confirm that you have reviewed and accepted our{' '}
-                                                    <Link href="/privacy" className="text-primary">Privacy Policy</Link> and{' '}
-                                                    <Link href="/terms" className="text-primary">Terms &amp; Conditions.</Link>
+                                                    <Link href="/privacy" style={{color: '#8F9B1F'}}>Privacy Policy</Link> and{' '}
+                                                    <Link href="/terms" style={{color: '#8F9B1F'}}>Terms &amp; Conditions.</Link>
                                                 </label>
                                                 {errors.agreement && <span className="text-danger animate-slide-up d-block mt-1">{errors.agreement}</span>}
                                             </div>
@@ -433,7 +551,7 @@ export default function RegisterPage() {
                                                 Next
                                             </button>
 
-                                            <div className="text-center fw-medium text-gray-light">
+                                            <div className="text-center fw-medium text-gray-light mt-3">
                                                 Already have an account?{' '}
                                                 <Link href="/auth/login" className="fw-semibold text-black">
                                                     Login
@@ -459,7 +577,7 @@ export default function RegisterPage() {
 
                                             {/* ✅ SELECT2 CATEGORY DROPDOWN */}
                                             <div className="input-wrapper d-flex flex-column mb-3">
-                                                <label htmlFor="category" className="mb-1 fw-semibold">Category *</label>
+                                                <label htmlFor="category" className="mb-1 fw-semibold">Category <span className="text-danger">*</span></label>
                                                 <select
                                                     id="category-select"
                                                     className="form-control"
@@ -521,13 +639,27 @@ export default function RegisterPage() {
 
                                             {errors.api && <p className="text-danger animate-slide-up mb-3">{errors.api}</p>}
 
-                                            <button
-                                                type="submit"
-                                                className="btn btn-primary w-100 rounded-3"
-                                                disabled={isLoading}
-                                            >
-                                                {isLoading ? 'Registering...' : 'Complete Registration'}
-                                            </button>
+                                            <div className="row">
+                                                <div className="col-lg-4">
+                                                    <button
+                                                        onClick={() => setCurrentStep(1)}
+                                                        type="button"
+                                                        className="btn btn-outline-dark rounded-3 text-center d-block"
+                                                        disabled={isLoading}
+                                                    >
+                                                        Back
+                                                    </button>
+                                                </div>
+                                                <div className="col-lg-8">
+                                                    <button
+                                                        type="submit"
+                                                        className="btn btn-primary w-100 rounded-3 text-center d-block"
+                                                        disabled={isLoading}
+                                                    >
+                                                        {isLoading ? 'Registering...' : 'Complete Registration'}
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
 

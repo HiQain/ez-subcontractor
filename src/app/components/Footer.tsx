@@ -63,10 +63,10 @@ export default function Footer() {
                                     className="text-decoration-none"
                                     style={{ color: '#E6EE9D' }}
                                 >
-                                    EZcontractorz1@gmail.com
+                                    info@ezsubcontractor.com
                                 </Link>
                             </div>
-                            <div className="d-flex align-items-center gap-2 mb-3">
+                            <div className="d-flex align-items-center gap-2 mb-3 d-none">
                                 <div className="icon">
                                     <Image
                                         src="/assets/img/icons/call-green.svg"
@@ -84,7 +84,7 @@ export default function Footer() {
                                     +1 (000) 123-4392
                                 </Link>
                             </div>
-                            <div className="d-flex align-items-center gap-2">
+                            <div className="d-flex align-items-center gap-2 d-none">
                                 <div className="icon">
                                     <Image
                                         src="/assets/img/icons/location-green.svg"

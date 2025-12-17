@@ -12,12 +12,14 @@ interface ProfileData {
     fullName: string;
     email: string;
     phone: string;
+    profile_image: string,
     companyName: string;
     role: string;
     city: string;
     state: string;
     zipCode: string;
     workRadius: number;
+    license_number: string;
     categories: string[];
 }
 
@@ -59,14 +61,16 @@ export default function ProfilePage() {
 
                 if (response.ok) {
                     setProfile({
-                        fullName: data.data.name || 'N/A',
-                        email: data.data.email || 'N/A',
-                        phone: data.data.phone || 'N/A',
-                        companyName: data.data.company_name || 'N/A',
-                        role: data.data.role || 'N/A',
-                        city: data.data.city || 'N/A',
-                        state: data.data.state || 'N/A',
-                        zipCode: data.data.zipCode || 'N/A',
+                        fullName: data.data.name || '',
+                        email: data.data.email || '',
+                        phone: data.data.phone || '',
+                        profile_image: data.data.profile_image || '/assets/img/profile-placeholder.webp',
+                        companyName: data.data.company_name || '',
+                        role: data.data.role || '',
+                        city: data.data.city || '',
+                        state: data.data.state || '',
+                        zipCode: data.data.zipCode || '',
+                        license_number: data.data.license_number || '',
                         workRadius: data.data.workRadius || 0,
                         categories: data.data.categories || [],
                     });
@@ -193,56 +197,6 @@ export default function ProfilePage() {
                             <div className="col-xl-3">
                                 <div className="sidebar">
                                     <div className="main-wrapper bg-dark p-0">
-                                        <div className="topbar mb-5 d-flex justify-content-between align-items-start">
-                                            <div className="icon-wrapper d-flex align-items-start gap-3">
-                                                <Image
-                                                    src="/assets/img/profile-img.webp"
-                                                    width={80}
-                                                    height={80}
-                                                    alt="Worker Icon"
-                                                />
-                                                <div className="content-wrapper">
-                                                    <div className="title text-black fs-5 fw-medium mb-2">
-                                                        {profile.fullName}
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/message-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Message Icon"
-                                                        />
-                                                        <Link
-                                                            href={`mailto:${profile.email}`}
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            {profile.email}
-                                                        </Link>
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/call-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Call Icon"
-                                                        />
-                                                        <Link
-                                                            href={`tel:${profile.phone}`}
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            {profile.phone}
-                                                        </Link>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <Image
-                                                src="/assets/img/icons/arrow-dark.svg"
-                                                width={16}
-                                                height={10}
-                                                alt="Arrow"
-                                                style={{ objectFit: 'contain' }}
-                                            />
-                                        </div>
 
                                         {/* Sidebar Links */}
                                         <div className="buttons-wrapper">
@@ -339,28 +293,30 @@ export default function ProfilePage() {
                                     <div className="review-bar d-flex align-items-center justify-content-between gap-2 flex-wrap mb-5">
                                         <div className="image-box d-flex align-items-center gap-4">
                                             <Image
-                                                src="/assets/img/profile-img.webp"
-                                                className="worker-img"
+                                                src={profile.profile_image}
+                                                className="worker-img rounded-circle"
                                                 width={180}
                                                 height={180}
                                                 alt="Worker Image"
                                             />
                                             <div className="content">
-                                                <div className="title fw-semibold fs-4 mb-2">{profile.fullName}</div>
-                                                <p className="mb-1 text-gray-light">{profile.role}</p>
-                                                <p className="mb-1 text-gray-light">
-                                                    {profile.city}, {profile.state} {profile.zipCode}
-                                                </p>
+                                                <div className="title fw-semibold fs-4 mb-0">{profile.fullName}</div>
+                                                <p className="mb-1 text-gray-light text-capitalize">{profile.role.replace(/[^a-zA-Z0-9]/g, ' ')}</p>
+                                                {(profile.city || profile.state || profile.zipCode) && (
+                                                    <p className="mb-1 text-gray-light">
+                                                        {profile.city}, {profile.state} {profile.zipCode}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="review-bar">
-                                        <div className="row g-2 mb-4">
+                                        <div className="row g-2 gy-4">
                                             <div className="col-xl-3 col-sm-6">
                                                 <div className="content">
                                                     <div className="text-gray-light fw-medium mb-2">Full Name</div>
-                                                    <div className="fw-semibold fs-18">{profile.fullName}</div>
+                                                    <div className="fw-semibold fs-18  text-truncate">{profile.fullName}</div>
                                                 </div>
                                             </div>
                                             <div className="col-xl-3 col-sm-6">
@@ -368,7 +324,7 @@ export default function ProfilePage() {
                                                     <div className="text-gray-light fw-medium mb-2">
                                                         Company Name
                                                     </div>
-                                                    <div className="fw-semibold fs-18">{profile.companyName}</div>
+                                                    <div className="fw-semibold fs-18 text-truncate">{profile.companyName}</div>
                                                 </div>
                                             </div>
                                             <div className="col-xl-3 col-sm-6 overflow-hidden">
@@ -378,7 +334,7 @@ export default function ProfilePage() {
                                                     </div>
                                                     <Link
                                                         href={`mailto:${profile.email}`}
-                                                        className="fw-semibold fs-18 text-dark text-truncate"
+                                                        className="fw-semibold fs-18 text-dark  text-truncate"
                                                     >
                                                         {profile.email}
                                                     </Link>
@@ -391,10 +347,22 @@ export default function ProfilePage() {
                                                     </div>
                                                     <Link
                                                         href={`tel:${profile.phone}`}
-                                                        className="fw-semibold fs-18 text-dark"
+                                                        className="fw-semibold fs-18 text-dark text-truncate"
                                                     >
                                                         {profile.phone}
                                                     </Link>
+                                                </div>
+                                            </div>
+                                            <div className="col-xl-3 col-sm-6">
+                                                <div className="content">
+                                                    <div className="text-gray-light fw-medium mb-2">
+                                                        License Number
+                                                    </div>
+                                                    <div
+                                                        className="fw-semibold fs-18 text-dark text-truncate"
+                                                    >
+                                                        {profile.license_number}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

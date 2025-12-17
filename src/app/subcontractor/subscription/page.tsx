@@ -26,12 +26,15 @@ export default function PricingPage() {
                 });
                 const data = await res.json();
 
+                console.log(data)
+
                 if (res.ok && data.success && Array.isArray(data.data?.plans)) {
                     // Transform API response into your UI structure
                     const transformedPlans = data.data.plans.map((plan: any) => ({
                         id: plan.id,
                         title: plan.plan_name,
-                        price: plan.discount_price ? plan.discount_price : plan.price, // Use discount if available
+                        price: parseFloat(plan.price), // Use discount if available
+                        discount: plan.discount_price, // Use discount if available
                         features: plan.features.map((f: any) => f.feature),
                         hasNote: plan.type === 'trial',
                         isPopular: plan.label === 'Popular',
@@ -87,7 +90,7 @@ export default function PricingPage() {
 
     const renderPlanCard = (plan: any) => (
         <div key={plan.id} className="col-lg-3 col-md-6">
-            <div className={`price-card ${plan.isPopular ? 'price-card1' : ''} free`}>
+            <div className={`price-card ${plan.isPopular ? 'popular' : ''} free`}>
                 <div>
                     <div className="pricing-header">
                         {plan.isPopular ? (
@@ -106,19 +109,21 @@ export default function PricingPage() {
 
                         {plan.showStrike ? (
                             <div className="d-flex align-items-center gap-1 flex-wrap">
-                                <del className="fs-4 fw-medium text-black">$ {plan.price}</del>
-                                <div className="d-flex align-items-center gap-2">
+                                <del className="fs-18 fw-medium text-black">$ {plan.price}</del>
+                                <div className="d-flex align-items-center gap-2 justify-content-between">
                                     <span className="price">
-                                        $<span className="fw-bold">{plan.price}</span>
+                                        $
+                                        <span className="fw-bold">
+                                            {plan.discount ? plan.price-plan.price/100*plan.discount : plan.price}
+                                        </span>
                                     </span>
                                     {plan.saveText && (
-                                        <button
-                                            type="button"
+                                        <div
                                             style={{ backgroundColor: plan.saveColor }}
-                                            className="custom-btn text-white p-2 rounded-pill"
+                                            className="custom-btn text-white py-2 px-3 rounded-pill"
                                         >
-                                            {plan.saveText}
-                                        </button>
+                                            {parseFloat(plan.discount)} % OFF
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -153,7 +158,7 @@ export default function PricingPage() {
                     {plan.hasNote && renderNoteCard()}
                     <div className="pricing-button w-100 pt-0">
                         <button className="btn" onClick={() => handleSelectPlan(plan)}>
-                            Get Started
+                            Buy Now
                         </button>
                     </div>
                 </div>
@@ -166,7 +171,7 @@ export default function PricingPage() {
         return (
             <>
                 <Header />
-                <div className="sections overflow-hidden">
+                <div className="sections overflow-hidden pt-5 mt-5">
                     <section className="banner-sec profile position-static">
                         <div className="container">
                             <div className="row">

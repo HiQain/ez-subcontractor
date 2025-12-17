@@ -12,6 +12,49 @@ export default function RegisterPage() {
     const router = useRouter();
     const params = useParams();
 
+    // 🔹 Show non-blocking toast notification
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
+
     // 🔑 Unified form data — all fields in one object
     const [formData, setFormData] = useState({
         name: 'User Test',
@@ -126,6 +169,9 @@ export default function RegisterPage() {
         // ❌ Validation failed
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
+            // 🔹 Show first error as toast
+            const firstError = Object.values(newErrors)[0];
+            showToast(firstError, 'error');
             setIsLoading(false);
             return;
         }
@@ -137,8 +183,6 @@ export default function RegisterPage() {
             'affiliate': 'affiliate',
         };
         const role = localStorage.getItem('role');
-
-        console.log(role)
 
         const payload: Record<string, any> = {
             name: formData.name,
@@ -174,20 +218,24 @@ export default function RegisterPage() {
                 const token = data.data.token;
                 localStorage.setItem('token', token);
                 if (token) {
-                    if (role == 'general_contractor') {
-                        console.log(1);
-                        router.push('/general-contractor/dashboard');
-                    }
-                    if (role == 'subcontractor') {
-                        console.log(2);
-                        router.push('/subcontractor/subscription');
-                    }
-                    if (role == 'affiliate') {
-                        console.log(3);
-                        router.push('/affiliate/subscription');
-                    }
+                    showToast('Registration successful! Welcome aboard!');
+                    // Delay navigation to show toast
+                    setTimeout(() => {
+                        if (role == 'general_contractor') {
+                            console.log(1);
+                            router.push('/general-contractor/dashboard');
+                        }
+                        if (role == 'subcontractor') {
+                            console.log(2);
+                            router.push('/subcontractor/subscription');
+                        }
+                        if (role == 'affiliate') {
+                            console.log(3);
+                            router.push('/affiliate/subscription');
+                        }
+                    }, 1500);
                 } else {
-                    setErrors({api: 'Registration succeeded, but no token received.'});
+                    showToast('Registration succeeded, but no token received.', 'error');
                 }
             } else {
                 let errorMessage = 'Registration failed. Please try again.';
@@ -198,10 +246,11 @@ export default function RegisterPage() {
                     errorMessage = data.message;
                 }
 
+                showToast(errorMessage, 'error');
                 setErrors({api: errorMessage});
             }
         } catch (err) {
-            setErrors({api: 'Network error. Please check your connection.'});
+            showToast('Network error. Please check your connection.', 'error');
             console.error(err);
         } finally {
             setIsLoading(false);

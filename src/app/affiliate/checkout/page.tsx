@@ -62,7 +62,7 @@ export default function CheckoutPage() {
 
     // ✅ Payment confirm handler
     const handleConfirmPayment = () => {
-        router.push('/affiliate/success'); // redirect to success page
+        router.push('/affiliate/thank-you'); // redirect to thank-you page
     };
 
     return (

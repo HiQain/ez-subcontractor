@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -8,7 +8,7 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import '../../../styles/profile.css';
 
-// 🔗 Sidebar links (same as Profile & Change Password)
+// 🔗 Sidebar links
 const links = [
     { href: '/subcontractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
     { href: '/subcontractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/lock.svg' },
@@ -17,31 +17,124 @@ const links = [
     { href: '/subcontractor/transaction-history', label: 'Transaction History', icon: '/assets/img/icons/saved.svg' },
 ];
 
+const DEFAULT_PROFILE_IMAGE = '/assets/img/construction-worker.png';
+
+interface Category {
+    id: string;
+    name: string;
+}
+
 export default function EditProfile() {
-    const [loading, setLoading] = useState(true); // For initial fetch
+    const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [errors, setErrors] = useState<Record<string, string>>({});
     const [success, setSuccess] = useState<string | null>(null);
+
+    const imageFileInputRef = useRef<HTMLInputElement>(null);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+    // 🔹 Toast
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
 
     // Form state
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
+        profile_image: DEFAULT_PROFILE_IMAGE,
         company_name: '',
         license_number: '',
         zip: '',
-        work_radius: 0,
-        category: 1,
+        work_radius: '',
+        category: '',
         address: '',
         city: '',
         state: '',
-        email: '', // Added for form completeness
+        email: '',
     });
 
     const pathname = usePathname();
     const router = useRouter();
 
-    // Fetch current profile data
+    // 🔹 Refetch profile
+    const refetchProfile = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/auth/login');
+            return;
+        }
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/get-profile`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+
+            if (res.ok && data.data) {
+                setFormData({
+                    name: data.data.name || '',
+                    phone: data.data.phone || '',
+                    profile_image: data.data.profile_image || DEFAULT_PROFILE_IMAGE,
+                    company_name: data.data.company_name || '',
+                    license_number: data.data.license_number || '',
+                    zip: data.data.zip || '',
+                    work_radius: data.data.work_radius || 0,
+                    category: data.data.specialization || '',
+                    address: data.data.address || '',
+                    city: data.data.city || '',
+                    state: data.data.state || '',
+                    email: data.data.email || '',
+                });
+            }
+        } catch (err) {
+            console.error('Failed to refetch profile:', err);
+            showToast('Failed to refresh profile data. Please try again.', 'error');
+        }
+    };
+
+    // Fetch profile on mount
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -55,15 +148,17 @@ export default function EditProfile() {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 const data = await res.json();
+                console.log(data)
                 if (res.ok && data.data) {
                     setFormData({
                         name: data.data.name || '',
                         phone: data.data.phone || '',
+                        profile_image: data.data.profile_image || DEFAULT_PROFILE_IMAGE,
                         company_name: data.data.company_name || '',
                         license_number: data.data.license_number || '',
                         zip: data.data.zip || '',
                         work_radius: data.data.work_radius || 0,
-                        category: data.data.category || 1,
+                        category: data.data.specialization || '',
                         address: data.data.address || '',
                         city: data.data.city || '',
                         state: data.data.state || '',
@@ -81,9 +176,139 @@ export default function EditProfile() {
         fetchProfile();
     }, [router]);
 
+    // Fetch categories
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/specializations`, {
+                    headers: { 'Accept': 'application/json' },
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                let fetchedCategories: Category[] = [];
+                if (Array.isArray(data)) {
+                    fetchedCategories = data.map(item => ({ id: String(item.id), name: item.name }));
+                } else if (data?.data?.specializations && Array.isArray(data.data.specializations)) {
+                    fetchedCategories = data.data.specializations.map((item: any) => ({
+                        id: String(item.id),
+                        name: item.name,
+                    }));
+                } else if (data?.data && Array.isArray(data.data)) {
+                    fetchedCategories = data.data.map((item: any) => ({
+                        id: String(item.id),
+                        name: item.name,
+                    }));
+                }
+                setCategories(fetchedCategories.length > 0 ? fetchedCategories : [
+                    { id: '1', name: 'Plumbing' },
+                    { id: '2', name: 'Electric Work' },
+                    { id: '3', name: 'Framing' },
+                    { id: '4', name: 'Roofing' },
+                ]);
+            } catch (err) {
+                console.error('Failed to load categories:', err);
+                setCategories([
+                    { id: '1', name: 'Plumbing' },
+                    { id: '2', name: 'Electric Work' },
+                    { id: '3', name: 'Framing' },
+                    { id: '4', name: 'Roofing' },
+                ]);
+            } finally {
+                setCategoriesLoading(false);
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    // ✅ Robust Select2 Initialization + Sync
+    useEffect(() => {
+        if (typeof window === 'undefined' || categoriesLoading) return;
+
+        const $ = require('jquery');
+        require('select2');
+        require('select2/dist/css/select2.min.css');
+
+        const $select = $('#category-select');
+        if ($select.length === 0) return;
+
+        // Destroy if already initialized
+        if ($select.data('select2')) {
+            $select.select2('destroy');
+        }
+
+        // Initialize Select2
+        $select.select2({
+            placeholder: 'Select category',
+            allowClear: false,
+            width: '100%',
+        }).on('change', function () {
+            const val = $(this).val() as string;
+            setFormData(prev => ({ ...prev, category: val || '' }));
+            if (errors.category) {
+                setErrors(prev => {
+                    const { category: _, ...rest } = prev;
+                    return rest;
+                });
+            }
+        });
+
+        // Sync value after initialization
+        setTimeout(() => {
+            $select.val(formData.category).trigger('change');
+        }, 0);
+
+        // Cleanup
+        return () => {
+            if ($select.data('select2')) {
+                $select.select2('destroy');
+            }
+        };
+    }, [categoriesLoading, categories]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showToast('Authentication required. Please log in.', 'error');
+            router.push('/auth/login');
+            return;
+        }
+
+        const uploadData = new FormData();
+        uploadData.append('profile_image', file);
+
+        setUploadingImage(true);
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/profile/update-image`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: uploadData,
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showToast('Profile image updated successfully!');
+                await refetchProfile();
+            } else {
+                showToast(result.message || 'Failed to upload image. Please try again.', 'error');
+            }
+        } catch (err) {
+            console.error('Image upload error:', err);
+            showToast('Network error. Please check your connection.', 'error');
+        } finally {
+            setUploadingImage(false);
+            if (imageFileInputRef.current) {
+                imageFileInputRef.current.value = '';
+            }
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -93,15 +318,15 @@ export default function EditProfile() {
 
         // Validation
         if (!formData.name.trim()) {
-            setError('Full Name is required.');
+            showToast('Full Name is required.');
             return;
         }
         if (!formData.email.trim()) {
-            setError('Email is required.');
+            showToast('Email is required.');
             return;
         }
         if (!formData.phone.trim()) {
-            setError('Phone Number is required.');
+            showToast('Phone Number is required.');
             return;
         }
 
@@ -111,7 +336,9 @@ export default function EditProfile() {
             return;
         }
 
-        setSubmitting(true);
+        setSubmitting(false);
+
+        console.log(formData.category);
 
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/update-profile`, {
@@ -127,7 +354,8 @@ export default function EditProfile() {
                     license_number: formData.license_number,
                     zip: formData.zip,
                     work_radius: formData.work_radius,
-                    category: formData.category,
+                    category: formData.category, // string, e.g. "17"
+                    specialization: formData.category, // string, e.g. "17"
                     address: formData.address,
                     city: formData.city,
                     state: formData.state,
@@ -143,23 +371,19 @@ export default function EditProfile() {
             }
 
             if (response.ok) {
-                setSuccess('Profile updated successfully!');
-                // Optional: refetch or redirect after delay
-                setTimeout(() => {
-                    setSuccess(null);
-                }, 3000);
+                showToast('Profile updated successfully!');
             } else {
-                setError(data.message || 'Failed to update profile. Please try again.');
+                showToast(data.message || 'Failed to update profile. Please try again.', 'error');
             }
         } catch (err) {
             console.error('Update profile error:', err);
-            setError('Network error. Please check your connection.');
+            showToast('Network error. Please check your connection.', 'error');
         } finally {
             setSubmitting(false);
         }
     };
 
-    // Logout handler
+    // Logout
     const handleLogout = async () => {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -182,7 +406,7 @@ export default function EditProfile() {
         router.push('/auth/login');
     };
 
-    // 🌀 Loading State — same as ProfilePage
+    // 🌀 Loading
     if (loading) {
         return (
             <>
@@ -216,60 +440,6 @@ export default function EditProfile() {
                             <div className="col-xl-3">
                                 <div className="sidebar h-100">
                                     <div className="main-wrapper bg-dark p-0 h-100 d-flex flex-column justify-content-between">
-                                        {/* Topbar */}
-                                        <div className="topbar mb-5 d-flex justify-content-between align-items-start">
-                                            <div className="icon-wrapper d-flex align-items-start gap-3">
-                                                <Image
-                                                    src="/assets/img/profile-img.webp"
-                                                    width={80}
-                                                    height={80}
-                                                    alt="Worker Icon"
-                                                />
-                                                <div className="content-wrapper">
-                                                    <div className="title text-black fs-5 fw-medium mb-2">
-                                                        {formData.name || 'N/A'}
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/message-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Message Icon"
-                                                        />
-                                                        <Link
-                                                            href={`mailto:${formData.email || ''}`}
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            {formData.email || '—'}
-                                                        </Link>
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/call-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Call Icon"
-                                                        />
-                                                        <Link
-                                                            href={`tel:${formData.phone || ''}`}
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            {formData.phone || '—'}
-                                                        </Link>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <Image
-                                                src="/assets/img/icons/arrow-dark.svg"
-                                                width={16}
-                                                height={10}
-                                                alt="Arrow"
-                                                style={{ objectFit: 'contain' }}
-                                            />
-                                        </div>
-
-                                        {/* Sidebar Links */}
                                         <div className="buttons-wrapper">
                                             {links.map((link) => (
                                                 <Link
@@ -297,7 +467,6 @@ export default function EditProfile() {
                                             ))}
                                         </div>
 
-                                        {/* Logout */}
                                         <div className="bottom-bar mt-auto">
                                             <div className="buttons-wrapper">
                                                 <button
@@ -333,18 +502,21 @@ export default function EditProfile() {
                                 <div className="right-bar">
                                     <div className="d-flex align-items-center gap-2 justify-content-between flex-wrap mb-5">
                                         <div className="icon-wrapper d-flex align-items-center gap-3">
-                                            <Link href="/general-contractor/profile" className="icon">
-                                                <Image src="/assets/img/button-angle.svg" width={10} height={15} alt="Back Icon" />
-                                            </Link>
+                                            <button
+                                                type="button"
+                                                onClick={() => router.back()}
+                                                className="icon"
+                                                aria-label="Go back"
+                                            >
+                                                <Image
+                                                    src="/assets/img/button-angle.svg"
+                                                    width={10}
+                                                    height={15}
+                                                    alt="Back"
+                                                />
+                                            </button>
                                             <span className="fs-4 fw-semibold">Edit Profile</span>
                                         </div>
-                                        <button
-                                            onClick={handleSubmit}
-                                            disabled={submitting}
-                                            className="btn btn-primary rounded-3"
-                                        >
-                                            {submitting ? 'Saving...' : 'Save Changes'}
-                                        </button>
                                     </div>
 
                                     {error && (
@@ -359,19 +531,45 @@ export default function EditProfile() {
                                         </div>
                                     )}
 
-                                    <Image
-                                        src="/assets/img/profile-img.webp"
-                                        width={234}
-                                        height={234}
-                                        alt="Worker Image"
-                                        className="d-block mb-4 img-fluid w-100"
-                                        style={{ maxWidth: '234px' }}
-                                    />
+                                    <div className="image-wrapper-s1">
+                                        <Image
+                                            src={formData.profile_image}
+                                            width={234}
+                                            height={234}
+                                            alt="Worker Image"
+                                            className="d-block mb-4 img-fluid rounded-circle"
+                                            style={{ width: '234px', height: '234px' }}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="icon"
+                                            onClick={() => imageFileInputRef.current?.click()}
+                                            disabled={uploadingImage}
+                                            aria-label="Upload profile image"
+                                        >
+                                            <Image
+                                                src="/assets/img/camera-icon.svg"
+                                                width={24}
+                                                height={24}
+                                                alt="Camera Icon"
+                                                style={{ maxWidth: '24px' }}
+                                            />
+                                        </button>
+                                        <input
+                                            type="file"
+                                            ref={imageFileInputRef}
+                                            accept="image/*"
+                                            onChange={handleProfileImageUpload}
+                                            style={{ display: 'none' }}
+                                        />
+                                    </div>
 
                                     <form onSubmit={handleSubmit}>
                                         <div className="form">
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="name" className="mb-1 fw-semibold">Full Name *</label>
+                                                <label htmlFor="name" className="mb-1 fw-semibold">
+                                                    Full Name <span className="text-danger">*</span>
+                                                </label>
                                                 <input
                                                     type="text"
                                                     id="name"
@@ -385,7 +583,9 @@ export default function EditProfile() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="company_name" className="mb-1 fw-semibold">Company Name *</label>
+                                                <label htmlFor="company_name" className="mb-1 fw-semibold">
+                                                    Company Name <span className="text-danger">*</span>
+                                                </label>
                                                 <input
                                                     type="text"
                                                     id="company_name"
@@ -399,7 +599,9 @@ export default function EditProfile() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="email" className="mb-1 fw-semibold">Email Address *</label>
+                                                <label htmlFor="email" className="mb-1 fw-semibold">
+                                                    Email Address <span className="text-danger">*</span>
+                                                </label>
                                                 <input
                                                     type="email"
                                                     id="email"
@@ -413,7 +615,9 @@ export default function EditProfile() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="phone" className="mb-1 fw-semibold">Phone Number *</label>
+                                                <label htmlFor="phone" className="mb-1 fw-semibold">
+                                                    Phone Number <span className="text-danger">*</span>
+                                                </label>
                                                 <input
                                                     id="phone"
                                                     name="phone"
@@ -427,7 +631,32 @@ export default function EditProfile() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="license_number" className="mb-1 fw-semibold">License Number</label>
+                                                <label htmlFor="category-select" className="mb-1 fw-semibold">
+                                                    Category
+                                                </label>
+                                                <select
+                                                    id="category-select"
+                                                    className="form-control"
+                                                    value={formData.category}
+                                                    onChange={(e) => setFormData(prev => ({
+                                                        ...prev,
+                                                        category: e.target.value
+                                                    }))}
+                                                    disabled={categoriesLoading}
+                                                >
+                                                    <option value="">Select category</option>
+                                                    {categories.map((cat) => (
+                                                        <option key={cat.id} value={cat.id}>
+                                                            {cat.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className="input-wrapper d-flex flex-column">
+                                                <label htmlFor="license_number" className="mb-1 fw-semibold">
+                                                    License Number
+                                                </label>
                                                 <input
                                                     type="text"
                                                     id="license_number"
@@ -440,7 +669,9 @@ export default function EditProfile() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="address" className="mb-1 fw-semibold">Address</label>
+                                                <label htmlFor="address" className="mb-1 fw-semibold">
+                                                    Address
+                                                </label>
                                                 <input
                                                     type="text"
                                                     id="address"
@@ -453,7 +684,9 @@ export default function EditProfile() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="city" className="mb-1 fw-semibold">City</label>
+                                                <label htmlFor="city" className="mb-1 fw-semibold">
+                                                    City
+                                                </label>
                                                 <input
                                                     type="text"
                                                     id="city"
@@ -466,7 +699,9 @@ export default function EditProfile() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="state" className="mb-1 fw-semibold">State</label>
+                                                <label htmlFor="state" className="mb-1 fw-semibold">
+                                                    State
+                                                </label>
                                                 <input
                                                     type="text"
                                                     id="state"
@@ -479,7 +714,9 @@ export default function EditProfile() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="zip" className="mb-1 fw-semibold">ZIP Code</label>
+                                                <label htmlFor="zip" className="mb-1 fw-semibold">
+                                                    ZIP Code
+                                                </label>
                                                 <input
                                                     type="text"
                                                     id="zip"
@@ -491,6 +728,13 @@ export default function EditProfile() {
                                                 />
                                             </div>
                                         </div>
+                                        <button
+                                            type="submit" // ✅ Fixed: was 'onClick'
+                                            disabled={submitting}
+                                            className="btn btn-primary rounded-3 mt-4"
+                                        >
+                                            {submitting ? 'Saving...' : 'Save Changes'}
+                                        </button>
                                     </form>
                                 </div>
                             </div>

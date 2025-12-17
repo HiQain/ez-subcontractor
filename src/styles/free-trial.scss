@@ -6,6 +6,12 @@ $dark: #272727 !important;
 .banner-sec.trial {
   padding-top: 150px;
   padding-bottom: 50px;
+  .slider {
+    img {
+      max-height: 230px;
+      object-fit: cover;
+    }
+  }
 
   .banner-wrapper {
     background: center / cover no-repeat;
@@ -13,7 +19,7 @@ $dark: #272727 !important;
     border-radius: 12px;
     box-shadow: 0 4px 35px 0 #00000025;
     max-width: 100%;
-
+    min-height: 230px;
     .topbar {
       .icon {
         background-color: #C9DA2B;
@@ -55,26 +61,139 @@ $dark: #272727 !important;
       }
     }
   }
-  .nav-tabs{
-    border: 1px solid $dark;
+  .nav.nav-tabs {
+    position: relative;
+    outline: 1px solid #272727;
+    border: 3px solid white;
+    border-top: 3.5px solid white;
+    border-right: 5px solid white;
+    border-left: 5px solid white;
     border-radius: 30px;
     padding: 2px;
     width: fit-content;
-    flex-wrap: wrap;
-    .nav-item{
-      button{
-        border-radius: 30px;
-        padding: 9px 27px;
+    display: flex;
+    overflow: hidden;
+
+    .nav-item {
+      z-index: 2;
+      flex: 1;
+      width: 33.33%;
+      .nav-link {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        width: 100%;
+        padding: 8px 28px;
         font-size: 18px;
         font-weight: 600;
         border: none;
-        &.active{
-          background-color: $primary;
-          color: $dark;
+        background: transparent !important;
+        border-radius: 30px !important;
+        color: $dark;
+        cursor: pointer;
+        white-space: nowrap;
+        text-align: center;
+
+
+
+        // Optional: improve contrast when active
+        &.active {
+          color: white; // against green slider
+          box-shadow: none !important;
+          outline: none !important;
         }
       }
     }
+
+    // 🟢 Green slider — matches your screenshot
+    .slider {
+      position: absolute;
+      top: 2px;
+      height: calc(100% - 4px);
+      background: $primary; // ✅ Light green from your screenshot
+      border-radius: 30px;
+      z-index: 1;
+      width: calc(100% / 3);
+      transition: left 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+      pointer-events: none;
+    }
+
+    // Position slider based on active tab
+    &:has(.nav-item:nth-child(1) .nav-link.active) .slider {
+      left: 0;
+    }
+    &:has(.nav-item:nth-child(2) .nav-link.active) .slider {
+      left: calc(100% / 3);
+    }
+    &:has(.nav-item:nth-child(3) .nav-link.active) .slider {
+      left: calc(2 * 100% / 3);
+    }
   }
+
+  .nav.nav-tabs-ddd {
+    position: relative;
+    outline: 1px solid #272727;
+    border: 3px solid white;
+    border-top: 3.5px solid white;
+    border-right: 5px solid white;
+    border-left: 5px solid white;
+    border-radius: 30px;
+    padding: 2px;
+    width: fit-content;
+    display: flex;
+    overflow: hidden;
+    .nav-item {
+      z-index: 2;
+      flex: 1;
+      .nav-link {
+        display: flex;          // 👈 makes centering perfect
+        justify-content: center;
+        align-items: center;    // 👈 vertically center
+        gap: 5px;
+        width: 100%;
+        padding: 8px 28px;
+        font-size: 18px;
+        font-weight: 600;
+        border: none;
+        background: transparent !important;
+        border-radius: 30px !important;
+        color: $dark;
+        cursor: pointer;
+        white-space: nowrap;    // 👈 no wrap
+        text-align: center;
+      }
+      .nav-link.active {
+        background-color: $primary;
+      }
+    }
+
+    .slider {
+      position: absolute;
+      top: 2px;
+      left: 0;
+      height: calc(100% - 4px);
+      background: $primary;
+      border-radius: 30px;
+      z-index: 1;
+      width: calc(100% / 3);
+      transition: 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    &:has(.nav-item:nth-child(1) .nav-link.active) .slider {
+      left: 0;
+    }
+
+    &:has(.nav-item:nth-child(2) .nav-link.active) .slider {
+      left: calc(100% / 3);
+    }
+
+    &:has(.nav-item:nth-child(3) .nav-link.active) .slider {
+      left: calc(100% / 3 * 2);
+    }
+  }
+
+
 }
 
 /* Filter Section */

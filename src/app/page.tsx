@@ -23,13 +23,13 @@ export default function HomePage() {
         if (metaDescription) {
             metaDescription.setAttribute(
                 'content',
-                'The trusted platform connecting General Contractors with verified Sub-Contractors. Post or find construction projects, bid on real work, and build your team for success. Free Trial Available!'
+                'The trusted platform connecting General Contractors with verified Sub-Contractors. Post or find construction projects, bid on real work, and build your team for thank-you. Free Trial Available!'
             );
         } else {
             const newMetaDescription = document.createElement('meta');
             newMetaDescription.name = 'description';
             newMetaDescription.content =
-                'The trusted platform connecting General Contractors with verified Sub-Contractors. Post or find construction projects, bid on real work, and build your team for success. Free Trial Available!';
+                'The trusted platform connecting General Contractors with verified Sub-Contractors. Post or find construction projects, bid on real work, and build your team for thank-you. Free Trial Available!';
             document.head.appendChild(newMetaDescription);
         }
 

@@ -8,6 +8,9 @@ const nextConfig = {
       },
     ];
   },
+  images: {
+    domains: ['ezsubcontractor.designspartans.com'],
+  },
   reactStrictMode: true,
   images: {
     domains: ['ezsubcontractor.designspartans.com'],

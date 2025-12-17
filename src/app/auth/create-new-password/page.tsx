@@ -13,11 +13,54 @@ export default function CreateNewPassword() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false); // ✅ New state
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
     const [email, setEmail] = useState<string | null>(null);
     const [otp, setOtp] = useState<string | null>(null);
+
+    // 🔹 Show non-blocking toast notification
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
 
     useEffect(() => {
         const savedEmail = localStorage.getItem('forgotPasswordEmail');
@@ -32,29 +75,27 @@ export default function CreateNewPassword() {
         setError('');
         setSuccess('');
 
-        // ✅ Prevent duplicate submissions
         if (isSubmitting) return;
 
-        // Validation (keep your existing logic)
         if (!password.trim()) {
-            setError('New Password is required');
+            showToast('New Password is required', 'error');
             return;
         }
         if (!confirmPassword.trim()) {
-            setError('Confirm Password is required');
+            showToast('Confirm Password is required', 'error');
             return;
         }
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
+            showToast('Passwords do not match', 'error');
             return;
         }
 
         if (!email || !otp) {
-            setError('Session expired. Please start again.');
+            showToast('Session expired. Please start again.', 'error');
             return;
         }
 
-        setIsSubmitting(true); // ✅ Disable button & show loading
+        setIsSubmitting(true);
 
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/reset-password`, {
@@ -67,7 +108,7 @@ export default function CreateNewPassword() {
                     email: email,
                     otp: otp,
                     new_password: password,
-                    password_confirmation: password // ⚠️ Note: usually should be `confirmPassword`, but match your API spec
+                    password_confirmation: password
                 }),
             });
 
@@ -76,7 +117,7 @@ export default function CreateNewPassword() {
             if (response.ok) {
                 localStorage.removeItem('forgotPasswordEmail');
                 localStorage.removeItem('verifiedOtp');
-                setSuccess('Password changed successfully!');
+                showToast('Password changed successfully!');
 
                 setTimeout(() => {
                     router.push('/auth/login');
@@ -88,12 +129,12 @@ export default function CreateNewPassword() {
                 } else if (Array.isArray(data.message)) {
                     errorMessage = data.message[0];
                 }
-                setError(errorMessage);
+                showToast(errorMessage, 'error');
             }
         } catch (err) {
-            setError('Network error. Please check your connection.');
+            showToast('Network error. Please check your connection.', 'error');
         } finally {
-            setIsSubmitting(false); // ✅ Re-enable button after success/failure
+            setIsSubmitting(false);
         }
     };
 
@@ -126,7 +167,7 @@ export default function CreateNewPassword() {
     );
 
     return (
-        <section className="hero-sec login overflow-hidden">
+        <section className="hero-sec login login-s1 overflow-hidden">
             <div className="image-wrapper">
                 <Image
                     src="/assets/img/left-image.webp"
@@ -171,7 +212,7 @@ export default function CreateNewPassword() {
                                         placeholder="Enter new password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        disabled={isSubmitting} // Optional: disable inputs too
+                                        disabled={isSubmitting}
                                     />
                                     <span
                                         className="toggle-password position-absolute"
@@ -194,7 +235,7 @@ export default function CreateNewPassword() {
                                         placeholder="Enter confirm password"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
-                                        disabled={isSubmitting} // Optional
+                                        disabled={isSubmitting}
                                     />
                                     <span
                                         className="toggle-password position-absolute"
@@ -205,11 +246,7 @@ export default function CreateNewPassword() {
                                     </span>
                                 </div>
 
-                                {/* Messages */}
-                                {error && <p className="text-danger text-center mb-2">{error}</p>}
-                                {success && <p className="text-success text-center mb-2">{success}</p>}
-
-                                {/* Submit Button — ✅ Now disables on submit */}
+                                {/* Submit Button */}
                                 <div className="buttons-wrapper d-flex align-items-center gap-4">
                                     <button
                                         type="submit"
