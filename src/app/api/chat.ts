@@ -11,6 +11,8 @@ export interface ChatMessage {
 export interface Contractor {
     id: number;
     name: string;
+    email: string;
+    phone: string;
     company_name: string;
     created_at: string;
     last_message: string | null;
@@ -99,3 +101,13 @@ export const capitalizeEachWord = (text: string): string => {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
 };
+
+export const getInitials = (name?: string) =>
+    name
+        ? name
+            .split(' ')
+            .map(word => word[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
+        : '?';

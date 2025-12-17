@@ -3,8 +3,10 @@
 import Image from 'next/image';
 import Header from '../components/Header';
 import '../../styles/chat.css';
+import '../../styles/chat-1.css';
+import '../../styles/chat-2.css';
 import { useEffect, useRef, useState } from 'react';
-import { capitalizeEachWord, ChatMessage, clearChatAPI, Contractor, getContractors, getMessages, sendMessageAPI } from '../api/chat';
+import { capitalizeEachWord, ChatMessage, clearChatAPI, Contractor, getContractors, getInitials, getMessages, sendMessageAPI } from '../api/chat';
 import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
 
 export default function ChatPage() {
@@ -17,6 +19,35 @@ export default function ChatPage() {
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [activePanel, setActivePanel] = useState<null | 'contact' | 'media'>(null);
+  const [showSearchBarInChat, setShowSearchBarInChat] = useState(false);
+  const [showBlockModal, setShowBlockModal] = useState(false);
+
+  const handleMenuClick = (panelType: 'contact' | 'media' | 'search') => {
+    setActivePanel(null);
+    setShowSearchBarInChat(false);
+    if (panelType === 'contact' || panelType === 'media') {
+      setActivePanel(panelType);
+    } else if (panelType === 'search') {
+      setShowSearchBarInChat(true);
+    }
+  };
+
+  const closePanel = () => setActivePanel(null);
+  const closeSearchBar = () => setShowSearchBarInChat(false);
+
+  // Close all on Escape
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActivePanel(null);
+        setShowSearchBarInChat(false);
+        setShowBlockModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
 
   useEffect(() => {
     getContractors().then(setResults);
@@ -226,20 +257,86 @@ export default function ChatPage() {
                   </div>
                 )}
 
-                <div className="chat-header-right">
-                  <div className="dropdown-container">
-                    <button className="more-options">⋯</button>
-                    <div className="dropdown-menu">
-                      <div className="dropdown-item">View contact</div>
-                      {/*<div className="dropdown-item">Search</div>
-                      <div className="dropdown-item">Media</div>
-                      <div className="dropdown-item">Mute chat</div> */}
-                      <div className="dropdown-item" onClick={handleClearChat}>Clear chat</div>
-                      {/* <div className="dropdown-item danger">Block user</div> */}
+                {selectedUser && (
+                  <div className="chat-header-right">
+                    <div className="dropdown-container">
+                      <button className="more-options">⋯</button>
+                      <div className="dropdown-menu">
+                        <div className="dropdown-item" onClick={() => handleMenuClick('contact')}>
+                          View contact
+                        </div>
+                        <div className="dropdown-item" onClick={() => handleMenuClick('search')}>
+                          Search
+                        </div>
+                        {/* <div className="dropdown-item" onClick={() => handleMenuClick('media')}>
+                          Media
+                        </div> */}
+                        {/* <div className="dropdown-item">Mute chat</div> */}
+                        <div className="dropdown-item" onClick={handleClearChat}>Clear chat</div>
+                        {/* <div
+                        className="dropdown-item danger"
+                        onClick={() => {
+                          setActivePanel(null);
+                          setShowSearchBarInChat(false);
+                          setShowBlockModal(true);
+                        }}
+                      >
+                        Block user
+                      </div> */}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
+
+              {/* Search Bar */}
+              {showSearchBarInChat && (
+                <div
+                  className="d-flex align-items-center me-3"
+                  style={{
+                    maxWidth: '340px',
+                    background: 'white',
+                    padding: '8px 12px',
+                    borderRadius: '12px',
+                    margin: '16px auto',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                  }}
+                >
+                  <Image
+                    src="/assets/img/icons/search-gray.svg"
+                    width={18}
+                    height={18}
+                    alt="Search Icon"
+                    loading="lazy"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search messages..."
+                    className="form-control border-0 shadow-none ms-2"
+                    autoFocus
+                    style={{
+                      background: 'transparent',
+                      outline: 'none',
+                      fontSize: '0.95rem',
+                      flex: 1,
+                      minWidth: 0,
+                    }}
+                  />
+                  <button
+                    className="btn p-0 ms-2"
+                    onClick={closeSearchBar}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '1.2rem',
+                      lineHeight: 1,
+                      color: '#888',
+                    }}
+                  >
+                    &times;
+                  </button>
+                </div>
+              )}
 
               {/* Chat Messages */}
               <div className="chat-messages" ref={chatMessagesRef}>
@@ -359,6 +456,143 @@ export default function ChatPage() {
               )}
 
             </div>
+
+            {/* Panels */}
+            {activePanel === 'contact' && (
+              <div className="contact-panel" style={{ minWidth: 300 }}>
+                <button className="close-btn" onClick={closePanel}>&times;</button>
+                <div className="card-2 p-4 text-center">
+                  <div
+                    className="d-flex align-items-center justify-content-center mx-auto mb-3"
+                    style={{
+                      width: 104,
+                      height: 104,
+                      borderRadius: '50%',
+                      background: '#C8DA2A',
+                      color: '#111',
+                      fontSize: '32px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {getInitials(selectedUser?.name)}
+                  </div>
+
+                  <div className="title text-black fw-semibold fs-5 mb-2">
+                    {capitalizeEachWord(selectedUser.name)}
+                  </div>
+                  <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap mb-2">
+                    <Image
+                      src="/assets/img/icons/message-dark.svg"
+                      width={20}
+                      height={20}
+                      alt="Email"
+                      loading="lazy"
+                    />
+                    <a href="mailto:hello@example.com" className="text-dark fw-medium">
+                      {selectedUser.email}
+                    </a>
+                  </div>
+                  <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap mb-3">
+                    <Image
+                      src="/assets/img/icons/call-dark.svg"
+                      width={20}
+                      height={20}
+                      alt="Phone"
+                      loading="lazy"
+                    />
+                    <a href="tel:+10000000000" className="text-dark fw-medium">
+                      {selectedUser.phone}
+                    </a>
+                  </div>
+                  <div className="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                    <a href="#" className="btn btn-outline-dark rounded-3 fs-14 text-dark">
+                      <Image
+                        src="/assets/img/icons/message-dark.svg"
+                        width={20}
+                        height={20}
+                        alt="Chat Icon"
+                        loading="lazy"
+                      />
+                      <span>Email</span>
+                    </a>
+                    <a href="#" className="btn btn-outline-dark rounded-3 fs-14 text-dark">
+                      <Image
+                        src="/assets/img/icons/call-dark.svg"
+                        width={20}
+                        height={20}
+                        alt="Chat Icon"
+                        loading="lazy"
+                      />
+                      <span>Phone</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* <div className="contact-options p-4">
+                  <div className="option d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span>Media</span>
+                    <Image
+                      src="/assets/img/icons/arrow-dark.svg"
+                      width={7}
+                      height={11}
+                      alt="icon"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="option d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span>Search</span>
+                    <Image
+                      src="/assets/img/icons/arrow-dark.svg"
+                      width={7}
+                      height={11}
+                      alt="icon"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="option d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span>Mute</span>
+                    <label className="mute-toggle">
+                      <input type="checkbox" id="muteToggle" />
+                      <span className="slider"></span>
+                    </label>
+                  </div>
+                  <div className="option d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span>Clear Chat</span>
+                    <Image
+                      src="/assets/img/icons/arrow-dark.svg"
+                      width={7}
+                      height={11}
+                      alt="icon"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="option danger d-flex justify-content-between align-items-center py-2 text-danger">
+                    <span>Block User</span>
+                    <Image
+                      src="/assets/img/icons/arrow-dark.svg"
+                      width={7}
+                      height={11}
+                      alt="icon"
+                      loading="lazy"
+                    />
+                  </div>
+                </div> */}
+              </div>
+            )}
+
+            {/* {activePanel === 'media' && <MediaPanel onClose={closePanel} />} */}
+
+            {/* ✅ Block Modal */}
+
+            {/* <BlockUserModal
+              show={showBlockModal}
+              onClose={() => setShowBlockModal(false)}
+              onConfirm={() => {
+                // ✅ Add your block logic here (e.g., API call)
+                console.log('User blocked successfully');
+              }}
+            /> */}
+
           </div>
         </div>
       </section>
