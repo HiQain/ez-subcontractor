@@ -37,7 +37,6 @@ export default function ChatPage() {
   const closePanel = () => setActivePanel(null);
   const closeSearchBar = () => setShowSearchBarInChat(false);
 
-  // Close all on Escape
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -72,6 +71,20 @@ export default function ChatPage() {
 
     const channel = subscribeToChatChannel(selectedChatId, (msg: any) => {
       setMessages((prev) => [...prev, msg]);
+
+      setResults(prev =>
+        Array.isArray(prev)
+          ? prev.map(user =>
+            user.id === selectedChatId
+              ? {
+                ...user,
+                last_message: msg.message || "📎 Attachment",
+                last_message_time: msg.created_at,
+              }
+              : user
+          )
+          : prev
+      );
     });
 
     return () => {
@@ -102,31 +115,25 @@ export default function ChatPage() {
 
     setMessages(prev => [...prev, tempMessage]);
 
+    setResults(prev =>
+      Array.isArray(prev)
+        ? prev.map(user =>
+          user.id === selectedChatId
+            ? {
+              ...user,
+              last_message: messageText || (files.length > 0 ? "📎 Attachment" : ""),
+              last_message_time: new Date().toISOString(),
+            }
+            : user
+        )
+        : prev
+    );
+
     setMessageText("");
     setFiles([]);
 
     try {
-      const savedMessage = await sendMessageAPI(selectedChatId, messageText, files);
-
-      if (savedMessage) {
-        setMessages(prev =>
-          prev.map(msg => (msg.id === tempId ? savedMessage : msg))
-        );
-
-        setResults(prev =>
-          Array.isArray(prev)
-            ? prev.map(user =>
-              user.id === selectedChatId
-                ? {
-                  ...user,
-                  last_message: savedMessage.message || "📎 Attachment",
-                  last_message_time: savedMessage.created_at,
-                }
-                : user
-            )
-            : prev
-        );
-      }
+      await sendMessageAPI(selectedChatId, messageText, files);
     } catch (error) {
       console.error("Send message error:", error);
       setMessages(prev => prev.filter(msg => msg.id !== tempId));
@@ -139,9 +146,19 @@ export default function ChatPage() {
     )
     : [];
 
-  const filteredMessages = messages.filter(msg =>
-    msg.message?.toLowerCase().includes(messageSearchTerm.toLowerCase())
-  );
+  const filteredMessages = messages.filter(msg => {
+    // OLD CODE
+    // msg.message?.toLowerCase().includes(messageSearchTerm.toLowerCase())
+
+    // NEW CODE
+    if (!messageSearchTerm.trim()) return true;
+
+    if (msg.message?.toLowerCase().includes(messageSearchTerm.toLowerCase())) return true;
+
+    if (msg.attachment && msg.attachment.length > 0) return true;
+
+    return false;
+  });
 
   const handleClearChat = async () => {
     if (!selectedChatId || messages.length === 0) return;
@@ -155,7 +172,6 @@ export default function ChatPage() {
       console.error("Failed to clear chat:", err);
     }
   };
-
 
   return (
     <div className="sections overflow-hidden">
