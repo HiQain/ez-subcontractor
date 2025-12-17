@@ -6,214 +6,168 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import '../../../styles/pricing.css';
 import '../../../styles/checkout.css';
 
-interface ProfileData {
-    address: string;
-    city: string;
-    companyName: string;
-    email: string;
-    licenseNumber: string;
-    fullName: string;
-    phone: string;
-    profile_image: string;
-    role: string;
-    categories: string[];
-    state: string;
-    workRadius: string;
-    zipCode: string;
-}
-
-interface Category {
-    id: string;
-    name: string;
-}
-
 export default function CheckoutPage() {
+    const stripe = useStripe();
+    const elements = useElements();
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState<string>("");
+    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+    const [selectedCategories, setSelectedCategories] = useState<{ id: number; name: string }[]>([]);
     const [selectedPlan, setSelectedPlan] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const [profile, setProfile] = useState<ProfileData | null>(null);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Categories
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [categoriesLoading, setCategoriesLoading] = useState(true);
-
-    const handleConfirmPayment = () => {
-        router.push('/subcontractor/thank-you');
-    };
-
-    // Load selected plan from localStorage
+    // ✅ Load selected plan from localStorage
     useEffect(() => {
         const plan = localStorage.getItem('selectedPlan');
-        if (plan) {
-            setSelectedPlan(JSON.parse(plan));
-        } else {
-            router.push('/subcontractor/subscription');
-        }
-    }, [router]);
+        if (plan) setSelectedPlan(JSON.parse(plan));
+    }, []);
 
-    // Fetch profile
+    // ✅ Load name & email from localStorage
     useEffect(() => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        const storedName = localStorage.getItem('userName');
+        const storedEmail = localStorage.getItem('userEmail');
 
-        if (!token) {
-            setLoading(false);
-            router.push('/auth/login');
-            return;
-        }
+        if (storedName) setName(storedName);
+        if (storedEmail) setEmail(storedEmail);
+    }, []);
 
-        const fetchProfile = async () => {
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/get-profile`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.data) {
-                    setProfile({
-                        address: data.data.address || null,
-                        city: data.data.city || 'N/A',
-                        companyName: data.data.company_name || 'N/A',
-                        email: data.data.email || 'N/A',
-                        licenseNumber: data.data.license_number || null,
-                        fullName: data.data.name || 'N/A',
-                        phone: data.data.phone || 'N/A',
-                        profile_image: data.data.profile_image || null,
-                        role: data.data.role || 'N/A',
-                        categories: data.data.categories || [],
-                        state: data.data.state || 'N/A',
-                        workRadius: data.data.workRadius || '0',
-                        zipCode: data.data.zipCode || 'N/A',
-                    });
-                } else {
-                    setError(data.message || 'Failed to load profile');
-                    router.push('/auth/login');
-                }
-            } catch (err) {
-                console.error('Profile fetch error:', err);
-                setError('Network error. Please try again.');
-                router.push('/auth/login');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProfile();
-    }, [router]);
-
-    // Fetch categories
+    // 🔹 Fetch categories from API
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/specializations`, {
-                    headers: { 'Accept': 'application/json' },
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/specializations`);
                 const data = await res.json();
-                let fetchedCategories: Category[] = [];
-                if (Array.isArray(data)) {
-                    fetchedCategories = data.map(item => ({ id: String(item.id), name: item.name }));
-                } else if (data?.data?.specializations && Array.isArray(data.data.specializations)) {
-                    fetchedCategories = data.data.specializations.map((item: any) => ({
-                        id: String(item.id),
-                        name: item.name,
-                    }));
-                } else if (data?.data && Array.isArray(data.data)) {
-                    fetchedCategories = data.data.map((item: any) => ({
-                        id: String(item.id),
-                        name: item.name,
-                    }));
+                if (data.success && Array.isArray(data.data.specializations)) {
+                    setCategories(data.data.specializations);
+                } else {
+                    console.error('Failed to fetch specializations', data.message);
                 }
-                setCategories(fetchedCategories.length > 0 ? fetchedCategories : [
-                    { id: '1', name: 'Plumbing' },
-                    { id: '2', name: 'Electric Work' },
-                    { id: '3', name: 'Framing' },
-                    { id: '4', name: 'Roofing' },
-                ]);
             } catch (err) {
-                console.error('Failed to load categories:', err);
-                setCategories([
-                    { id: '1', name: 'Plumbing' },
-                    { id: '2', name: 'Electric Work' },
-                    { id: '3', name: 'Framing' },
-                    { id: '4', name: 'Roofing' },
-                ]);
-            } finally {
-                setCategoriesLoading(false);
+                console.error('Error fetching categories:', err);
             }
         };
         fetchCategories();
     }, []);
 
-    // Initialize Select2
-    useEffect(() => {
-        if (typeof window === 'undefined' || categoriesLoading) return;
+    const toggleCategory = (category: { id: number; name: string }) => {
+        if (selectedCategories.some(c => c.id === category.id)) {
+            setSelectedCategories(selectedCategories.filter(c => c.id !== category.id));
+        } else {
+            setSelectedCategories([...selectedCategories, category]);
+        }
+    };
 
-        const $ = require('jquery');
-        require('select2');
-        require('select2/dist/css/select2.min.css');
-
-        $('#category-select2').select2({
-            placeholder: 'Select category',
-            allowClear: true, // ✅ Allow clearing
-            width: '100%',
-            minimumInputLength: 0,
-        })
-            .on('change', function () {
-                const val = $(this).val() as string;
-                setSelectedCategory(val || '');
-                // Clear error if needed (add your validation logic here)
-                // clearError('category');
-            })
-            .on('select2:unselect', function () {
-                setSelectedCategory('');
-            });
-
-        // Cleanup on unmount
-        return () => {
-            $('#category-select2').select2('destroy');
-        };
-    }, [categoriesLoading, categories]);
-
-    // ✅ Don't render until plan is loaded
-    if (!selectedPlan) return null;
-
-    if (loading) {
-        return (
-            <div className="sections overflow-hidden">
-                <Header />
-                <section className="hero-sec pricing no-before overflow-hidden">
-                    <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
-                        <div className="text-center">
-                            <div className="spinner-border text-primary" role="status">
-                                <span className="visually-hidden">Loading...</span>
-                            </div>
-                            <p className="mt-2">Loading...</p>
-                        </div>
-                    </div>
-                </section>
-                <Footer />
-            </div>
-        );
-    }
-
-    if (!profile) return null;
-
-    // Price summary
+    // ✅ Price summary
     const basePrice = selectedPlan ? parseFloat(selectedPlan.price) || 0 : 0;
     const extraCategories = 2 * 125;
     const tax = Math.round((basePrice + extraCategories) * 0.08);
     const total = basePrice + extraCategories + tax;
+
+    // ✅ Note card for Trial plan
+    const renderNoteCard = () => (
+        <div className="note-card d-flex align-items-start gap-1">
+            <Image
+                src="/assets/img/icons/note.webp"
+                width={24}
+                height={24}
+                alt="Note"
+                loading="lazy"
+                className="d-block"
+            />
+            <div className="content">
+                <span className="d-block fw-semibold mb-1" style={{ fontSize: '14px' }}>Note</span>
+                <p className="mb-0" style={{ fontSize: '12px' }}>
+                    After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with contractors, and accessing premium tools.
+                </p>
+            </div>
+        </div>
+    );
+
+    // ✅ Handle payment confirm
+    const handleConfirmPayment = async () => {
+        setError(null);
+
+        // 🔹 Validate name & email
+        if (!name.trim() || !email.trim()) {
+            setError('Please enter your name and email');
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 500);
+            return;
+        }
+
+        if (!stripe || !elements) {
+            setError('Stripe not loaded yet');
+            return;
+        }
+
+        const cardElement = elements.getElement(CardElement);
+        if (!cardElement) {
+            setError('Card details missing');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // 🔹 1. Create Stripe Payment Method
+            const { error: stripeError, paymentMethod } =
+                await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardElement,
+                    billing_details: { name, email },
+                });
+
+            if (stripeError || !paymentMethod) {
+                throw new Error(stripeError?.message || 'Payment method creation failed');
+            }
+
+            // 🔹 2. Call Backend Subscription API
+            const token = localStorage.getItem('token');
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/create-subscription`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` }),
+                    },
+                    body: JSON.stringify({
+                        plan_id: selectedPlan.id,
+                        category_ids: selectedCategories.map(c => c.id),
+                        payment_method_id: paymentMethod.id,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.message?.[0] || 'Subscription creation failed');
+            }
+
+            // ✅ Success
+            router.push('/subcontractor/success');
+
+        } catch (err: any) {
+            setError(err.message || 'Something went wrong');
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 500);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!selectedPlan) return null;
 
     return (
         <div className="sections overflow-hidden">
@@ -226,128 +180,109 @@ export default function CheckoutPage() {
                         <div className="col-lg-8">
                             <div className="d-flex flex-column justify-content-center w-100 h-100">
                                 <div className="d-flex align-items-center gap-2 mb-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => router.back()}
-                                        className="icon"
-                                        aria-label="Go back"
-                                    >
-                                        <Image
-                                            src="/assets/img/button-angle.svg"
-                                            width={10}
-                                            height={15}
-                                            alt="Back"
-                                        />
-                                    </button>
+                                    <div className="icon">
+                                        <Image src="/assets/img/button-angle.svg" width={10} height={15} alt="Angle" />
+                                    </div>
                                     <div className="login-title fw-semibold fs-2 text-center">
-                                        Checkout
+                                        Business Details
                                     </div>
                                 </div>
 
                                 <div className="form">
-                                    {/* Full Name & Email */}
+                                    {/* User Info */}
                                     <div className="input-wrapper-s2">
                                         <div className="input-wrapper d-flex flex-column">
                                             <label className="mb-1 fw-semibold">Full Name *</label>
-                                            <input
-                                                type="text"
-                                                placeholder="Jason Doe"
-                                                defaultValue={profile.fullName}
-                                                readOnly
+                                            <input type="text" placeholder="Jason Doe"
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                disabled
                                             />
                                         </div>
                                         <div className="input-wrapper d-flex flex-column">
                                             <label className="mb-1 fw-semibold">Email Address *</label>
-                                            <input
-                                                type="email"
-                                                placeholder="hello@example.com"
-                                                defaultValue={profile.email}
-                                                readOnly
+                                            <input type="email" placeholder="hello@example.com"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                disabled
                                             />
                                         </div>
                                     </div>
 
                                     {/* Category Select */}
                                     <div className="input-wrapper d-flex flex-column position-relative">
-                                        <label className="mb-1 fw-semibold">Category *</label>
-                                        <select
-                                            id="category-select2"
-                                            className="form-control"
-                                            value={selectedCategory}
-                                            // Controlled by Select2; value ignored but kept for SSR compatibility
-                                        >
-                                            <option value="">Select category</option>
-                                            {categories.map((cat) => (
-                                                <option key={cat.id} value={cat.id}>
-                                                    {cat.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    {/* 👇 Single Selected Category Chip */}
-                                    {selectedCategory && (
-                                        <div className="d-flex align-items-center gap-2 mb-3">
-                                            <div className="btn bg-dark p-2 fs-12 rounded-3 d-flex align-items-center gap-1">
-                                                <span className="text-gray-light">
-                                                    {categories.find(cat => cat.id === selectedCategory)?.name || 'Unknown'}
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setSelectedCategory('');
-                                                        // Reset Select2
-                                                        if (typeof window !== 'undefined') {
-                                                            const $ = require('jquery');
-                                                            $('#category-select2').val(null).trigger('change');
-                                                        }
-                                                    }}
-                                                    className="bg-transparent border-0 p-0 m-0"
-                                                    aria-label="Remove category"
-                                                >
-                                                    <Image
-                                                        src="/assets/img/cancel_svgrepo.com.svg"
-                                                        width={16}
-                                                        height={16}
-                                                        alt="Remove"
-                                                    />
-                                                </button>
+                                        <label className="mb-1 fw-semibold">Select Specializations *</label>
+                                        <div className={`custom-select ${isOpen ? 'open' : ''}`} onClick={() => setIsOpen(!isOpen)}>
+                                            <div className="select-selected">
+                                                {selectedCategories.length > 0 ?
+                                                    selectedCategories.map(c => c.name).join(', ') :
+                                                    'Select Specializations'}
                                             </div>
-                                        </div>
-                                    )}
-
-                                    {/* Card Info */}
-                                    <div className="input-wrapper-s2">
-                                        <div className="input-wrapper d-flex flex-column">
-                                            <label className="mb-1 fw-semibold">Card Holder Name *</label>
-                                            <input type="text" placeholder="Enter card holder name" />
-                                        </div>
-                                        <div className="input-wrapper d-flex flex-column">
-                                            <label className="mb-1 fw-semibold">Card Number *</label>
-                                            <input type="number" placeholder="4242 4242 4242 4242" />
-                                        </div>
-                                    </div>
-
-                                    <div className="input-wrapper-s2">
-                                        <div className="input-wrapper d-flex flex-column">
-                                            <label className="mb-1 fw-semibold">CVV *</label>
-                                            <input type="number" placeholder="Enter CVV" />
-                                        </div>
-                                        <div className="input-wrapper d-flex flex-column">
-                                            <label className="mb-1 fw-semibold">Expiry Date *</label>
-                                            <input type="date" placeholder="12/25" />
+                                            <i className="bi bi-chevron-down select-arrow"></i>
+                                            {isOpen && (
+                                                <ul className="select-options">
+                                                    {categories.map(cat => (
+                                                        <li key={cat.id} onClick={() => toggleCategory(cat)}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedCategories.some(c => c.id === cat.id)}
+                                                                readOnly
+                                                            /> {cat.name}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
                                         </div>
                                     </div>
 
-                                    <div className="input-wrapper-s2">
-                                        <div className="input-wrapper d-flex flex-column">
-                                            <label className="mb-1 fw-semibold">Zip Code *</label>
-                                            <input
-                                                type="number"
-                                                placeholder="Enter zip code"
-                                                defaultValue={profile.zipCode !== 'N/A' ? profile.zipCode : ''}
+                                    {/* Selected Categories Buttons */}
+                                    <div className="buttons d-flex align-items-center gap-2 flex-wrap">
+                                        {selectedCategories.map(cat => (
+                                            <div
+                                                key={cat.id}
+                                                className="btn bg-dark p-2 fs-12 rounded-3 d-flex align-items-center gap-1"
+                                            >
+                                                <span className="text-gray-light">{cat.name}</span>
+                                                <Image
+                                                    src="/assets/img/cancel_svgrepo.com.svg"
+                                                    width={16}
+                                                    height={16}
+                                                    alt="Cancel"
+                                                    onClick={() => toggleCategory(cat)}
+                                                    style={{ cursor: 'pointer' }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+
+
+                                    {/* STRIPE CARD FORM */}
+                                    <div className="input-wrapper d-flex flex-column">
+                                        <label className="mb-1 fw-semibold">Card Details *</label>
+
+                                        <div
+                                            style={{
+                                                border: '1px solid #ddd',
+                                                borderRadius: '8px',
+                                                padding: '12px',
+                                                background: '#fff',
+                                            }}
+                                        >
+                                            <CardElement
+                                                options={{
+                                                    style: {
+                                                        base: {
+                                                            fontSize: '16px',
+                                                            color: '#000',
+                                                            '::placeholder': { color: '#999' },
+                                                        },
+                                                    },
+                                                }}
                                             />
                                         </div>
+                                    </div>
+
+                                    <div className="input-wrapper-s2">
                                         <div className="input-wrapper d-flex flex-column">
                                             <label className="mb-1 fw-semibold">Promo Code</label>
                                             <input type="text" placeholder="Enter promo code" />
@@ -363,9 +298,7 @@ export default function CheckoutPage() {
 
                                                 <div className="d-flex align-items-center justify-content-between mt-2">
                                                     <span style={{ fontSize: '14px' }}>{selectedPlan.title} Plan</span>
-                                                    <span className="fw-semibold" style={{ fontSize: '14px' }}>
-                                                        {selectedPlan.price === 'Free' ? 'Free' : `$${selectedPlan.price}`}
-                                                    </span>
+                                                    <span className="fw-semibold" style={{ fontSize: '14px' }}>{selectedPlan.price === 'Free' ? 'Free' : `$${selectedPlan.price}`}</span>
                                                 </div>
 
                                                 <div className="d-flex align-items-center justify-content-between mt-2">
@@ -386,19 +319,26 @@ export default function CheckoutPage() {
                                                 </div>
 
                                                 <p className="mb-0 mt-2" style={{ fontSize: '14px' }}>
-                                                    Note: You’ve selected 1 category (others are pre-selected from profile)
+                                                    Note: You’ve selected 3 categories
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* CONFIRM PAYMENT */}
-                                    <input
-                                        type="button"
-                                        value="Confirm Payment"
+                                    {error && (
+                                        <p className="text-danger mb-3 animate-slide-up">
+                                            {error}
+                                        </p>
+                                    )}
+
+                                    <button
                                         className="btn btn-primary w-100 rounded-3 mt-4"
                                         onClick={handleConfirmPayment}
-                                    />
+                                        disabled={!stripe || loading}
+                                    >
+                                        {loading ? 'Processing...' : 'Confirm Payment'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -417,20 +357,20 @@ export default function CheckoutPage() {
                                                 )}
                                             </div>
                                             <div className="d-flex align-items-center gap-2">
-                                                {selectedPlan.discount && (
-                                                    <del className="fs-18">${selectedPlan.price}</del>
-                                                )}
-                                                {selectedPlan.discount ? (
-                                                    <span className="price">
-                                                        ${selectedPlan.price - selectedPlan.price / 100 * selectedPlan.discount}
-                                                    </span>
-                                                ) : (
-                                                    <span className="price">${selectedPlan.price}</span>
-                                                )}
+                                                <span className="price">{selectedPlan.price === 'Free' ? 'Free' : `$${selectedPlan.price}`}</span>
                                                 {selectedPlan.saveText && (
-                                                    <div className="btn btn-primary rounded-pill p-2 m-0 bg-primary">
-                                                        {parseFloat(selectedPlan.discount)}% OFF
-                                                    </div>
+                                                    <Link
+                                                        href="#"
+                                                        className="btn btn-primary rounded-pill p-2 m-0"
+                                                        style={{
+                                                            backgroundColor: selectedPlan.saveColor,
+                                                            color: 'white !important',
+                                                            fontSize: '14px !important',
+                                                            width: 'fit-content',
+                                                        }}
+                                                    >
+                                                        {selectedPlan.saveText}
+                                                    </Link>
                                                 )}
                                             </div>
                                         </div>
@@ -442,6 +382,8 @@ export default function CheckoutPage() {
                                                 ))}
                                             </ul>
                                         </div>
+
+                                        {selectedPlan.id === 2 && renderNoteCard()}
                                     </div>
                                 </div>
                             </div>

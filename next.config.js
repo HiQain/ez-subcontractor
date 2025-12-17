@@ -12,8 +12,9 @@ const nextConfig = {
     domains: ['ezsubcontractor.designspartans.com'],
   },
   reactStrictMode: true,
-  // experimental: {
-  //   appDir: true,
-  // },
+  images: {
+    domains: ['ezsubcontractor.designspartans.com'],
+  },
 };
+
 module.exports = nextConfig;

@@ -8,11 +8,15 @@
     "start": "next start"
   },
   "dependencies": {
+    "@pusher/push-notifications-web": "^1.1.0",
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.5.3",
     "bootstrap": "^5.3.8",
     "date-fns": "^4.1.0",
     "jquery": "^3.7.1",
     "libphonenumber-js": "^1.12.26",
     "next": "14.2.0",
+    "pusher-js": "^8.4.0",
     "quill": "^2.0.3",
     "react": "18.2.0",
     "react-datepicker": "^9.0.0",
