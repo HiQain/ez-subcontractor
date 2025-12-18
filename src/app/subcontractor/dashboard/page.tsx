@@ -9,6 +9,14 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/free-trial.css';
 
+// 🔹 New: Banner image type (extendable)
+interface BannerImage {
+    id: number;
+    src: string;
+    alt: string;
+    // caption?: string; // optional: add later if needed
+}
+
 interface Project {
     id: number;
     city: string;
@@ -29,38 +37,60 @@ interface Category {
 export default function DashboardSubContractor() {
     const router = useRouter();
     const sliderRef = useRef<Slider | null>(null);
+    const leftSliderRef = useRef<Slider | null>(null);
 
-    const settings = {
+    // 🔹 Slider settings
+    const sliderSettings = {
         dots: false,
         infinite: true,
         speed: 600,
         slidesToShow: 1,
         slidesToScroll: 1,
         arrows: false,
+        autoplay: true,
+        autoplaySpeed: 4000,
+        pauseOnHover: true,
+    };
+    const sliderSettingsSidebar = {
+        dots: false,
+        infinite: true,
+        speed: 600,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        arrows: false,
+        autoplay: true,
+        autoplaySpeed: 4000,
+        pauseOnHover: true,
     };
 
-    // 🔹 State
+    // 🔹 NEW: Banner images state (API-ready)
+    const [bannerImages, setBannerImages] = useState<BannerImage[]>([]);
+    const [bannerImagesSidebar, setBannerImagesSidebar] = useState<BannerImage[]>([]);
+    const [bannerImagesLoading, setBannerImagesLoading] = useState(true);
+    const [bannerImagesError, setBannerImagesError] = useState<string | null>(null);
+
+    // 🔹 Rest of your existing state
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [expanded, setExpanded] = useState<number[]>([]);
     const [savedproject, setSavedproject] = useState<Set<number>>(new Set());
+    const [shouldShowSeeMore, setShouldShowSeeMore] = useState<boolean[]>([]);
 
-    // 🔹 Filter state
     const [searchTerm, setSearchTerm] = useState('');
     const [zipCode, setZipCode] = useState('');
-    const [workRadius, setWorkRadius] = useState(2); // default 2 miles
-    const [categoryId, setCategoryId] = useState<string>(''); // empty = all categories
+    const [workRadius, setWorkRadius] = useState(2);
+    const [categoryId, setCategoryId] = useState<string>('');
     const [page, setPage] = useState(1);
     const perPage = 10;
     const [hasMore, setHasMore] = useState(true);
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
 
-    // 🔹 Refs
     const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+    const descriptionRefs = useRef<(HTMLParagraphElement | null)[]>([]);
 
-    // 🔹 Toast
+    // 🔹 Toast (unchanged)
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
         const toast = document.createElement('div');
         const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
@@ -103,7 +133,7 @@ export default function DashboardSubContractor() {
         });
     };
 
-    // 🔹 Format time ago
+    // 🔹 Format time ago (unchanged)
     const formatTimeAgo = (dateString: string): string => {
         const now = new Date();
         const past = new Date(dateString);
@@ -130,7 +160,73 @@ export default function DashboardSubContractor() {
         return 'Just now';
     };
 
-    // 🔁 Fetch categories
+    // 🔹 NEW: Fetch banner images (replace with your API)
+    const fetchBannerImages = async () => {
+        setBannerImagesLoading(true);
+        setBannerImagesError(null);
+
+        try {
+            // ✅ Replace this block with real API call later
+            // Example:
+            // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}banner-images`);
+            // const data = await res.json();
+
+            // 🔹 For now: static fallback (you can remove this when API ready)
+            const staticImages: BannerImage[] = [
+                { id: 1, src: '/assets/img/ad-posting1.webp', alt: 'Construction Project 1' },
+                { id: 2, src: '/assets/img/ad-posting1.webp', alt: 'Construction Project 2' },
+                { id: 3, src: '/assets/img/ad-posting1.webp', alt: 'Construction Project 3' },
+            ];
+
+            // Simulate API delay (remove in production)
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            setBannerImages(staticImages);
+        } catch (err) {
+            console.error('Failed to load banner images:', err);
+            setBannerImagesError('Failed to load banner images');
+            // Fallback to default images
+            setBannerImages([
+                { id: 1, src: '/assets/img/ad-posting1.webp', alt: 'Default Banner' },
+            ]);
+        } finally {
+            setBannerImagesLoading(false);
+        }
+    };
+    const fetchBannerImagesSidebar = async () => {
+        setBannerImagesLoading(true);
+        setBannerImagesError(null);
+
+        try {
+            // ✅ Replace this block with real API call later
+            // Example:
+            // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}banner-images`);
+            // const data = await res.json();
+
+            // 🔹 For now: static fallback (you can remove this when API ready)
+            const staticImagesSidebar: BannerImage[] = [
+                { id: 1, src: '/assets/img/filter-img.webp', alt: 'Construction Project 1' },
+                { id: 2, src: '/assets/img/filter-img.webp', alt: 'Construction Project 2' },
+                { id: 3, src: '/assets/img/filter-img.webp', alt: 'Construction Project 3' },
+            ];
+
+            // Simulate API delay (remove in production)
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            setBannerImagesSidebar(staticImagesSidebar);
+        } catch (err) {
+            console.error('Failed to load banner images:', err);
+            setBannerImagesError('Failed to load banner images');
+            // Fallback to default images
+            setBannerImagesSidebar([
+                { id: 1, src: '/assets/img/filter-img.webp', alt: 'Default Banner' },
+            ]);
+        } finally {
+            setBannerImagesLoading(false);
+        }
+    };
+
+    // 🔹 Fetch categories (unchanged)
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -163,7 +259,7 @@ export default function DashboardSubContractor() {
         fetchCategories();
     }, []);
 
-    // 🔁 Fetch saved projects
+    // 🔹 Fetch saved projects (unchanged)
     const fetchSavedproject = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -207,7 +303,7 @@ export default function DashboardSubContractor() {
         }
     };
 
-    // 🔁 Fetch projects with filters
+    // 🔹 Fetch projects (unchanged)
     const fetchprojects = async (resetPage = false) => {
         const currentPage = resetPage ? 1 : page;
         if (resetPage) setPage(1);
@@ -215,7 +311,7 @@ export default function DashboardSubContractor() {
         const params = new URLSearchParams();
         if (searchTerm) params.append('search', searchTerm);
         if (zipCode) params.append('zip', zipCode);
-        params.append('radius', String(workRadius)); // ✅ Matches Postman
+        params.append('radius', String(workRadius));
         if (categoryId) params.append('category_id', categoryId);
         params.append('page', String(currentPage));
         params.append('perPage', String(perPage));
@@ -255,6 +351,7 @@ export default function DashboardSubContractor() {
             const total = data?.data?.total || 0;
 
             setProjects(prev => resetPage ? fetchedProjects : [...prev, ...fetchedProjects]);
+            setShouldShowSeeMore(Array(fetchedProjects.length).fill(false));
             setHasMore(currentPage * perPage < total);
         } catch (err: any) {
             console.error('Fetch projects error:', err);
@@ -264,7 +361,7 @@ export default function DashboardSubContractor() {
         }
     };
 
-    // 🔹 Toggle save/unsave
+    // 🔹 Toggle save/unsave (unchanged)
     const toggleSaveproject = async (projectId: number) => {
         try {
             const token = localStorage.getItem('token');
@@ -319,50 +416,82 @@ export default function DashboardSubContractor() {
         }
     };
 
-    // 🔹 Search debounce
+    // 🔹 Search debounce (unchanged)
     useEffect(() => {
         if (searchTimeout.current) {
             clearTimeout(searchTimeout.current);
         }
         searchTimeout.current = setTimeout(() => {
-            fetchprojects(true); // reset to page 1 on new search
+            fetchprojects(true);
         }, 500);
         return () => {
             if (searchTimeout.current) clearTimeout(searchTimeout.current);
         };
     }, [searchTerm, zipCode, workRadius, categoryId]);
 
-    // 🔹 Initial load: categories + saved + projects
+    // 🔹 Initial load: Banner images + saved + projects
     useEffect(() => {
+        fetchBannerImages(); // ✅ NEW: Load banner first
+        fetchBannerImagesSidebar();
         Promise.all([
             fetchSavedproject(),
-            fetchprojects(true), // initial load with page=1
+            fetchprojects(true),
         ]);
     }, []);
 
-    // 🔹 Toggle description
+    // 🔹 Truncation check (unchanged)
+    useEffect(() => {
+        const checkTruncation = () => {
+            if (projects.length === 0) return;
+
+            const updated = [...shouldShowSeeMore];
+            let changed = false;
+
+            descriptionRefs.current.forEach((el, index) => {
+                if (el) {
+                    const style = window.getComputedStyle(el);
+                    const lineHeight = parseFloat(style.lineHeight) || 20;
+                    const maxHeight = lineHeight * 3;
+                    const isTruncated = el.scrollHeight > maxHeight + 2;
+
+                    if (isTruncated !== updated[index]) {
+                        updated[index] = isTruncated;
+                        changed = true;
+                    }
+                }
+            });
+
+            if (changed) {
+                setShouldShowSeeMore(updated);
+            }
+        };
+
+        const timer = setTimeout(checkTruncation, 0);
+        return () => clearTimeout(timer);
+    }, [projects, expanded]);
+
+    // 🔹 Toggle description (unchanged)
     const toggleExpand = (index: number) => {
         setExpanded(prev =>
             prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
         );
     };
 
-    // 🔹 Load more
+    // 🔹 Load more (unchanged)
     const handleLoadMore = () => {
         if (!loading && hasMore) {
             setPage(prev => prev + 1);
-            fetchprojects(); // appends next page
+            fetchprojects();
         }
     };
 
-    // 🔹 Reset filters
+    // 🔹 Reset filters (unchanged)
     const handleResetFilters = () => {
         setSearchTerm('');
         setZipCode('');
         setWorkRadius(2);
         setCategoryId('');
         setPage(1);
-        // Triggers fetch via useEffect (debounce)
     };
 
     return (
@@ -374,31 +503,78 @@ export default function DashboardSubContractor() {
                 <section className="banner-sec trial position-static">
                     <div className="container">
                         <div className="row g-4">
-                            <div className="col-lg-6">
-                                <div className="slider">
-                                    <Image
-                                        src="/assets/img/dashboard-free-trial-img.webp"
-                                        width={800}
-                                        height={600}
-                                        alt="Section Image"
-                                        className="img-fluid w-100 h-100"
-                                        style={{
-                                            borderRadius: '12px',
-                                            boxShadow: '0 4px 35px 0 #00000025',
-                                            objectFit: 'cover',
-                                        }}
-                                    />
+                            {/* 🔹 Left: Dynamic Image Slider */}
+                            <div className="col-lg-6 position-relative">
+                                {bannerImagesLoading ? (
+                                    <div className="d-flex align-items-center justify-content-center" style={{ height: '400px' }}>
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Loading banner...</span>
+                                        </div>
+                                    </div>
+                                ) : bannerImagesError ? (
+                                    <div className="alert alert-warning d-flex align-items-center" style={{ height: '400px' }}>
+                                        {bannerImagesError}
+                                    </div>
+                                ) : (
+                                    <div className="slider rounded overflow-hidden">
+                                        <Slider ref={leftSliderRef} {...sliderSettings}>
+                                            {bannerImages.map((img) => (
+                                                <div key={img.id} className="px-1">
+                                                    <Image
+                                                        src={img.src}
+                                                        width={800}
+                                                        height={230}
+                                                        alt={img.alt}
+                                                        className="img-fluid w-100 h-100 rounded-4 object-fit-cover "
+                                                        // Optional: add loading="lazy" later
+                                                    />
+                                                </div>
+                                            ))}
+                                        </Slider>
+                                    </div>
+                                )}
+
+                                {/* Optional arrows (uncomment if needed) */}
+                                {/*
+                                <div className="slider-controls d-flex gap-2 position-absolute top-50 start-0 translate-middle-y ps-3 z-index-1">
+                                    <button
+                                        className="btn btn-sm btn-light rounded-circle shadow-sm"
+                                        onClick={() => leftSliderRef.current?.slickPrev()}
+                                        aria-label="Previous slide"
+                                    >
+                                        <Image
+                                            src="/assets/img/dashboard-arrow.svg"
+                                            alt="Prev"
+                                            width={8}
+                                            height={16}
+                                        />
+                                    </button>
+                                    <button
+                                        className="btn btn-sm btn-light rounded-circle shadow-sm"
+                                        onClick={() => leftSliderRef.current?.slickNext()}
+                                        aria-label="Next slide"
+                                    >
+                                        <Image
+                                            src="/assets/img/dashboard-arrow1.svg"
+                                            alt="Next"
+                                            width={8}
+                                            height={16}
+                                        />
+                                    </button>
                                 </div>
+                                */}
                             </div>
+
+                            {/* 🔹 Right: Text Slider (unchanged) */}
                             <div className="col-lg-6">
                                 <div
-                                    className="banner-wrapper"
+                                    className="banner-wrapper position-relative"
                                     style={{ backgroundImage: "url('/assets/img/free-trial-img2.webp')" }}
                                 >
                                     <div className="main-slider">
-                                        <Slider ref={sliderRef} {...settings}>
+                                        <Slider ref={sliderRef} {...sliderSettings}>
                                             {[1, 2].map((_, i) => (
-                                                <div key={i} className="slider-item">
+                                                <div key={i} className="slider-item p-4">
                                                     <div className="d-flex align-items-center gap-2 mb-3">
                                                         <div className="icon bg-primary">
                                                             <Image
@@ -421,11 +597,12 @@ export default function DashboardSubContractor() {
                                             ))}
                                         </Slider>
                                     </div>
-                                    <div className="slider-controls d-flex align-items-center justify-content-between">
+                                    <div className="slider-controls d-flex align-items-center justify-content-between px-4">
                                         <div className="custom-arrows d-flex align-items-center gap-2">
                                             <button
-                                                className="custom-prev"
+                                                className="custom-prev btn btn-sm btn-light rounded-circle px-2 py-1"
                                                 onClick={() => sliderRef.current?.slickPrev()}
+                                                aria-label="Previous content"
                                             >
                                                 <Image
                                                     src="/assets/img/dashboard-arrow.svg"
@@ -435,8 +612,9 @@ export default function DashboardSubContractor() {
                                                 />
                                             </button>
                                             <button
-                                                className="custom-next"
+                                                className="custom-next btn btn-sm btn-light rounded-circle"
                                                 onClick={() => sliderRef.current?.slickNext()}
+                                                aria-label="Next content"
                                             >
                                                 <Image
                                                     src="/assets/img/dashboard-arrow1.svg"
@@ -461,15 +639,13 @@ export default function DashboardSubContractor() {
                     </div>
                 </section>
 
-                {/* Filter + Projects Section */}
+                {/* Filter + Projects Section (unchanged except Filter Image spacing) */}
                 <section className="filter-sec">
                     <div className="container">
                         <div className="row g-4">
-                            {/* Filter Column */}
                             <div className="col-xl-3">
                                 <span className="d-block mb-3 fw-semibold fs-4">Filters</span>
 
-                                {/* Search */}
                                 <div className="input-wrapper mb-3">
                                     <input
                                         type="text"
@@ -480,7 +656,6 @@ export default function DashboardSubContractor() {
                                     />
                                 </div>
 
-                                {/* Zip Code */}
                                 <span className="d-block mb-2 fw-medium">Zip Code</span>
                                 <input
                                     type="text"
@@ -490,7 +665,6 @@ export default function DashboardSubContractor() {
                                     onChange={(e) => setZipCode(e.target.value)}
                                 />
 
-                                {/* Category */}
                                 <span className="d-block mb-2 fw-medium">Category</span>
                                 <div className="input-wrapper d-flex flex-column position-relative w-100 mb-3">
                                     <select
@@ -508,7 +682,6 @@ export default function DashboardSubContractor() {
                                     </select>
                                 </div>
 
-                                {/* Work Radius */}
                                 <span className="d-block mb-2 fw-medium">Work Radius</span>
                                 <div className="range-wrapper mb-5">
                                     <div className="range-container">
@@ -530,26 +703,33 @@ export default function DashboardSubContractor() {
                                     </div>
                                 </div>
 
-                                {/* Reset Button */}
                                 <button
                                     type="button"
-                                    className="btn btn-outline-primary w-100 mb-3"
+                                    className="btn btn-outline-dark text-center justify-content-center btn-sm w-100 mb-4"
                                     onClick={handleResetFilters}
                                 >
                                     Reset Filters
                                 </button>
 
-                                <Image
-                                    src="/assets/img/filter-img.webp"
-                                    width={400}
-                                    height={400}
-                                    alt="Filter Image"
-                                    className="img-fluid w-100"
-                                    style={{ borderRadius: '25px', boxShadow: '0 4px 85px 0px #00000025' }}
-                                />
+                                <div className="slider rounded overflow-hidden">
+                                    <Slider ref={leftSliderRef} {...sliderSettings}>
+                                        {bannerImagesSidebar.map((img) => (
+                                            <div key={img.id} className="px-1">
+                                                <Image
+                                                    src={img.src}
+                                                    width={800}
+                                                    height={230}
+                                                    alt={img.alt}
+                                                    className="img-fluid w-100 h-100 rounded-4 object-fit-cover "
+                                                    // Optional: add loading="lazy" later
+                                                />
+                                            </div>
+                                        ))}
+                                    </Slider>
+                                </div>
                             </div>
 
-                            {/* Projects Column */}
+                            {/* Projects Column (unchanged) */}
                             <div className="col-xl-9">
                                 <div className="d-flex justify-content-between align-items-center mb-4">
                                     <span className="d-block fw-semibold fs-4 text-dark">Projects</span>
@@ -631,28 +811,41 @@ export default function DashboardSubContractor() {
                                                     </div>
                                                 </div>
 
-                                                <p
-                                                    className={`description mb-0 ${
-                                                        expanded.includes(index) ? 'expanded' : ''
-                                                    }`}
-                                                >
-                                                    {project.description.replace(/<[^>]*>/g, '').slice(0, 150) || 'No description provided.'}
-                                                    {!expanded.includes(index) && project.description.length > 150 && '...'}
-                                                </p>
+                                                <div className="description-wrapper mb-2 position-relative">
+                                                    <p
+                                                        className={`description mb-0 ${
+                                                            expanded.includes(index) ? 'expanded' : 'collapsed'
+                                                        }`}
+                                                        style={{
+                                                            display: '-webkit-box',
+                                                            WebkitLineClamp: expanded.includes(index) ? 'unset' : 3,
+                                                            WebkitBoxOrient: 'vertical',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            maxHeight: expanded.includes(index) ? 'none' : 'calc(1.5em * 3)',
+                                                            transition: 'max-height 0.2s ease',
+                                                        }}
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: project.description.replace(/<[^>]*>/g, '').trim() || 'No description provided.'
+                                                        }}
+                                                    />
+                                                </div>
 
-                                                <button
-                                                    className="see-more-btn d-block"
-                                                    onClick={() => toggleExpand(index)}
-                                                >
-                                                    {expanded.includes(index) ? 'See less' : 'See more'}
-                                                </button>
+                                                {shouldShowSeeMore[index] && (
+                                                    <button
+                                                        className="see-more-btn d-block"
+                                                        onClick={() => toggleExpand(index)}
+                                                    >
+                                                        {expanded.includes(index) ? 'See less' : 'See more'}
+                                                    </button>
+                                                )}
                                             </div>
                                         ))}
 
                                         {hasMore && (
                                             <button
                                                 type="button"
-                                                className="btn btn-primary w-100 mt-4"
+                                                className="btn btn-primary mx-auto mt-4"
                                                 onClick={handleLoadMore}
                                                 disabled={loading}
                                             >

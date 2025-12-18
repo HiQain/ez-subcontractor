@@ -19,6 +19,8 @@ interface ProfileData {
     zipCode: string;
     workRadius: number;
     category: number | null; // ← Now stores ID (e.g., 17), not name
+    average_rating: string; // e.g., "4.67"
+    total_ratings: number;  // e.g., 3
 }
 
 interface Category {
@@ -39,12 +41,13 @@ export default function ProfilePage() {
     const [categoriesLoading, setCategoriesLoading] = useState(true);
 
     const links = [
-        { href: '/subcontractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
-        { href: '/subcontractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/lock.svg' },
         { href: '/subcontractor/saved-listing', label: 'Saved Listing', icon: '/assets/img/icons/saved.svg' },
         { href: '/subcontractor/my-subscription', label: 'My Subscription', icon: '/assets/img/icons/saved.svg' },
         { href: '/subcontractor/transaction-history', label: 'Transaction History', icon: '/assets/img/icons/saved.svg' },
+        { href: '/subcontractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
+        { href: '/subcontractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/lock.svg' },
     ];
+
 
     // 🔁 Fetch categories
     useEffect(() => {
@@ -126,8 +129,10 @@ export default function ProfilePage() {
                         state: data.data.state || 'N/A',
                         zipCode: data.data.zip || 'N/A',
                         workRadius: data.data.work_radius || 0,
-                        // ✅ Store category as number | null
                         category: data.data.specialization ? Number(data.data.specialization) : null,
+                        // ✅ Add rating fields
+                        average_rating: data.data.average_rating || '0.00',
+                        total_ratings: data.data.total_ratings || 0,
                     });
                 } else {
                     setError(data.message || 'Failed to load profile');
@@ -247,6 +252,36 @@ export default function ProfilePage() {
         if (categoryId === null) return 'Not Set';
         const cat = categories.find(c => c.id === String(categoryId));
         return cat ? cat.name : 'Unknown';
+    };
+
+    // ✅ Render stars based on average_rating
+    const renderStars = (rating: string) => {
+        const avg = parseFloat(rating) || 0;
+        return [1, 2, 3, 4, 5].map((_, i) => {
+            const starValue = i + 1;
+            const isFull = starValue <= Math.floor(avg);
+            const isHalf = !isFull && starValue <= avg + 0.5;
+
+            return (
+                <Image
+                    key={i}
+                    src={
+                        isFull
+                            ? '/assets/img/start1.svg'
+                            : isHalf
+                            ? '/assets/img/star2.svg'
+                            : '/assets/img/star-empty.svg'
+                    }
+                    width={50}
+                    height={50}
+                    alt="Star Icon"
+                    style={{
+                        width: 'clamp(20px,5vw,50px)',
+                        height: 'clamp(20px,5vw,50px)',
+                    }}
+                />
+            );
+        });
     };
 
     return (
@@ -372,32 +407,15 @@ export default function ProfilePage() {
                                         </div>
                                         <div className="right d-flex align-items-center gap-4 flex-wrap">
                                             <div className="rating-icons d-flex align-items-center gap-1 flex-wrap">
-                                                {[1, 2, 3, 4].map((_, i) => (
-                                                    <Image
-                                                        key={i}
-                                                        src="/assets/img/start1.svg"
-                                                        width={50}
-                                                        height={50}
-                                                        alt="Star Icon"
-                                                        style={{
-                                                            width: 'clamp(20px,5vw,50px)',
-                                                            height: 'clamp(20px,5vw,50px)',
-                                                        }}
-                                                    />
-                                                ))}
-                                                <Image
-                                                    src="/assets/img/star2.svg"
-                                                    width={50}
-                                                    height={50}
-                                                    alt="Star Icon"
-                                                    style={{
-                                                        width: 'clamp(20px,5vw,50px)',
-                                                        height: 'clamp(20px,5vw,50px)',
-                                                    }}
-                                                />
+                                                {renderStars(profile.average_rating)}
                                             </div>
                                             <div className="content">
-                                                <div className="text-black text-center fs-3 fw-bold">4.5/5</div>
+                                                <div className="text-black text-center fs-3 fw-bold">
+                                                    {parseFloat(profile.average_rating).toFixed(1)}/5
+                                                    {/*<span className="fs-14 ms-1 text-gray-light">*/}
+                                                    {/*    ({profile.total_ratings})*/}
+                                                    {/*</span>*/}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

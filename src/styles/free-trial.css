@@ -3,7 +3,7 @@
   padding-bottom: 50px;
 }
 .banner-sec.trial .slider img {
-  max-height: 230px;
+  height: 272px !important;
   object-fit: cover;
 }
 .banner-sec.trial .banner-wrapper {
@@ -12,7 +12,10 @@
   border-radius: 12px;
   box-shadow: 0 4px 35px 0 rgba(0, 0, 0, 0.1450980392);
   max-width: 100%;
-  min-height: 230px;
+  min-height: 250px;
+}
+.banner-sec.trial .banner-wrapper .slider-controls {
+  margin-top: 0;
 }
 .banner-sec.trial .banner-wrapper .topbar .icon {
   background-color: #C9DA2B;

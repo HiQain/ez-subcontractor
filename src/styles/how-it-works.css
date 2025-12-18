@@ -45,6 +45,7 @@
 .hero-sec.how-it-works .nav.nav-tabs .slider {
   position: absolute;
   top: 2px;
+  left: 0;
   height: calc(100% - 4px);
   background: #C9DA2B !important;
   border-radius: 30px;

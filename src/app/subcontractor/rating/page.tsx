@@ -5,10 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-
 import '../../../styles/reviews.css';
 
-// ✅ Updated interface to match API response
 interface Review {
     id: number;
     user_id: string;
@@ -30,6 +28,33 @@ export default function ReviewsPage() {
     const [error, setError] = useState<string | null>(null);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [averageRating, setAverageRating] = useState<number>(0);
+
+    // ✅ Filter state
+    const [isOpen, setIsOpen] = useState(false);
+    const [selected, setSelected] = useState('All Ratings');
+    const [filterRating, setFilterRating] = useState<number | null>(null);
+
+    // ✅ Filter options
+    const options = ['All Ratings', '5 Star', '4 Star', '3 Star', '2 Star', '1 Star'];
+
+    // 🔹 Handle filter selection
+    const handleSelect = (option: string) => {
+        setSelected(option);
+        setIsOpen(false);
+
+        if (option === 'All Ratings') {
+            setFilterRating(null);
+        } else {
+            const match = option.match(/^(\d+)/);
+            const rating = match ? parseInt(match[1], 10) : null;
+            setFilterRating(rating);
+        }
+    };
+
+    // 🔹 Sort reviews by rating (highest first)
+    const sortReviewsByRating = (reviewsToSort: Review[]) => {
+        return [...reviewsToSort].sort((a, b) => b.rating - a.rating);
+    };
 
     // 🔁 Fetch ratings on mount
     useEffect(() => {
@@ -60,17 +85,16 @@ export default function ReviewsPage() {
                 }
 
                 const data = await response.json();
-                console.log(data)
+
                 if (!response.ok) {
                     throw new Error(data.message?.[0] || 'Failed to load ratings');
                 }
 
-                // ✅ Parse reviews array — convert rating to number
                 const fetchedReviews = data.data?.map((item: any) => ({
                     id: item.id,
                     user_id: item.user_id,
-                    contractor_id: item.rated_user_id, // assuming this is you
-                    rating: parseFloat(item.rating), // ✅ Convert string to number
+                    contractor_id: item.rated_user_id,
+                    rating: parseFloat(item.rating),
                     comment: item.comment || '',
                     created_at: item.created_at,
                     rated_given_by_user: {
@@ -82,16 +106,14 @@ export default function ReviewsPage() {
                     },
                 })) || [];
 
-                setReviews(fetchedReviews);
+                setReviews(sortReviewsByRating(fetchedReviews));
 
-                // ✅ Calculate average rating
                 if (fetchedReviews.length > 0) {
                     const avg = fetchedReviews.reduce((sum, r) => sum + r.rating, 0) / fetchedReviews.length;
                     setAverageRating(parseFloat(avg.toFixed(1)));
                 } else {
                     setAverageRating(0);
                 }
-
             } catch (err: any) {
                 console.error('Fetch ratings error:', err);
                 setError(err.message || 'Failed to load ratings. Please try again.');
@@ -103,12 +125,20 @@ export default function ReviewsPage() {
         fetchRatings();
     }, []);
 
+    // 🔹 Filter reviews
+    const filteredReviews = reviews.filter(review => {
+        if (filterRating === null) return true;
+        return review.rating >= filterRating && review.rating < filterRating + 1;
+    });
+
+    const sortedFiltered = sortReviewsByRating(filteredReviews);
+
     // 🔁 Format date to "X mins/hours/days ago"
     const timeAgo = (dateString: string): string => {
         const now = new Date();
         const past = new Date(dateString);
         const diffMs = now.getTime() - past.getTime();
-        const diffMins = Math.floor(diffMs / 60000); // minutes
+        const diffMins = Math.floor(diffMs / 60000);
         const diffHours = Math.floor(diffMins / 60);
         const diffDays = Math.floor(diffHours / 24);
 
@@ -174,7 +204,7 @@ export default function ReviewsPage() {
                 <section className="banner-sec reviews position-static">
                     <div className="container">
 
-                        {/* Filter Bar */}
+                        {/* 🔹 Filter Bar — now with star dropdown */}
                         <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-5">
                             <div className="rating fw-semibold fs-5">Rating</div>
                             <div className="d-flex align-items-center gap-2">
@@ -182,14 +212,25 @@ export default function ReviewsPage() {
                                     Filter by:
                                 </div>
                                 <div className="input-wrapper d-flex flex-column position-relative w-100">
-                                    <div style={{ minWidth: "clamp(180px,28vw,288px)" }} className="custom-select w-100">
-                                        <div className="select-selected">Select option</div>
+                                    <div
+                                        style={{ minWidth: "clamp(180px,28vw,288px)" }}
+                                        className={`custom-select w-100 ${isOpen ? 'open' : ''}`}
+                                        onClick={() => setIsOpen(!isOpen)}
+                                    >
+                                        <div className="select-selected">{selected}</div>
                                         <i className="bi bi-chevron-down select-arrow"></i>
                                         <ul className="select-options">
-                                            <li data-value="1">Select option 1</li>
-                                            <li data-value="2">Select option 2</li>
-                                            <li data-value="3">Select option 3</li>
-                                            <li data-value="4">Select option 4</li>
+                                            {options.map((option, i) => (
+                                                <li
+                                                    key={i}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleSelect(option);
+                                                    }}
+                                                >
+                                                    {option}
+                                                </li>
+                                            ))}
                                         </ul>
                                     </div>
                                 </div>
@@ -222,12 +263,16 @@ export default function ReviewsPage() {
 
                         {/* Review Cards */}
                         <div className="row g-4 mb-5">
-                            {reviews.length === 0 ? (
+                            {sortedFiltered.length === 0 ? (
                                 <div className="col-12 text-center py-5">
-                                    <p className="text-gray-light">You haven't received any ratings yet.</p>
+                                    <p className="text-gray-light">
+                                        {filterRating
+                                            ? `No ${filterRating}-star ratings found.`
+                                            : 'You haven’t received any ratings yet.'}
+                                    </p>
                                 </div>
                             ) : (
-                                reviews.map((review, index) => (
+                                sortedFiltered.map((review, index) => (
                                     <div className="col-lg-4 col-md-6" key={review.id}>
                                         <div className="review-card">
                                             <div className="content d-flex align-items-center gap-1 justify-content-between flex-wrap mb-4">
@@ -277,8 +322,11 @@ export default function ReviewsPage() {
                                                         className="rounded-circle"
                                                     />
                                                     <div className="content">
+                                                        {/* 🔁 Swapped order: role (static) → name (dynamic) */}
                                                         <div className="passion fs-14">General Contractor</div>
-                                                        <div className="name fw-semibold text-black">{review.rated_given_by_user.name}</div>
+                                                        <div className="name fw-semibold text-black">
+                                                            {review.rated_given_by_user.name}
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <img

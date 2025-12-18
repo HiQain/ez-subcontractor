@@ -150,6 +150,7 @@ export default function HomePage() {
         arrows: false,
         dots: true,
         infinite: true,
+        autoplay: true,
         speed: 600,
     };
 

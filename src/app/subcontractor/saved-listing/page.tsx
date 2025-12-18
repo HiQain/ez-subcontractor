@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -28,17 +28,21 @@ export default function SavedListingPage() {
     const [savedproject, setSavedproject] = useState<Set<number>>(new Set());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [shouldShowSeeMore, setShouldShowSeeMore] = useState<boolean[]>([]);
+    const [searchQuery, setSearchQuery] = useState(''); // ✅ NEW
+
+    const descriptionRefs = useRef<(HTMLParagraphElement | null)[]>([]);
 
     // Sidebar links
     const links = [
-        { href: '/subcontractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
-        { href: '/subcontractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/lock.svg' },
         { href: '/subcontractor/saved-listing', label: 'Saved Listing', icon: '/assets/img/icons/saved.svg' },
         { href: '/subcontractor/my-subscription', label: 'My Subscription', icon: '/assets/img/icons/saved.svg' },
         { href: '/subcontractor/transaction-history', label: 'Transaction History', icon: '/assets/img/icons/saved.svg' },
+        { href: '/subcontractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
+        { href: '/subcontractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/lock.svg' },
     ];
 
-    // 🔹 Toast notification
+    // 🔹 Toast
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
         const toast = document.createElement('div');
         const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
@@ -108,12 +112,10 @@ export default function SavedListingPage() {
                 }
 
                 const data = await response.json();
-                console.log(data);
                 if (!response.ok) {
                     throw new Error(data.message?.[0] || 'Failed to load saved projects');
                 }
 
-                // ✅ Explicitly type fetched projects
                 interface SavedProject {
                     id: number | string;
                     city: string;
@@ -129,8 +131,8 @@ export default function SavedListingPage() {
                 const fetchedProjects: SavedProject[] = data.data?.projects || [];
 
                 setProjects(fetchedProjects as Project[]);
+                setShouldShowSeeMore(Array(fetchedProjects.length).fill(false));
 
-                // ✅ Convert IDs to numbers safely
                 const savedIds = new Set(
                     fetchedProjects.map(p => typeof p.id === 'string' ? parseInt(p.id) : Number(p.id))
                 );
@@ -147,6 +149,50 @@ export default function SavedListingPage() {
         fetchSavedProjects();
     }, [router]);
 
+    // 🔹 Filter projects based on search
+    const filteredProjects = projects.filter(project => {
+        const query = searchQuery.toLowerCase().trim();
+        if (!query) return true;
+
+        const matchesCity = project.city.toLowerCase().includes(query);
+        const matchesState = project.state.toLowerCase().includes(query);
+        const matchesCategory = project.category.name.toLowerCase().includes(query);
+        const matchesDescription = project.description.toLowerCase().includes(query);
+
+        return matchesCity || matchesState || matchesCategory || matchesDescription;
+    });
+
+    // 🔁 Re-check truncation when filtered list changes
+    useEffect(() => {
+        const checkTruncation = () => {
+            if (filteredProjects.length === 0) return;
+
+            const updated = [...shouldShowSeeMore];
+            let changed = false;
+
+            descriptionRefs.current.forEach((el, index) => {
+                if (el && index < filteredProjects.length) {
+                    const style = window.getComputedStyle(el);
+                    const lineHeight = parseFloat(style.lineHeight) || 20;
+                    const maxHeight = lineHeight * 3;
+                    const isTruncated = el.scrollHeight > maxHeight + 2;
+
+                    if (isTruncated !== updated[index]) {
+                        updated[index] = isTruncated;
+                        changed = true;
+                    }
+                }
+            });
+
+            if (changed) {
+                setShouldShowSeeMore(updated);
+            }
+        };
+
+        const timer = setTimeout(checkTruncation, 0);
+        return () => clearTimeout(timer);
+    }, [filteredProjects, expanded]);
+
     const toggleExpand = (index: number) => {
         setExpanded(prev =>
             prev.includes(index)
@@ -155,12 +201,11 @@ export default function SavedListingPage() {
         );
     };
 
-    // 🔁 Format date to "X mins/hours/days ago"
     const timeAgo = (dateString: string): string => {
         const now = new Date();
         const past = new Date(dateString);
         const diffMs = now.getTime() - past.getTime();
-        const diffMins = Math.floor(diffMs / 60000); // minutes
+        const diffMins = Math.floor(diffMs / 60000);
         const diffHours = Math.floor(diffMins / 60);
         const diffDays = Math.floor(diffHours / 24);
 
@@ -207,7 +252,6 @@ export default function SavedListingPage() {
                 throw new Error(data.message?.[0] || `Failed to ${isCurrentlySaved ? 'unsave' : 'save'} project`);
             }
 
-            // Update local state
             setSavedproject(prev => {
                 const newSet = new Set(prev);
                 if (isCurrentlySaved) {
@@ -224,6 +268,11 @@ export default function SavedListingPage() {
             console.error(`${savedproject.has(projectId) ? 'Unsave' : 'Save'} project error:`, err);
             showToast(err.message || `Failed to ${savedproject.has(projectId) ? 'unsave' : 'save'} project.`, 'error');
         }
+    };
+
+    // 🔹 Reset search
+    const handleResetSearch = () => {
+        setSearchQuery('');
     };
 
     // 🌀 Loading State
@@ -287,8 +336,6 @@ export default function SavedListingPage() {
                             <div className="col-xl-3">
                                 <div className="sidebar">
                                     <div className="main-wrapper bg-dark m-0">
-
-                                        {/* Sidebar Links */}
                                         <div className="buttons-wrapper">
                                             {links.map((link) => (
                                                 <Link
@@ -346,29 +393,40 @@ export default function SavedListingPage() {
                                 <div className="right-bar">
                                     <div className="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-5">
                                         <div className="change fw-semibold fs-4">Saved Listing</div>
-                                        <div
-                                            className="form-wrapper mb-0"
-                                            style={{ minWidth: 'clamp(200px,34vw,335px)' }}
-                                        >
-                                            <Image
-                                                src="/assets/img/icons/search-gray.svg"
-                                                width={18}
-                                                height={18}
-                                                alt="Search Icon"
-                                                loading="lazy"
-                                            />
-                                            <input type="text" placeholder="Search here" />
-                                            <Image
-                                                src="/assets/img/icons/voice.svg"
-                                                width={18}
-                                                height={18}
-                                                alt="Voice Icon"
-                                                loading="lazy"
-                                            />
+                                        <div className="d-flex align-items-center gap-2">
+                                            <div
+                                                className="form-wrapper mt-0 mb-0 d-flex flex-nowrap"
+                                                style={{ minWidth: 'clamp(200px,34vw,335px)' }}
+                                            >
+                                                <Image
+                                                    src="/assets/img/icons/search-gray.svg"
+                                                    width={18}
+                                                    height={18}
+                                                    alt="Search Icon"
+                                                    loading="lazy"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search city, state, category..."
+                                                    value={searchQuery}
+                                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                                    className="form-control shadow-none"
+                                                />
+                                            </div>
+                                            {searchQuery && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm btn-outline-dark"
+                                                    onClick={handleResetSearch}
+                                                    aria-label="Clear search"
+                                                >
+                                                    Clear
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 
-                                    {projects.length === 0 ? (
+                                    {filteredProjects.length === 0 ? (
                                         <div className="text-center py-5">
                                             <Image
                                                 src="/assets/img/no-data.svg"
@@ -377,15 +435,27 @@ export default function SavedListingPage() {
                                                 alt="No saved projects"
                                                 className="mb-3"
                                             />
-                                            <p className="text-gray-light">You haven't saved any projects yet.</p>
+                                            <p className="text-gray-light">
+                                                {searchQuery
+                                                    ? `No projects match "${searchQuery}".`
+                                                    : 'You haven’t saved any projects yet.'}
+                                            </p>
+                                            {searchQuery && (
+                                                <button
+                                                    className="btn btn-outline-primary mt-2"
+                                                    onClick={handleResetSearch}
+                                                >
+                                                    Clear Search
+                                                </button>
+                                            )}
                                         </div>
                                     ) : (
-                                        projects.map((job, index) => (
+                                        filteredProjects.map((job, index) => (
                                             <div key={job.id} className="posted-card posted-card-1 custom-card mb-3">
                                                 <div className="topbar mb-2">
                                                     <div className="title">{job.city}, {job.state}</div>
                                                     <div className="d-flex align-items-center gap-2">
-                                                        <div className="date">{timeAgo(job.created_at)} {job.id}</div>
+                                                        <div className="date">{timeAgo(job.created_at)}</div>
                                                         <button
                                                             className={`icon bg-white ${savedproject.has(job.id) ? 'Saved' : 'Save'}`}
                                                             onClick={() => toggleSaveproject(job.id)}
@@ -405,21 +475,34 @@ export default function SavedListingPage() {
                                                     </div>
                                                 </div>
 
-                                                {/* ✅ Render description as plain text for safety */}
-                                                <p
-                                                    className={`description mb-0 ${
-                                                        expanded.includes(index) ? 'expanded' : ''
-                                                    }`}
-                                                >
-                                                    {job.description.replace(/<[^>]*>/g, '').trim().substring(0, 300)}...
-                                                </p>
+                                                <div className="description-wrapper mb-2 position-relative">
+                                                    <p
+                                                        className={`description mb-0 ${
+                                                            expanded.includes(index) ? 'expanded' : 'collapsed'
+                                                        }`}
+                                                        style={{
+                                                            display: '-webkit-box',
+                                                            WebkitLineClamp: expanded.includes(index) ? 'unset' : 3,
+                                                            WebkitBoxOrient: 'vertical',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            maxHeight: expanded.includes(index) ? 'none' : 'calc(1.5em * 3)',
+                                                            transition: 'max-height 0.2s ease',
+                                                        }}
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: job.description.replace(/<[^>]*>/g, '').trim() || 'No description provided.'
+                                                        }}
+                                                    />
+                                                </div>
 
-                                                <button
-                                                    className="see-more-btn d-block"
-                                                    onClick={() => toggleExpand(index)}
-                                                >
-                                                    {expanded.includes(index) ? 'See less' : 'See more'}
-                                                </button>
+                                                {shouldShowSeeMore[index] && (
+                                                    <button
+                                                        className="see-more-btn d-block"
+                                                        onClick={() => toggleExpand(index)}
+                                                    >
+                                                        {expanded.includes(index) ? 'See less' : 'See more'}
+                                                    </button>
+                                                )}
 
                                                 <div className="bottom-bar">
                                                     <div className="left">

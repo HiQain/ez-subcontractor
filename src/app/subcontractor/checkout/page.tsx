@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Header from "../../components/Header";
@@ -260,7 +260,7 @@ export default function CheckoutPage() {
                                         <Image src="/assets/img/button-angle.svg" width={10} height={15} alt="Angle" />
                                     </div>
                                     <div className="login-title fw-semibold fs-2 text-center">
-                                        Business Details
+                                        Checkout
                                     </div>
                                 </div>
 
