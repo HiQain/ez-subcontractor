@@ -382,7 +382,7 @@ export default function CheckoutPage() {
                             <div className="pricing-sec p-0">
                                 <div className="fs-5 fw-semibold mb-3">Selected Plan</div>
                                 <div className="pricing-wrapper">
-                                    <div className={`price-card ${selectedPlan.isPopular ? 'price-card1' : ''} free`}>
+                                    <div className={`price-card ${selectedPlan.isPopular ? 'popular' : ''} free`}>
                                         <div className="pricing-header">
                                             <div className="d-flex align-items-center justify-content-between mb-3">
                                                 <span className="title1 mb-0">{selectedPlan.title}</span>
@@ -391,20 +391,43 @@ export default function CheckoutPage() {
                                                 )}
                                             </div>
                                             <div className="d-flex align-items-center gap-2">
-                                                <span className="price">{selectedPlan.price === 'Free' ? 'Free' : `$${selectedPlan.price}`}</span>
-                                                {selectedPlan.saveText && (
-                                                    <Link
-                                                        href="#"
-                                                        className="btn btn-primary rounded-pill p-2 m-0"
-                                                        style={{
-                                                            backgroundColor: selectedPlan.saveColor,
-                                                            color: 'white !important',
-                                                            fontSize: '14px !important',
-                                                            width: 'fit-content',
-                                                        }}
-                                                    >
-                                                        {selectedPlan.saveText}
-                                                    </Link>
+                                                {selectedPlan.showStrike ? (
+                                                    <div className="d-flex flex-column gap-1">
+                                                        <del className="fs-18 fw-medium text-black">$ {selectedPlan.price}</del>
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <span className="price">
+                                                                $
+                                                                <span className="fw-bold">
+                                                                    {selectedPlan.discount
+                                                                        ? selectedPlan.price - (selectedPlan.price / 100) * selectedPlan.discount
+                                                                        : selectedPlan.price}
+                                                                </span>
+                                                            </span>
+                                                            {selectedPlan.saveText && (
+                                                                <div
+                                                                    style={{ backgroundColor: selectedPlan.saveColor }}
+                                                                    className="custom-btn text-white py-2 px-3 rounded-pill"
+                                                                >
+                                                                    {parseFloat(selectedPlan.discount)} % OFF
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        <span className="price">
+                                                            $<span className="fw-bold">{selectedPlan.price}</span>
+                                                        </span>
+                                                        {selectedPlan.saveText && (
+                                                            <button
+                                                                type="button"
+                                                                style={{ backgroundColor: selectedPlan.saveColor }}
+                                                                className="custom-btn text-white p-2 rounded-pill"
+                                                            >
+                                                                {selectedPlan.saveText}
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
