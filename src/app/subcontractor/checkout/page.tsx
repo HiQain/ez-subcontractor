@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -28,6 +27,50 @@ export default function CheckoutPage() {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [promoCode, setPromoCode] = useState('');
+    const [appliedPromo, setAppliedPromo] = useState<any>(null);
+    const [promoLoading, setPromoLoading] = useState(false);
+    const [promoError, setPromoError] = useState<string | null>(null);
+
+    // ✅ Handle Apply Promo Code
+    const handleApplyPromo = async () => {
+        if (!promoCode.trim()) return;
+
+        setPromoLoading(true);
+        setPromoError(null);
+
+        try {
+            const token = localStorage.getItem('token');
+
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/promo/check`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { Authorization: `Bearer ${token}` }),
+                },
+                body: JSON.stringify({ code: promoCode.trim() }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.message?.[0] || 'Invalid promo code');
+            }
+
+            setAppliedPromo(data.data);
+        } catch (err: any) {
+            setPromoError(err.message || 'Something went wrong');
+            setAppliedPromo(null);
+        } finally {
+            setPromoLoading(false);
+        }
+    };
+
+    // ✅ Handle Remove Promo
+    const handleRemovePromo = () => {
+        setAppliedPromo(null);
+        setPromoCode('');
+    };
 
     // ✅ Load selected plan from localStorage
     useEffect(() => {
@@ -95,7 +138,13 @@ export default function CheckoutPage() {
 
     const tax = Math.round((basePrice + extraCategoriesPrice) * 0.08);
     const total = basePrice + extraCategoriesPrice + tax;
+    let finalTotal = basePrice + extraCategoriesPrice + tax;
 
+    if (appliedPromo) {
+        if (appliedPromo.type === 'fixed') {
+            finalTotal = Math.max(finalTotal - parseFloat(appliedPromo.value), 0);
+        }
+    }
 
     // ✅ Note card for Trial plan
     const renderNoteCard = () => (
@@ -309,12 +358,40 @@ export default function CheckoutPage() {
                                         </div>
                                     </div>
 
-                                    <div className="input-wrapper-s2">
-                                        <div className="input-wrapper d-flex flex-column">
+                                    <div className="input-wrapper-s2 d-flex align-items-start gap-2">
+                                        <div className="input-wrapper d-flex flex-column flex-grow-1">
                                             <label className="mb-1 fw-semibold">Promo Code</label>
-                                            <input type="text" placeholder="Enter promo code" />
+                                            <input
+                                                type="text"
+                                                placeholder="Enter promo code"
+                                                value={promoCode}
+                                                onChange={(e) => setPromoCode(e.target.value)}
+                                                disabled={!!appliedPromo}
+                                            />
                                         </div>
+                                        {appliedPromo ? (
+                                            <button
+                                                className="btn btn-danger"
+                                                style={{ height: '38px', marginTop: '31px' }}
+                                                onClick={handleRemovePromo}
+                                            >
+                                                Remove
+                                            </button>
+                                        ) : (
+                                            <button
+                                                className="btn btn-primary"
+                                                style={{ height: '38px', marginTop: '31px' }}
+                                                onClick={handleApplyPromo}
+                                                disabled={promoLoading}
+                                            >
+                                                {promoLoading ? 'Applying...' : 'Apply'}
+                                            </button>
+                                        )}
                                     </div>
+                                    {promoError && <p className="text-danger mt-1">{promoError}</p>}
+                                    {appliedPromo && (
+                                        <p className="text-success mt-1">Promo "{appliedPromo.code}" applied successfully!</p>
+                                    )}
 
                                     {/* ORDER SUMMARY */}
                                     <div className="summary-card mt-4">
@@ -344,11 +421,23 @@ export default function CheckoutPage() {
                                                     <span className="fw-semibold" style={{ fontSize: '14px' }}>${tax}</span>
                                                 </div>
 
+                                                {/* ✅ Promo Discount */}
+                                                {appliedPromo && appliedPromo.type === 'fixed' && (
+                                                    <div className="d-flex align-items-center justify-content-between mt-2">
+                                                        <span style={{ fontSize: '14px', color: '#28a745' }}>
+                                                            Promo ({appliedPromo.code})
+                                                        </span>
+                                                        <span className="fw-semibold" style={{ fontSize: '14px', color: '#28a745' }}>
+                                                            -${parseFloat(appliedPromo.value)}
+                                                        </span>
+                                                    </div>
+                                                )}
+
                                                 <hr className="mt-2 mb-2" />
 
                                                 <div className="d-flex align-items-center justify-content-between">
                                                     <span style={{ fontSize: '14px' }} className="fw-semibold">Total</span>
-                                                    <span style={{ fontSize: '14px' }} className="fw-semibold">${total}</span>
+                                                    <span style={{ fontSize: '14px' }} className="fw-semibold">${finalTotal}</span>
                                                 </div>
 
                                                 <p className="mb-0 mt-2" style={{ fontSize: '14px' }}>
