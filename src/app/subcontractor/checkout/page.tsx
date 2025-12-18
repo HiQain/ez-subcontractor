@@ -2,13 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import '../../../styles/pricing.css';
 import '../../../styles/checkout.css';
+
+const PLAN_RULES: any = {
+    1: { free: 1, extraPrice: 0, max: 1 },
+    2: { free: 1, extraPrice: 25 },
+    3: { free: 1, extraPrice: 200 },
+};
 
 export default function CheckoutPage() {
     const stripe = useStripe();
@@ -22,6 +27,50 @@ export default function CheckoutPage() {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [promoCode, setPromoCode] = useState('');
+    const [appliedPromo, setAppliedPromo] = useState<any>(null);
+    const [promoLoading, setPromoLoading] = useState(false);
+    const [promoError, setPromoError] = useState<string | null>(null);
+
+    // ✅ Handle Apply Promo Code
+    const handleApplyPromo = async () => {
+        if (!promoCode.trim()) return;
+
+        setPromoLoading(true);
+        setPromoError(null);
+
+        try {
+            const token = localStorage.getItem('token');
+
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/promo/check`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { Authorization: `Bearer ${token}` }),
+                },
+                body: JSON.stringify({ code: promoCode.trim() }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.message?.[0] || 'Invalid promo code');
+            }
+
+            setAppliedPromo(data.data);
+        } catch (err: any) {
+            setPromoError(err.message || 'Something went wrong');
+            setAppliedPromo(null);
+        } finally {
+            setPromoLoading(false);
+        }
+    };
+
+    // ✅ Handle Remove Promo
+    const handleRemovePromo = () => {
+        setAppliedPromo(null);
+        setPromoCode('');
+    };
 
     // ✅ Load selected plan from localStorage
     useEffect(() => {
@@ -57,18 +106,45 @@ export default function CheckoutPage() {
     }, []);
 
     const toggleCategory = (category: { id: number; name: string }) => {
-        if (selectedCategories.some(c => c.id === category.id)) {
+        if (!selectedPlan) return;
+
+        const rule = PLAN_RULES[selectedPlan.id];
+        const alreadySelected = selectedCategories.some(c => c.id === category.id);
+
+        // 🔹 If already selected → remove normally
+        if (alreadySelected) {
             setSelectedCategories(selectedCategories.filter(c => c.id !== category.id));
-        } else {
-            setSelectedCategories([...selectedCategories, category]);
+            return;
         }
+
+        // ✅ PLAN 1 SPECIAL BEHAVIOR
+        // Only 1 allowed → replace existing with new one
+        if (selectedPlan.id === 1) {
+            setSelectedCategories([category]);
+            return;
+        }
+
+        // 🔹 Other plans (2 & 3) → normal add
+        setSelectedCategories([...selectedCategories, category]);
     };
 
     // ✅ Price summary
     const basePrice = selectedPlan ? parseFloat(selectedPlan.price) || 0 : 0;
-    const extraCategories = 2 * 125;
-    const tax = Math.round((basePrice + extraCategories) * 0.08);
-    const total = basePrice + extraCategories + tax;
+
+    const rule = selectedPlan ? PLAN_RULES[selectedPlan.id] : null;
+    const freeCategories = rule?.free || 0;
+    const extraCategoryCount = Math.max(selectedCategories.length - freeCategories, 0);
+    const extraCategoriesPrice = extraCategoryCount * (rule?.extraPrice || 0);
+
+    const tax = Math.round((basePrice + extraCategoriesPrice) * 0.08);
+    const total = basePrice + extraCategoriesPrice + tax;
+    let finalTotal = basePrice + extraCategoriesPrice + tax;
+
+    if (appliedPromo) {
+        if (appliedPromo.type === 'fixed') {
+            finalTotal = Math.max(finalTotal - parseFloat(appliedPromo.value), 0);
+        }
+    }
 
     // ✅ Note card for Trial plan
     const renderNoteCard = () => (
@@ -155,7 +231,7 @@ export default function CheckoutPage() {
             }
 
             // ✅ Success
-            router.push('/subcontractor/success');
+            router.push('/subcontractor/my-subscription');
 
         } catch (err: any) {
             setError(err.message || 'Something went wrong');
@@ -180,19 +256,9 @@ export default function CheckoutPage() {
                         <div className="col-lg-8">
                             <div className="d-flex flex-column justify-content-center w-100 h-100">
                                 <div className="d-flex align-items-center gap-2 mb-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => router.back()}
-                                        className="icon"
-                                        aria-label="Go back"
-                                    >
-                                        <Image
-                                            src="/assets/img/button-angle.svg"
-                                            width={10}
-                                            height={15}
-                                            alt="Back"
-                                        />
-                                    </button>
+                                    <div className="icon" onClick={() => router.back()}>
+                                        <Image src="/assets/img/button-angle.svg" width={10} height={15} alt="Angle" />
+                                    </div>
                                     <div className="login-title fw-semibold fs-2 text-center">
                                         Checkout
                                     </div>
@@ -292,12 +358,43 @@ export default function CheckoutPage() {
                                         </div>
                                     </div>
 
-                                    <div className="input-wrapper-s2">
-                                        <div className="input-wrapper d-flex flex-column">
-                                            <label className="mb-1 fw-semibold">Promo Code</label>
-                                            <input type="text" placeholder="Enter promo code" />
+                                    {selectedPlan.id !== 1 && (
+                                        <div className="input-wrapper-s2 d-flex align-items-start gap-2">
+                                            <div className="input-wrapper d-flex flex-column flex-grow-1">
+                                                <label className="mb-1 fw-semibold">Promo Code</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter promo code"
+                                                    value={promoCode}
+                                                    onChange={(e) => setPromoCode(e.target.value)}
+                                                    disabled={!!appliedPromo}
+                                                />
+                                            </div>
+                                            {appliedPromo ? (
+                                                <button
+                                                    className="btn btn-danger"
+                                                    style={{ height: '38px', marginTop: '31px' }}
+                                                    onClick={handleRemovePromo}
+                                                >
+                                                    Remove
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className="btn btn-primary"
+                                                    style={{ height: '38px', marginTop: '31px' }}
+                                                    onClick={handleApplyPromo}
+                                                    disabled={promoLoading}
+                                                >
+                                                    {promoLoading ? 'Applying...' : 'Apply'}
+                                                </button>
+                                            )}
                                         </div>
-                                    </div>
+                                    )}
+
+                                    {promoError && <p className="text-danger mt-1">{promoError}</p>}
+                                    {appliedPromo && (
+                                        <p className="text-success mt-1">Promo "{appliedPromo.code}" applied successfully!</p>
+                                    )}
 
                                     {/* ORDER SUMMARY */}
                                     <div className="summary-card mt-4">
@@ -307,29 +404,52 @@ export default function CheckoutPage() {
                                                 <span className="fw-semibold d-block" style={{ fontSize: '14px' }}>Order Summary</span>
 
                                                 <div className="d-flex align-items-center justify-content-between mt-2">
-                                                    <span style={{ fontSize: '14px' }}>{selectedPlan.title} Plan</span>
-                                                    <span className="fw-semibold" style={{ fontSize: '14px' }}>{selectedPlan.price === 'Free' ? 'Free' : `$${selectedPlan.price}`}</span>
+                                                    <span style={{ fontSize: '14px' }}>{selectedPlan.title}</span>
+                                                    <span className="fw-semibold" style={{ fontSize: '14px' }}>{
+                                                        selectedPlan.discount
+                                                            ? selectedPlan.price - (selectedPlan.price / 100) * selectedPlan.discount
+                                                            : selectedPlan.price
+                                                    }</span>
                                                 </div>
 
-                                                <div className="d-flex align-items-center justify-content-between mt-2">
-                                                    <span style={{ fontSize: '14px' }}>Extra Categories (2 X $125)</span>
-                                                    <span className="fw-semibold" style={{ fontSize: '14px' }}>${extraCategories}</span>
-                                                </div>
+                                                {extraCategoryCount > 0 && (
+                                                    <div className="d-flex align-items-center justify-content-between mt-2">
+                                                        <span style={{ fontSize: '14px' }}>
+                                                            Extra Categories ({extraCategoryCount} × ${rule.extraPrice})
+                                                        </span>
+                                                        <span className="fw-semibold" style={{ fontSize: '14px' }}>
+                                                            ${extraCategoriesPrice}
+                                                        </span>
+                                                    </div>
+                                                )}
 
                                                 <div className="d-flex align-items-center justify-content-between mt-2">
                                                     <span style={{ fontSize: '14px' }}>Tax (8%)</span>
                                                     <span className="fw-semibold" style={{ fontSize: '14px' }}>${tax}</span>
                                                 </div>
 
+                                                {/* ✅ Promo Discount */}
+                                                {appliedPromo && appliedPromo.type === 'fixed' && (
+                                                    <div className="d-flex align-items-center justify-content-between mt-2">
+                                                        <span style={{ fontSize: '14px', color: '#28a745' }}>
+                                                            Promo ({appliedPromo.code})
+                                                        </span>
+                                                        <span className="fw-semibold" style={{ fontSize: '14px', color: '#28a745' }}>
+                                                            -${parseFloat(appliedPromo.value)}
+                                                        </span>
+                                                    </div>
+                                                )}
+
                                                 <hr className="mt-2 mb-2" />
 
                                                 <div className="d-flex align-items-center justify-content-between">
                                                     <span style={{ fontSize: '14px' }} className="fw-semibold">Total</span>
-                                                    <span style={{ fontSize: '14px' }} className="fw-semibold">${total}</span>
+                                                    <span style={{ fontSize: '14px' }} className="fw-semibold">${finalTotal}</span>
                                                 </div>
 
                                                 <p className="mb-0 mt-2" style={{ fontSize: '14px' }}>
-                                                    Note: You’ve selected 3 categories
+                                                    You’ve selected {selectedCategories.length} category
+                                                    {selectedCategories.length > 1 ? 'ies' : ''}
                                                 </p>
                                             </div>
                                         </div>
@@ -358,7 +478,7 @@ export default function CheckoutPage() {
                             <div className="pricing-sec p-0">
                                 <div className="fs-5 fw-semibold mb-3">Selected Plan</div>
                                 <div className="pricing-wrapper">
-                                    <div className={`price-card ${selectedPlan.isPopular ? 'price-card1' : ''} free`}>
+                                    <div className={`price-card ${selectedPlan.isPopular ? 'popular' : ''} free`}>
                                         <div className="pricing-header">
                                             <div className="d-flex align-items-center justify-content-between mb-3">
                                                 <span className="title1 mb-0">{selectedPlan.title}</span>
@@ -367,20 +487,43 @@ export default function CheckoutPage() {
                                                 )}
                                             </div>
                                             <div className="d-flex align-items-center gap-2">
-                                                <span className="price">{selectedPlan.price === 'Free' ? 'Free' : `$${selectedPlan.price}`}</span>
-                                                {selectedPlan.saveText && (
-                                                    <Link
-                                                        href="#"
-                                                        className="btn btn-primary rounded-pill p-2 m-0"
-                                                        style={{
-                                                            backgroundColor: selectedPlan.saveColor,
-                                                            color: 'white !important',
-                                                            fontSize: '14px !important',
-                                                            width: 'fit-content',
-                                                        }}
-                                                    >
-                                                        {selectedPlan.saveText}
-                                                    </Link>
+                                                {selectedPlan.showStrike ? (
+                                                    <div className="d-flex flex-column gap-1">
+                                                        <del className="fs-18 fw-medium text-black">$ {selectedPlan.price}</del>
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <span className="price">
+                                                                $
+                                                                <span className="fw-bold">
+                                                                    {selectedPlan.discount
+                                                                        ? selectedPlan.price - (selectedPlan.price / 100) * selectedPlan.discount
+                                                                        : selectedPlan.price}
+                                                                </span>
+                                                            </span>
+                                                            {selectedPlan.saveText && (
+                                                                <div
+                                                                    style={{ backgroundColor: selectedPlan.saveColor }}
+                                                                    className="custom-btn text-white py-2 px-3 rounded-pill"
+                                                                >
+                                                                    {parseFloat(selectedPlan.discount)} % OFF
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        <span className="price">
+                                                            $<span className="fw-bold">{selectedPlan.price}</span>
+                                                        </span>
+                                                        {selectedPlan.saveText && (
+                                                            <button
+                                                                type="button"
+                                                                style={{ backgroundColor: selectedPlan.saveColor }}
+                                                                className="custom-btn text-white p-2 rounded-pill"
+                                                            >
+                                                                {selectedPlan.saveText}
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
