@@ -1,114 +1,77 @@
-// app/pricing/page.tsx
 'use client';
 
-import { useState } from 'react';
+import {useRouter, usePathname} from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import '../../styles/pricing.css';
-
-// Pricing plan data
-const pricingPlans = {
-    'sub-contractor': [
-        {
-            id: 1,
-            title: '30-Days Free Trial',
-            price: 'Free',
-            features: Array(4).fill(
-                'Registration with full company profile, license number, insurance, and workers’ comp details.'
-            ),
-            hasNote: false,
-            isPopular: false,
-            showStrike: false,
-            saveText: null,
-            saveColor: null,
-        },
-        {
-            id: 2,
-            title: '30-Days Free Trial',
-            price: 'Free',
-            features: Array(4).fill(
-                'Registration with full company profile, license number, insurance, and workers’ comp details.'
-            ),
-            hasNote: true,
-            isPopular: false,
-            showStrike: false,
-            saveText: null,
-            saveColor: null,
-        },
-        {
-            id: 3,
-            title: '30-Days Free Trial',
-            price: 'Free',
-            features: Array(4).fill(
-                'Registration with full company profile, license number, insurance, and workers’ comp details.'
-            ),
-            hasNote: true,
-            isPopular: false,
-            showStrike: false,
-            saveText: null,
-            saveColor: null,
-        },
-        {
-            id: 4,
-            title: 'Yearly',
-            price: '400',
-            features: Array(4).fill(
-                'Registration with full company profile, license number, insurance, and workers’ comp details.'
-            ),
-            hasNote: true,
-            isPopular: true,
-            showStrike: true,
-            saveText: 'Save $200',
-            saveColor: '#DC2626',
-        },
-    ],
-    affiliate: [
-        {
-            id: 1,
-            title: '30-Days Free Trial 1',
-            price: 'Free',
-            features: Array(4).fill(
-                'Registration with full company profile, license number, insurance, and workers’ comp details.'
-            ),
-            hasNote: true,
-            isPopular: false,
-            showStrike: false,
-            saveText: null,
-            saveColor: null,
-        },
-        {
-            id: 2,
-            title: '30-Days Free Trial',
-            price: 'Free',
-            features: Array(4).fill(
-                'Registration with full company profile, license number, insurance, and workers’ comp details.'
-            ),
-            hasNote: true,
-            isPopular: false,
-            showStrike: false,
-            saveText: null,
-            saveColor: null,
-        },
-        {
-            id: 3,
-            title: '30-Days Free Trial',
-            price: 'Free',
-            features: Array(4).fill(
-                'Registration with full company profile, license number, insurance, and workers’ comp details.'
-            ),
-            hasNote: true,
-            isPopular: true,
-            showStrike: false,
-            saveText: 'Save $200',
-            saveColor: '#10BC17',
-        },
-    ],
-};
+import {useState, useEffect} from 'react';
+import Link from "next/link";
 
 export default function PricingPage() {
-    const [activeTab, setActiveTab] = useState("all");
+    const router = useRouter();
+    const pathname = usePathname();
+
+    // State
+    const [activeTab, setActiveTab] = useState<'subcontractor' | 'affiliate'>('subcontractor');
+    const [plans, setPlans] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Fetch plans based on active tab
+    useEffect(() => {
+        const fetchPlans = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const token = localStorage.getItem('token'); // Optional: auth not required for public plans
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/plans?role=${activeTab}`, {
+                    headers: token ? {Authorization: `Bearer ${token}`} : {},
+                });
+                const data = await res.json();
+
+                console.log(data);
+
+                if (res.ok && data.success && Array.isArray(data.data?.plans)) {
+                    // Transform API response into your UI structure
+                    const transformedPlans = data.data.plans.map((plan: any) => ({
+                        id: plan.id,
+                        title: plan.plan_name,
+                        price: parseFloat(plan.price), // Use discount if available
+                        discount: plan.discount_price, // Use discount if available
+                        features: plan.features.map((f: any) => f.feature),
+                        hasNote: plan.type === 'trial',
+                        isPopular: plan.label === 'Popular',
+                        showStrike: !!plan.discount_price,
+                        saveText: plan.discount_price ? `${Math.round(100 - (parseFloat(plan.discount_price) / parseFloat(plan.price)) * 100)}% OFF` : '',
+                        saveColor: '#DC2626',
+                        duration_days: plan.duration_days,
+                        type: plan.type,
+                        stripe_price_id: plan.stripe_price_id,
+                        extra_category_price: plan.extra_category_price,
+                    }));
+
+                    setPlans(transformedPlans);
+                } else {
+                    throw new Error(data.message?.[0] || 'Failed to load plans');
+                }
+            } catch (err: any) {
+                console.error('Error fetching plans:', err);
+                setError(err.message || 'Failed to load subscription plans. Please try again.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPlans();
+    }, [activeTab]); // 🔁 Re-fetch when tab changes
+
+    const handleSelectPlan = (plan: any) => {
+        localStorage.setItem('selectedPlan', JSON.stringify({...plan, type: activeTab}));
+        router.push('/subcontractor/checkout');
+    };
+
     const renderNoteCard = () => (
         <div className="note-card d-flex align-items-start gap-1">
             <Image
@@ -120,10 +83,10 @@ export default function PricingPage() {
                 className="d-block"
             />
             <div className="content">
-        <span style={{ fontSize: '14px' }} className="d-block fw-semibold mb-1">
-          Note
-        </span>
-                <p style={{ fontSize: '12px' }} className="mb-0">
+                <span style={{fontSize: '14px'}} className="d-block fw-semibold mb-1">
+                    Note
+                </span>
+                <p style={{fontSize: '12px'}} className="mb-0">
                     After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with
                     contractors, and accessing premium tools.
                 </p>
@@ -131,53 +94,55 @@ export default function PricingPage() {
         </div>
     );
 
-    const renderPlanCard = (plan: (typeof pricingPlans)['sub-contractor'][0], index: number) => (
-        <div
-            key={plan.id}
-            className={`col-lg-${index === 3 ? '3' : index >= 2 && plan.isPopular ? '4' : '3'} col-md-${plan.isPopular ? '12' : '6'}`}
-        >
-            <div className={`price-card ${plan.isPopular ? 'price-card1' : ''} free`}>
+    const renderPlanCard = (plan: any) => (
+        <div key={plan.id} className="col-lg-3 col-md-6">
+            <div className={`price-card ${plan.isPopular ? 'popular' : ''} free`}>
                 <div>
                     <div className="pricing-header">
                         {plan.isPopular ? (
-                            <div className="d-flex align-items-center gap-1 justify-content-between mb-3">
-                                <span className="title1 mb-0">{plan.title}</span>
-                                <div style={{ fontSize: '14px' }} className="custom-btn bg-white shadow p-2 rounded-pill">
+                            <div className="d-flex align-items-center justify-content-between mb-3">
+                                <span className="title1 mb-0 text-truncate">{plan.title}</span>
+                                <div
+                                    style={{fontSize: '14px'}}
+                                    className="custom-btn bg-white shadow p-2 rounded-pill"
+                                >
                                     🔥 Popular
                                 </div>
                             </div>
                         ) : (
-                            <span className="title1">{plan.title}</span>
+                            <span className="title1 text-truncate">{plan.title}</span>
                         )}
 
                         {plan.showStrike ? (
                             <div className="d-flex align-items-center gap-1 flex-wrap">
-                                <del className="fs-4 fw-medium text-black">$ 600</del>
-                                <div className="d-flex align-items-center gap-2">
-                <span className="price">
-                  $<span className="fw-bold">{plan.price}</span>
-                </span>
+                                <del className="fs-18 fw-medium text-black">$ {plan.price}</del>
+                                <div className="d-flex align-items-center gap-2 justify-content-between">
+                                    <span className="price">
+                                        $
+                                        <span className="fw-bold">
+                                            {plan.discount ? plan.price - (plan.price / 100) * plan.discount : plan.price}
+                                        </span>
+                                    </span>
                                     {plan.saveText && (
-                                        <button
-                                            type="button"
-                                            style={{ backgroundColor: plan.saveColor! }}
-                                            className="custom-btn text-white p-2 rounded-pill"
+                                        <div
+                                            style={{backgroundColor: plan.saveColor}}
+                                            className="custom-btn text-white py-2 px-3 rounded-pill"
                                         >
-                                            {plan.saveText}
-                                        </button>
+                                            {parseFloat(plan.discount)} % OFF
+                                        </div>
                                     )}
                                 </div>
                             </div>
                         ) : (
                             <div className="d-flex align-items-center gap-2">
-              <span className="price">
-                $<span className="fw-bold">{plan.price}</span>
-              </span>
+                                <span className="price">
+                                    $<span className="fw-bold">{plan.price}</span>
+                                </span>
                                 {plan.saveText && (
                                     <button
                                         type="button"
-                                        style={{ backgroundColor: plan.saveColor! }}
-                                        className="custom-btn text-white p-2"
+                                        style={{backgroundColor: plan.saveColor}}
+                                        className="custom-btn text-white p-2 rounded-pill"
                                     >
                                         {plan.saveText}
                                     </button>
@@ -186,29 +151,34 @@ export default function PricingPage() {
                         )}
                     </div>
 
-                    <div className="pricing-body">
+                    <div className="pricing-body mb-3">
                         <ul className="m-0 p-0 list-with-icon">
-                            {plan.features.map((feature, i) => (
+                            {plan.features.map((feature: string, i: number) => (
                                 <li key={i}>{feature}</li>
                             ))}
                         </ul>
                     </div>
                 </div>
 
-                {plan.hasNote && renderNoteCard()}
-
-                <div className="pricing-button">
-                    <button className="btn">Get Started</button>
+                <div className="d-flex align-items-center flex-column">
+                    {plan.hasNote && renderNoteCard()}
+                    <div className="pricing-button w-100 pt-0">
+                        <button className="btn" onClick={() => handleSelectPlan(plan)}>
+                            Buy Now
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     );
 
+
+
+
     return (
         <div>
-            <Header />
+            <Header/>
             <div className="sections overflow-hidden">
-                {/* Hero Section */}
                 <section
                     style={{
                         background: `url('/assets/img/pricing-hero.webp') center /cover no-repeat`,
@@ -221,82 +191,105 @@ export default function PricingPage() {
                                 Choose Your Plan and Start Getting Project Leads Today
                             </h1>
                             <p className="mb-4 text-white text-center fs-5 fw-medium">
-                                Unlock full access to jobs, messaging, and contractor tools no hidden fees.
+                                Unlock full access to jobs, messaging, and contractor tools — no hidden fees.
                             </p>
-
-                            <ul className="nav nav-tabs mb-4" role="tablist" style={{minWidth: 400}}>
+                            <ul className="nav nav-tabs mb-4" role="tablist">
                                 <li className="nav-item" role="presentation">
                                     <button
-                                        className={`nav-link ${activeTab === "Sub Contractor" ? "active" : ""}`}
+                                        className={`nav-link ${activeTab === 'subcontractor' ? 'active' : ''}`}
                                         type="button"
-                                        onClick={() => setActiveTab("sub-contractor")}
+                                        onClick={() => setActiveTab('subcontractor')}
                                     >
-                                        Sub Contractor
+                                        Subcontractor
                                     </button>
                                 </li>
                                 <li className="nav-item" role="presentation">
                                     <button
-                                        className={`nav-link ${activeTab === "affiliate" ? "active" : ""}`}
+                                        className={`nav-link ${activeTab === 'affiliate' ? 'active' : ''}`}
                                         type="button"
-                                        onClick={() => setActiveTab("affiliate")}
+                                        onClick={() => setActiveTab('affiliate')}
                                     >
                                         Affiliate
                                     </button>
                                 </li>
                                 <div className="slider"></div>
+                                {/* 👈 This is the animated green background */}
                             </ul>
-
                         </div>
                     </div>
                 </section>
 
-                {/* Pricing Section */}
-                {/* Pricing Section */}
-                <section className="pricing-sec">
-                    <div className="container-fluid">
-                        <div className="tab-content pricing-wrapper" id="pricingTabContent">
-                            {/* Sub Contractor Tab — shown when activeTab === 'sub-contractor' */}
-                            {activeTab === "sub-contractor" && (
-                                <div className="tab-pane fade show active pricing-content" role="tabpanel">
+                {loading ?
+                <>
+                    <div className="sections overflow-hidden py-5 my-5">
+                        <section className="banner-sec profile position-static">
+                            <div className="container">
+                                <div className="row">
+                                    <div className="col-12 text-center py-5">
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </> :
+                    <section className="pricing-sec">
+                        <div className="container-fluid">
+                            <div className="tab-content pricing-wrapper">
+                                <div
+                                    className={`tab-pane fade ${activeTab === 'subcontractor' ? 'show active' : ''} pricing-content`}
+                                    id="subcontractor">
                                     <div className="row g-3 justify-content-center">
-                                        {pricingPlans['sub-contractor'].map((plan, index) =>
-                                            renderPlanCard(plan, index)
+                                        {plans.length > 0 ? (
+                                            plans.map((plan) => renderPlanCard(plan))
+                                        ) : (
+                                            <div className="col-12 text-center py-5">
+                                                <p>No plans available at this time.</p>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
-                            )}
-
-                            {/* Affiliate Tab — shown when activeTab === 'affiliate' */}
-                            {activeTab === "affiliate" && (
-                                <div className="tab-pane fade show active pricing-content" role="tabpanel">
+                                <div
+                                    className={`tab-pane fade ${activeTab === 'affiliate' ? 'show active' : ''} pricing-content`}
+                                    id="affiliate">
                                     <div className="row g-3 justify-content-center">
-                                        {pricingPlans.affiliate.map((plan) => renderPlanCard(plan, -1))}
+                                        {plans.length > 0 ? (
+                                            plans.map((plan) => renderPlanCard(plan))
+                                        ) : (
+                                            <div className="col-12 text-center py-5">
+                                                <p>No affiliate plans available at this time.</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                            )}
+                            </div>
                         </div>
+                    </section>
+                }
+                {error &&
+                    <div className="sections overflow-hidden">
+                        <section className="banner-sec profile position-static">
+                            <div className="container">
+                                <div className="row">
+                                    <div className="col-12 text-center py-5">
+                                        <p className="text-danger">{error}</p>
+                                        <button
+                                            className="btn btn-primary mt-3"
+                                            onClick={() => window.location.reload()}
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
                     </div>
-                </section>
-            </div>
-            <Footer />
-            <style jsx>{`
-        .hero-sec {
-          position: relative;
-          z-index: 1;
-        }
+                }
 
-        .hero-sec::before {
-          content: '';
-          position: absolute;
-          inset: 0; /* shorthand for top:0; left:0; right:0; bottom:0 */
-          width: 100%;
-          height: 100%;
-          background-color: #000;
-          opacity: 0.85;
-          z-index: -1;
-          display: block;
-        }
-      `}</style>
+            </div>
+            <Footer/>
         </div>
     );
 }

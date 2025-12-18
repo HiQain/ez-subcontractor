@@ -8,7 +8,7 @@ $dark: #272727 !important;
   padding-bottom: 50px;
   .slider {
     img {
-      max-height: 230px;
+      height: 272px !important;
       object-fit: cover;
     }
   }
@@ -19,7 +19,10 @@ $dark: #272727 !important;
     border-radius: 12px;
     box-shadow: 0 4px 35px 0 #00000025;
     max-width: 100%;
-    min-height: 230px;
+    min-height: 250px;
+    .slider-controls {
+      margin-top: 0;
+    }
     .topbar {
       .icon {
         background-color: #C9DA2B;

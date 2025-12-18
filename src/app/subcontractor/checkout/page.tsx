@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -180,11 +180,21 @@ export default function CheckoutPage() {
                         <div className="col-lg-8">
                             <div className="d-flex flex-column justify-content-center w-100 h-100">
                                 <div className="d-flex align-items-center gap-2 mb-4">
-                                    <div className="icon">
-                                        <Image src="/assets/img/button-angle.svg" width={10} height={15} alt="Angle" />
-                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => router.back()}
+                                        className="icon"
+                                        aria-label="Go back"
+                                    >
+                                        <Image
+                                            src="/assets/img/button-angle.svg"
+                                            width={10}
+                                            height={15}
+                                            alt="Back"
+                                        />
+                                    </button>
                                     <div className="login-title fw-semibold fs-2 text-center">
-                                        Business Details
+                                        Checkout
                                     </div>
                                 </div>
 

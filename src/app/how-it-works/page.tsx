@@ -36,7 +36,7 @@ export default function HowItWorksPage() {
                                             data-bs-toggle="tab"
                                             data-bs-target="#tab1"
                                         >
-                                            Sub Contractor
+                                            Subcontractor
                                         </button>
                                     </li>
                                     <li className="nav-item" role="presentation">

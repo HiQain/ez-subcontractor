@@ -57,6 +57,7 @@ $danger: #DC2626;
         .slider {
             position: absolute;
             top: 2px;
+            left: 0;
             height: calc(100% - 4px);
             background: $primary; // ✅ Light green from your screenshot
             border-radius: 30px;
