@@ -358,36 +358,39 @@ export default function CheckoutPage() {
                                         </div>
                                     </div>
 
-                                    <div className="input-wrapper-s2 d-flex align-items-start gap-2">
-                                        <div className="input-wrapper d-flex flex-column flex-grow-1">
-                                            <label className="mb-1 fw-semibold">Promo Code</label>
-                                            <input
-                                                type="text"
-                                                placeholder="Enter promo code"
-                                                value={promoCode}
-                                                onChange={(e) => setPromoCode(e.target.value)}
-                                                disabled={!!appliedPromo}
-                                            />
+                                    {selectedPlan.id !== 1 && (
+                                        <div className="input-wrapper-s2 d-flex align-items-start gap-2">
+                                            <div className="input-wrapper d-flex flex-column flex-grow-1">
+                                                <label className="mb-1 fw-semibold">Promo Code</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter promo code"
+                                                    value={promoCode}
+                                                    onChange={(e) => setPromoCode(e.target.value)}
+                                                    disabled={!!appliedPromo}
+                                                />
+                                            </div>
+                                            {appliedPromo ? (
+                                                <button
+                                                    className="btn btn-danger"
+                                                    style={{ height: '38px', marginTop: '31px' }}
+                                                    onClick={handleRemovePromo}
+                                                >
+                                                    Remove
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className="btn btn-primary"
+                                                    style={{ height: '38px', marginTop: '31px' }}
+                                                    onClick={handleApplyPromo}
+                                                    disabled={promoLoading}
+                                                >
+                                                    {promoLoading ? 'Applying...' : 'Apply'}
+                                                </button>
+                                            )}
                                         </div>
-                                        {appliedPromo ? (
-                                            <button
-                                                className="btn btn-danger"
-                                                style={{ height: '38px', marginTop: '31px' }}
-                                                onClick={handleRemovePromo}
-                                            >
-                                                Remove
-                                            </button>
-                                        ) : (
-                                            <button
-                                                className="btn btn-primary"
-                                                style={{ height: '38px', marginTop: '31px' }}
-                                                onClick={handleApplyPromo}
-                                                disabled={promoLoading}
-                                            >
-                                                {promoLoading ? 'Applying...' : 'Apply'}
-                                            </button>
-                                        )}
-                                    </div>
+                                    )}
+
                                     {promoError && <p className="text-danger mt-1">{promoError}</p>}
                                     {appliedPromo && (
                                         <p className="text-success mt-1">Promo "{appliedPromo.code}" applied successfully!</p>
@@ -401,8 +404,12 @@ export default function CheckoutPage() {
                                                 <span className="fw-semibold d-block" style={{ fontSize: '14px' }}>Order Summary</span>
 
                                                 <div className="d-flex align-items-center justify-content-between mt-2">
-                                                    <span style={{ fontSize: '14px' }}>{selectedPlan.title} Plan</span>
-                                                    <span className="fw-semibold" style={{ fontSize: '14px' }}>{selectedPlan.price === 'Free' ? 'Free' : `$${selectedPlan.price}`}</span>
+                                                    <span style={{ fontSize: '14px' }}>{selectedPlan.title}</span>
+                                                    <span className="fw-semibold" style={{ fontSize: '14px' }}>{
+                                                        selectedPlan.discount
+                                                            ? selectedPlan.price - (selectedPlan.price / 100) * selectedPlan.discount
+                                                            : selectedPlan.price
+                                                    }</span>
                                                 </div>
 
                                                 {extraCategoryCount > 0 && (
