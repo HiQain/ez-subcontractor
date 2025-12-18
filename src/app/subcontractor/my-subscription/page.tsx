@@ -90,7 +90,7 @@ export default function SubscriptionPage() {
                             <div className="col-xl-3">
                                 <div className="sidebar d-flex flex-column">
                                     <div className="main-wrapper bg-dark p-0 flex-grow-1 d-flex flex-column">
-                                        <div className="topbar mb-5">
+                                        {/* <div className="topbar mb-5">
                                             <div className="icon-wrapper">
                                                 <Image
                                                     src="/assets/img/icons/construction-worker.webp"
@@ -143,7 +143,7 @@ export default function SubscriptionPage() {
                                                 alt="Arrow"
                                                 loading="lazy"
                                             />
-                                        </div>
+                                        </div> */}
 
                                         {/* Sidebar Links */}
                                         <div className="buttons-wrapper flex-grow-1">
