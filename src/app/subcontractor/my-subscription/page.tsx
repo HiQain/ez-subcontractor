@@ -29,6 +29,7 @@ interface Subscription {
     end_date: string;
     is_active: string;
     plan: Plan;
+    status: string;
 }
 
 export default function SubscriptionPage() {
@@ -41,6 +42,10 @@ export default function SubscriptionPage() {
     const [selectedSubscription, setSelectedSubscription] = useState<Subscription>(null);
 
     useEffect(() => {
+        fetchSubscriptions();
+    }, []);
+
+    const fetchSubscriptions = async () => {
         const token = localStorage.getItem('token');
 
         if (!token) {
@@ -49,34 +54,69 @@ export default function SubscriptionPage() {
             return;
         }
 
-        const fetchSubscriptions = async () => {
-            try {
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/my-subscriptions`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-
-                const data = await res.json();
-
-                if (!res.ok || !data.success) {
-                    throw new Error(data.message?.[0] || 'Failed to fetch subscriptions');
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/my-subscriptions`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
                 }
+            );
 
-                setSubscriptions(data.data.subscriptions || []);
-            } catch (err: any) {
-                setError(err.message || 'Something went wrong');
-            } finally {
-                setLoading(false);
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.message?.[0] || 'Failed to fetch subscriptions');
             }
-        };
 
-        fetchSubscriptions();
-    }, []);
+            setSubscriptions(data.data.subscriptions || []);
+        } catch (err: any) {
+            setError(err.message || 'Something went wrong');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const cancelSubscription = async () => {
+        if (!selectedSubscription) return;
+
+        try {
+            const token = localStorage.getItem('token');
+
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/cancel`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        subscription_id: selectedSubscription.id,
+                    }),
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.message?.[0] || 'Failed to cancel subscription');
+            }
+
+            // ✅ Modal close
+            setShowCancelModal(false);
+            setSelectedSubscription(null);
+
+            // ✅ Subscriptions dubara load
+            fetchSubscriptions();
+
+        } catch (err: any) {
+            alert(err.message || 'Cancel failed');
+        }
+    };
+
 
     return (
         <>
@@ -393,17 +433,19 @@ export default function SubscriptionPage() {
                                                                     {/* Button */}
                                                                     <div className="pricing-button mt-3">
                                                                         <button
-                                                                            className={`btn ${sub.is_active === '1'
+                                                                            className={`btn ${sub.status === 'active'
                                                                                 ? 'btn-outline-danger'
                                                                                 : 'btn-secondary'
                                                                                 }`}
-                                                                            disabled={sub.is_active !== '1'}
+                                                                            disabled={sub.status !== 'active'}
                                                                             onClick={() => {
-                                                                                setSelectedSubscription(sub);
-                                                                                setShowCancelModal(true)
+                                                                                if (sub.status === 'active') {
+                                                                                    setSelectedSubscription(sub);
+                                                                                    setShowCancelModal(true)
+                                                                                }
                                                                             }}
                                                                         >
-                                                                            {sub.is_active === '1' ? 'Cancel Plan' : 'Expired'}
+                                                                            {sub.status === 'active' ? 'Cancel Plan' : sub.status === 'cancelled' ? 'Cancelled' : 'Expired'}
                                                                         </button>
                                                                     </div>
 
@@ -419,12 +461,7 @@ export default function SubscriptionPage() {
                                                                         setShowCancelModal(false);
                                                                         setSelectedSubscription(null);
                                                                     }}
-                                                                    onConfirm={() => {
-                                                                        console.log(
-                                                                            'Cancel plan:',
-                                                                            selectedSubscription?.plan?.plan_name
-                                                                        );
-                                                                    }}
+                                                                    onConfirm={cancelSubscription}
                                                                 />
                                                             </div>
                                                         ))}

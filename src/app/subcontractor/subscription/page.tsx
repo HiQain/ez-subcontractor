@@ -45,6 +45,8 @@ export default function PricingPage() {
                         type: plan.type,
                         stripe_price_id: plan.stripe_price_id,
                         extra_category_price: plan.extra_category_price,
+                        is_subscribed: plan.is_subscribed,
+                        is_cancelled: plan.is_cancelled,
                     }));
 
                     setPlans(transformedPlans);
@@ -88,6 +90,14 @@ export default function PricingPage() {
         </div>
     );
 
+    const hasAnyActiveSubscription = plans.some(
+        (p) =>
+            p.is_subscribed === true &&
+            p.status !== 'cancelled' &&
+            p.is_cancelled !== true
+    );
+
+
     const renderPlanCard = (plan: any) => (
         <div key={plan.id} className="col-lg-3 col-md-6">
             <div className={`price-card ${plan.isPopular ? 'popular' : ''} free`}>
@@ -114,7 +124,7 @@ export default function PricingPage() {
                                     <span className="price">
                                         $
                                         <span className="fw-bold">
-                                            {plan.discount ? plan.price-plan.price/100*plan.discount : plan.price}
+                                            {plan.discount ? plan.price - plan.price / 100 * plan.discount : plan.price}
                                         </span>
                                     </span>
                                     {plan.saveText && (
@@ -157,9 +167,21 @@ export default function PricingPage() {
                 <div className="d-flex align-items-center flex-column">
                     {plan.hasNote && renderNoteCard()}
                     <div className="pricing-button w-100 pt-0">
-                        <button className="btn" onClick={() => handleSelectPlan(plan)}>
-                            Buy Now
-                        </button>
+                        <div className="pricing-button w-100 pt-0">
+                            <button
+                                className={plan.is_subscribed ? 'active-btn' : 'btn'}
+                                disabled={hasAnyActiveSubscription && !plan.is_subscribed}
+                                onClick={() => {
+                                    if (!hasAnyActiveSubscription && !plan.is_subscribed) {
+                                        handleSelectPlan(plan);
+                                    }
+                                }}
+                            >
+                                {plan.is_subscribed && plan.status !== 'cancelled'
+                                    ? 'Current Plan'
+                                    : 'Buy Now'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -155,7 +155,7 @@ export default function CheckoutPage() {
             }
 
             // ✅ Success
-            router.push('/subcontractor/success');
+            router.push('/subcontractor/my-subscription');
 
         } catch (err: any) {
             setError(err.message || 'Something went wrong');
@@ -180,7 +180,7 @@ export default function CheckoutPage() {
                         <div className="col-lg-8">
                             <div className="d-flex flex-column justify-content-center w-100 h-100">
                                 <div className="d-flex align-items-center gap-2 mb-4">
-                                    <div className="icon">
+                                    <div className="icon" onClick={() => router.back()}>
                                         <Image src="/assets/img/button-angle.svg" width={10} height={15} alt="Angle" />
                                     </div>
                                     <div className="login-title fw-semibold fs-2 text-center">
