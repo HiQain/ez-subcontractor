@@ -260,7 +260,7 @@ export default function SubscriptionPage() {
                                             </Link>
 
                                             <Link
-                                                href="/sub-contractor/transaction-history"
+                                                href="/subcontractor/transaction-history"
                                                 className={`custom-btn ${pathname === '/subcontractor/transaction-history' ? 'active' : ''}`}
                                             >
                                                 <div className="d-flex align-items-center gap-2">
