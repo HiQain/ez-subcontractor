@@ -20,7 +20,7 @@ export const generateToken = async () => {
     console.log('permission ===>', permission);
     if (permission === 'granted') {
         const token = await getToken(messaging!, {
-            vapidKey: "BOkqAoS5BG3-70xSaY140knjWQDpfBKcOx3L1eUspSG27srt6-x2lwlQCkfh25cC5il4TbbQLdJp6CmEAUGu0fs",
+            vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
         });
         console.log('token ===>', token);
     }
