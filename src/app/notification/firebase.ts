@@ -22,6 +22,7 @@ export const generateToken = async () => {
         const token = await getToken(messaging!, {
             vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
         });
+        localStorage.setItem("fcmToken", token);
         console.log('token ===>', token);
     }
 }
