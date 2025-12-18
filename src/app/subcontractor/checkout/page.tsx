@@ -10,6 +10,12 @@ import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import '../../../styles/pricing.css';
 import '../../../styles/checkout.css';
 
+const PLAN_RULES: any = {
+    1: { free: 1, extraPrice: 0, max: 1 },
+    2: { free: 1, extraPrice: 25 },
+    3: { free: 1, extraPrice: 200 },
+};
+
 export default function CheckoutPage() {
     const stripe = useStripe();
     const elements = useElements();
@@ -57,18 +63,39 @@ export default function CheckoutPage() {
     }, []);
 
     const toggleCategory = (category: { id: number; name: string }) => {
-        if (selectedCategories.some(c => c.id === category.id)) {
+        if (!selectedPlan) return;
+
+        const rule = PLAN_RULES[selectedPlan.id];
+        const alreadySelected = selectedCategories.some(c => c.id === category.id);
+
+        // 🔹 If already selected → remove normally
+        if (alreadySelected) {
             setSelectedCategories(selectedCategories.filter(c => c.id !== category.id));
-        } else {
-            setSelectedCategories([...selectedCategories, category]);
+            return;
         }
+
+        // ✅ PLAN 1 SPECIAL BEHAVIOR
+        // Only 1 allowed → replace existing with new one
+        if (selectedPlan.id === 1) {
+            setSelectedCategories([category]);
+            return;
+        }
+
+        // 🔹 Other plans (2 & 3) → normal add
+        setSelectedCategories([...selectedCategories, category]);
     };
 
     // ✅ Price summary
     const basePrice = selectedPlan ? parseFloat(selectedPlan.price) || 0 : 0;
-    const extraCategories = 2 * 125;
-    const tax = Math.round((basePrice + extraCategories) * 0.08);
-    const total = basePrice + extraCategories + tax;
+
+    const rule = selectedPlan ? PLAN_RULES[selectedPlan.id] : null;
+    const freeCategories = rule?.free || 0;
+    const extraCategoryCount = Math.max(selectedCategories.length - freeCategories, 0);
+    const extraCategoriesPrice = extraCategoryCount * (rule?.extraPrice || 0);
+
+    const tax = Math.round((basePrice + extraCategoriesPrice) * 0.08);
+    const total = basePrice + extraCategoriesPrice + tax;
+
 
     // ✅ Note card for Trial plan
     const renderNoteCard = () => (
@@ -301,10 +328,16 @@ export default function CheckoutPage() {
                                                     <span className="fw-semibold" style={{ fontSize: '14px' }}>{selectedPlan.price === 'Free' ? 'Free' : `$${selectedPlan.price}`}</span>
                                                 </div>
 
-                                                <div className="d-flex align-items-center justify-content-between mt-2">
-                                                    <span style={{ fontSize: '14px' }}>Extra Categories (2 X $125)</span>
-                                                    <span className="fw-semibold" style={{ fontSize: '14px' }}>${extraCategories}</span>
-                                                </div>
+                                                {extraCategoryCount > 0 && (
+                                                    <div className="d-flex align-items-center justify-content-between mt-2">
+                                                        <span style={{ fontSize: '14px' }}>
+                                                            Extra Categories ({extraCategoryCount} × ${rule.extraPrice})
+                                                        </span>
+                                                        <span className="fw-semibold" style={{ fontSize: '14px' }}>
+                                                            ${extraCategoriesPrice}
+                                                        </span>
+                                                    </div>
+                                                )}
 
                                                 <div className="d-flex align-items-center justify-content-between mt-2">
                                                     <span style={{ fontSize: '14px' }}>Tax (8%)</span>
@@ -319,7 +352,8 @@ export default function CheckoutPage() {
                                                 </div>
 
                                                 <p className="mb-0 mt-2" style={{ fontSize: '14px' }}>
-                                                    Note: You’ve selected 3 categories
+                                                    You’ve selected {selectedCategories.length} category
+                                                    {selectedCategories.length > 1 ? 'ies' : ''}
                                                 </p>
                                             </div>
                                         </div>
