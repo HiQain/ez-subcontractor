@@ -8,6 +8,7 @@ import '../../../styles/profile.css';
 import '../../../styles/pricing.css';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import CancelSubscriptionModal from './components/cancel-subscription-modal';
 
 interface Feature {
     feature: string;
@@ -36,6 +37,8 @@ export default function SubscriptionPage() {
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [selectedSubscription, setSelectedSubscription] = useState<Subscription>(null);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -395,6 +398,10 @@ export default function SubscriptionPage() {
                                                                                 : 'btn-secondary'
                                                                                 }`}
                                                                             disabled={sub.is_active !== '1'}
+                                                                            onClick={() => {
+                                                                                setSelectedSubscription(sub);
+                                                                                setShowCancelModal(true)
+                                                                            }}
                                                                         >
                                                                             {sub.is_active === '1' ? 'Cancel Plan' : 'Expired'}
                                                                         </button>
@@ -405,6 +412,20 @@ export default function SubscriptionPage() {
                                                                         {sub.start_date} → {sub.end_date}
                                                                     </div>
                                                                 </div>
+                                                                <CancelSubscriptionModal
+                                                                    show={showCancelModal}
+                                                                    planName={selectedSubscription?.plan?.plan_name}
+                                                                    onClose={() => {
+                                                                        setShowCancelModal(false);
+                                                                        setSelectedSubscription(null);
+                                                                    }}
+                                                                    onConfirm={() => {
+                                                                        console.log(
+                                                                            'Cancel plan:',
+                                                                            selectedSubscription?.plan?.plan_name
+                                                                        );
+                                                                    }}
+                                                                />
                                                             </div>
                                                         ))}
                                                     </div>
