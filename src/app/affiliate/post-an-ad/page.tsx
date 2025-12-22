@@ -660,8 +660,19 @@ export default function PostAnAd() {
                                 </div>
                             </div>
 
-                            <button className="btn btn-primary w-100 rounded-3 justify-content-center" onClick={handlePostAd}>
-                                Post an Ad
+                            <button
+                                className="btn btn-primary w-100 rounded-3 justify-content-center d-flex align-items-center justify-content-center gap-2"
+                                onClick={handlePostAd}
+                                disabled={loading}
+                            >
+                                {loading && (
+                                    <span
+                                        className="spinner-border spinner-border-sm"
+                                        role="status"
+                                        aria-hidden="true"
+                                    ></span>
+                                )}
+                                {loading ? 'Posting...' : 'Post an Ad'}
                             </button>
                         </div>
 
