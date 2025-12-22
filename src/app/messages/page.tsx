@@ -366,7 +366,9 @@ export default function ChatPage() {
                         key={msg.id}
                         className={`message ${msg.sender_id === selectedChatId ? 'incoming' : 'outgoing'}`}
                       >
-                        <div className="message-content">
+                        <div className="message-content" style={{
+                          minWidth: '80px'
+                        }}>
                           <div className="message-bubble">
                             {/* Attachments first */}
                             {msg.attachment && msg.attachment.length > 0 && (
