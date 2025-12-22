@@ -33,7 +33,6 @@ export default function PostAnAd() {
     const [selectedAd, setSelectedAd] = useState<any | null>(null);
     const durationWeeks = 7; // 7 weeks
 
-
     // 🔹 Toast Utility — identical to your register page
     const showToast = (message: string, type: 'success' | 'error' = 'error') => {
         const existing = document.querySelector('.checkout-toast');
