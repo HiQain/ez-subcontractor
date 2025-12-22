@@ -338,17 +338,17 @@ export default function CheckoutPage() {
                                         <div className="input-wrapper d-flex flex-column">
                                             <label className="mb-1 fw-semibold">Full Name *</label>
                                             <input type="text" placeholder="Jason Doe"
-                                                   value={name}
-                                                   onChange={(e) => setName(e.target.value)}
-                                                   //disabled
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                disabled
                                             />
                                         </div>
                                         <div className="input-wrapper d-flex flex-column">
                                             <label className="mb-1 fw-semibold">Email Address *</label>
                                             <input type="email" placeholder="hello@example.com"
-                                                   value={email}
-                                                   onChange={(e) => setEmail(e.target.value)}
-                                                  // disabled
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                disabled
                                             />
                                         </div>
                                     </div>
