@@ -24,7 +24,7 @@ export default function TransactionHistory() {
                 <section className="banner-sec profile">
                     <div className="container">
                         <div className="row g-4">
-                            {/* Sidebar */}
+                            {/* SidebarSubcontractor */}
                             <div className="col-xl-3">
                                 <div className="sidebar">
                                     <div className="main-wrapper bg-dark p-0">
@@ -78,7 +78,7 @@ export default function TransactionHistory() {
                                             />
                                         </div>
 
-                                        {/* Sidebar Links */}
+                                        {/* SidebarSubcontractor Links */}
                                         <div className="buttons-wrapper">
                                             {sidebarLinks.map((link) => (
                                                 <Link

@@ -27,7 +27,7 @@
 .home-banner-sec .slick-list,
 .home-banner-sec .slick-track,
 .home-banner-sec .banner-wrapper {
-  height: 100vh;
+  height: 60vh;
 }
 .home-banner-sec .slick-dots {
   bottom: 100px;
@@ -112,6 +112,24 @@
   font-weight: 600;
   font-size: 18px;
   text-decoration: none;
+}
+
+.role-cards {
+  position: relative;
+  z-index: 2;
+  margin-top: -60px;
+}
+.role-cards .account-card {
+  min-width: 100% !important;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 30px 20px;
+  margin-bottom: 10px;
+}
+.role-cards .account-card input {
+  display: none;
 }
 
 .testimonial-sec {

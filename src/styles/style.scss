@@ -435,3 +435,27 @@ body {
   top: 8px !important;
   right: 8px !important;
 }
+
+.banner-sec.trial {
+  padding: 50px 0;
+}
+.dropdown.hide-arrow {
+  a {
+    &:after {
+      display: none;
+    }
+  }
+}
+.slick-slider {
+  .slick-arrow {
+    top: auto;
+    bottom: 0;
+    transform: translate(0, 0)
+  }
+  .slick-arrow.slick-prev {
+    left: 20px
+  }
+  .slick-arrow.slick-next {
+    left: 50px
+  }
+}

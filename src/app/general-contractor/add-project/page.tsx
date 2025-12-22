@@ -462,9 +462,6 @@ export default function PostAd() {
                                                 <DatePicker
                                                     selected={estimateDueDate}
                                                     onChange={handleChangeEstimateDueDate}
-                                                    selectsStart
-                                                    startDate={estimateDueDate}
-                                                    endDate={endDate}
                                                     minDate={new Date()}
                                                 />
                                                 {errors.estimateDueDate && (
@@ -479,11 +476,7 @@ export default function PostAd() {
                                                 <DatePicker
                                                     selected={startDate}
                                                     onChange={handleChangeStartDate}
-                                                    startDate={startDate}
-                                                    endDate={endDate}
                                                     minDate={new Date()}
-                                                    maxDate={estimateDueDate || undefined}
-                                                    disabled={!estimateDueDate}
                                                 />
                                                 {errors.startDate && (
                                                     <span className="text-danger animate-slide-up">{errors.startDate}</span>
@@ -497,12 +490,8 @@ export default function PostAd() {
                                                 <DatePicker
                                                     selected={endDate}
                                                     onChange={handleChangeEndDate}
-                                                    selectsEnd
-                                                    startDate={startDate}
-                                                    endDate={endDate}
-                                                    minDate={startDate || undefined}
-                                                    maxDate={estimateDueDate || undefined}
-                                                    disabled={!startDate || !estimateDueDate}
+                                                    minDate={new Date()}
+                                                    disabled={!startDate}
                                                 />
                                                 {errors.endDate && (
                                                     <span className="text-danger animate-slide-up">{errors.endDate}</span>

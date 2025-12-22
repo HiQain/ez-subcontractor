@@ -32,7 +32,7 @@ export default function ProfilePage() {
     const [error, setError] = useState<string | null>(null);
 
     const links = [
-        { href: '/general-contractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/lock.svg' },
+        { href: '/general-contractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/user.svg' },
         { href: '/general-contractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
     ];
 
@@ -193,12 +193,12 @@ export default function ProfilePage() {
                 <section className="banner-sec profile position-static">
                     <div className="container">
                         <div className="row g-4">
-                            {/* Sidebar */}
+                            {/* SidebarSubcontractor */}
                             <div className="col-xl-3">
                                 <div className="sidebar">
                                     <div className="main-wrapper bg-dark p-0">
 
-                                        {/* Sidebar Links */}
+                                        {/* SidebarSubcontractor Links */}
                                         <div className="buttons-wrapper">
                                             {links.map((link) => (
                                                 <Link
@@ -327,19 +327,6 @@ export default function ProfilePage() {
                                                     <div className="fw-semibold fs-18 text-truncate">{profile.companyName}</div>
                                                 </div>
                                             </div>
-                                            <div className="col-xl-3 col-sm-6 overflow-hidden">
-                                                <div className="content">
-                                                    <div className="text-gray-light fw-medium mb-2">
-                                                        Email Address
-                                                    </div>
-                                                    <Link
-                                                        href={`mailto:${profile.email}`}
-                                                        className="fw-semibold fs-18 text-dark  text-truncate"
-                                                    >
-                                                        {profile.email}
-                                                    </Link>
-                                                </div>
-                                            </div>
                                             <div className="col-xl-3 col-sm-6">
                                                 <div className="content">
                                                     <div className="text-gray-light fw-medium mb-2">
@@ -350,6 +337,19 @@ export default function ProfilePage() {
                                                         className="fw-semibold fs-18 text-dark text-truncate"
                                                     >
                                                         {profile.phone}
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                            <div className="col-xl-3 col-sm-6 overflow-hidden">
+                                                <div className="content">
+                                                    <div className="text-gray-light fw-medium mb-2">
+                                                        Email Address
+                                                    </div>
+                                                    <Link
+                                                        href={`mailto:${profile.email}`}
+                                                        className="fw-semibold fs-18 text-dark  text-truncate"
+                                                    >
+                                                        {profile.email}
                                                     </Link>
                                                 </div>
                                             </div>

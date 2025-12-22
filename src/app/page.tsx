@@ -4,7 +4,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import Slider from "react-slick";
-import { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -15,10 +15,32 @@ import "../styles/slick-slider.css";
 import { generateToken, messaging } from "./notification/firebase";
 import { onMessage } from "firebase/messaging";
 import { showNotificationToast } from "./notification/toast";
+import {useRouter} from "next/navigation";
 
 export default function HomePage() {
+    const router = useRouter();
     const sliderRef = useRef(null);
+    const [selectedType, setSelectedType] = useState('');
     const [currentSlide, setCurrentSlide] = useState(0);
+
+    const accountTypes = [
+        {
+            id: 'general_contractor',
+            title: 'General Contractor',
+            icon: '/assets/img/icons/construction-worker.webp',
+        },
+        {
+            id: 'subcontractor',
+            title: 'Subcontractor',
+            icon: '/assets/img/icons/settings.svg',
+        },
+        {
+            id: 'affiliate',
+            title: 'Affiliate',
+            icon: '/assets/img/icons/portfolio.webp',
+        },
+    ];
+
 
     useEffect(() => {
         document.title = "Construction Projects & Sub-Contractors Network";
@@ -144,6 +166,19 @@ export default function HomePage() {
         setExpandedCards(newExpanded);
     };
 
+    const handleSelection = (typeId) => {
+        setSelectedType(typeId);
+        localStorage.setItem('role', typeId);
+        if (typeId == 'general_contractor') {
+            router.push('/auth/register/general_contractor');
+        } else if (typeId == 'subcontractor') {
+            router.push('/auth/register/subcontractor');
+        } else if (typeId == 'affiliate') {
+            router.push('/auth/register/affiliate');
+        }
+        console.log(typeId);
+    };
+
     const sliderSettingsDesktop = {
         slidesToShow: 3,
         slidesToScroll: 1,
@@ -195,7 +230,7 @@ export default function HomePage() {
                                     >
                                         <source src={banner.video} type="video/mp4" />
                                     </video>
-                                    <div className="content-wrapper text-center text-white px-3">
+                                    <div className="content-wrapper text-center text-white px-3 d-none">
                                         {/* ✅ First slide <h1>, others <h2> */}
                                         {banner.id === 1 ? (
                                             <h1 className="main-title mb-4">{banner.title}</h1>
@@ -257,6 +292,42 @@ export default function HomePage() {
                     {/*</div>*/}
                 </section>
 
+                <section className="role-cards">
+                    <div className="container">
+                        <div className="row">
+                            <div className="col-xl-8 offset-xl-2">
+                                <div className="row">
+                                    {accountTypes.map((acc) => (
+                                        <div className="col-lg-4">
+                                            <div
+                                                className={`account-card mb-3 px-4 shadow-sm ${selectedType === acc.id ? 'active' : ''}`}
+                                                key={acc.id}
+                                                onClick={() => handleSelection(acc.id)}
+                                                style={{cursor: 'pointer', minWidth: '430px'}}
+
+                                            >
+                                                <div className={'text-center'}>
+                                                    <Image src={acc.icon} width={50} height={50}
+                                                           alt={`${acc.title} Icon`} className={"mb-3"}/>
+                                                    <h5 className="title fw-semibold">{acc.title}</h5>
+                                                </div>
+                                                <input
+                                                    type="radio"
+                                                    name="accountType"
+                                                    className="account-radio"
+                                                    value={acc.id}
+                                                    checked={selectedType === acc.id}
+                                                    onChange={() => handleSelection(acc.id)}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 {/* 🔹 Project Section */}
                 <section className="project-sec py-5">
                     <div className="container">
@@ -291,7 +362,7 @@ export default function HomePage() {
                                             </div>
                                             <button
                                                 onClick={() => toggleExpand(index)}
-                                                className="see-more-btn d-block btn btn-link p-0 text-primary"
+                                                className="see-more-btn d-block btn btn-link p-0 text-primary d-none"
                                             >
                                                 {expandedCards.has(index) ? "See less" : "See more"}
                                             </button>

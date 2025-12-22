@@ -68,7 +68,7 @@ export default function SubscriptionPage() {
                 <section className="banner-sec profile pricing">
                     <div className="container">
                         <div className="row g-4">
-                            {/* Sidebar */}
+                            {/* SidebarSubcontractor */}
                             <div className="col-xl-3">
                                 <div className="sidebar">
                                     <div className="main-wrapper bg-dark p-0">
@@ -127,7 +127,7 @@ export default function SubscriptionPage() {
                                             />
                                         </div>
 
-                                        {/* Sidebar Buttons */}
+                                        {/* SidebarSubcontractor Buttons */}
                                         <div className="buttons-wrapper">
                                             <Link href="/affiliate/change-password" className="custom-btn">
                                                 <div className="d-flex align-items-center gap-2">

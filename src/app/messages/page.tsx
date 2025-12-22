@@ -175,7 +175,7 @@ export default function ChatPage() {
         <div className="container">
           <div className="chat-wrapper">
 
-            {/* Sidebar */}
+            {/* SidebarSubcontractor */}
             <div className="sidebar">
               <div className="form-wrapper">
                 <div className="d-flex align-items-center gap-2">

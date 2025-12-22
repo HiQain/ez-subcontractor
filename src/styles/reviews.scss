@@ -5,8 +5,7 @@ $dark: #272727 !important;
 $danger: #DC2626;
 
 .banner-sec.reviews {
-    padding-top: 157px;
-    padding-bottom: 50px;
+    padding: 50px 0;
     .topbar {
         background-color: $dark;
         padding: clamp(20px,3vw,30px) clamp(30px,5vw,50px);

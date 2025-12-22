@@ -127,6 +127,8 @@ export default function LoginPage() {
 
             const data = await response.json();
 
+            console.log(data);
+
             if (response.ok) {
                 const token = data.data?.token;
                 const user = data.data?.user;

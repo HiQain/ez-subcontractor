@@ -1,10 +1,11 @@
 'use client';
 
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import Slider from 'react-slick';
 
 import '../../../styles/job-single.css';
 import {useRouter} from "next/navigation";
@@ -47,6 +48,13 @@ interface Project {
     };
 }
 
+interface BannerImage {
+    id: number;
+    src: string;
+    alt: string;
+    // caption?: string; // optional: add later if needed
+}
+
 
 export default function ProjectSubcontractorDetailsPage() {
     const router = useRouter();
@@ -54,6 +62,22 @@ export default function ProjectSubcontractorDetailsPage() {
     const [project, setProject] = useState<Project | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [bannerImagesSidebar, setBannerImagesSidebar] = useState<BannerImage[]>([]);
+    const [bannerImagesLoading, setBannerImagesLoading] = useState(true);
+    const [bannerImagesError, setBannerImagesError] = useState<string | null>(null);
+    const leftSliderRef = useRef<Slider | null>(null);
+
+    const sliderSettings = {
+        dots: false,
+        infinite: true,
+        speed: 600,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        arrows: false,
+        autoplay: true,
+        autoplaySpeed: 4000,
+        pauseOnHover: true,
+    };
 
     const formatDate = (dateStr: string) => {
         const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -86,6 +110,7 @@ export default function ProjectSubcontractorDetailsPage() {
     };
 
     useEffect(() => {
+        fetchBannerImagesSidebar();
         setProjectId(localStorage.getItem('project-id'));
         if (!projectId) {
             setError('Project ID is missing.');
@@ -144,6 +169,39 @@ export default function ProjectSubcontractorDetailsPage() {
 
         fetchProject();
     }, [projectId]);
+
+    const fetchBannerImagesSidebar = async () => {
+        setBannerImagesLoading(true);
+        setBannerImagesError(null);
+
+        try {
+            // ✅ Replace this block with real API call later
+            // Example:
+            // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}banner-images`);
+            // const data = await res.json();
+
+            // 🔹 For now: static fallback (you can remove this when API ready)
+            const staticImagesSidebar: BannerImage[] = [
+                { id: 1, src: '/assets/img/filter-img.webp', alt: 'Construction Project 1' },
+                { id: 2, src: '/assets/img/filter-img.webp', alt: 'Construction Project 2' },
+                { id: 3, src: '/assets/img/filter-img.webp', alt: 'Construction Project 3' },
+            ];
+
+            // Simulate API delay (remove in production)
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            setBannerImagesSidebar(staticImagesSidebar);
+        } catch (err) {
+            console.error('Failed to load banner images:', err);
+            setBannerImagesError('Failed to load banner images');
+            // Fallback to default images
+            setBannerImagesSidebar([
+                { id: 1, src: '/assets/img/filter-img.webp', alt: 'Default Banner' },
+            ]);
+        } finally {
+            setBannerImagesLoading(false);
+        }
+    };
 
     const pdfs = project?.attachments
         ? project.attachments.filter(a =>
@@ -245,8 +303,8 @@ export default function ProjectSubcontractorDetailsPage() {
 
                         <div className="row g-4">
                             {/* Left Side */}
-                            <div className="col-lg-8">
-                                <div className="custom-card mb-4">
+                            <div className="col-lg-9">
+                                <div className="custom-card mb-4 mt-0 mx-0">
                                     <div
                                         className="mb-4 d-flex align-items-center justify-content-between gap-2 flex-wrap">
                                         <Link href="#" className="btn btn-primary">
@@ -467,7 +525,7 @@ export default function ProjectSubcontractorDetailsPage() {
                             </div>
 
                             {/* Right Side */}
-                            <div className="col-lg-4">
+                            <div className="col-lg-3">
                                 <div className="custom-card card-2">
                                     <Image
                                         src="/assets/img/icons/p-icon.svg"
@@ -481,9 +539,9 @@ export default function ProjectSubcontractorDetailsPage() {
                                         <div className="title text-black fw-semibold text-center fs-5 mb-2">{project.user.company_name}</div>
                                     )}
                                     {project.user?.email && (
-                                        <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap mb-2">
+                                        <div className="d-flex align-items-center justify-content-center gap-2 mb-2 flex-nowrap">
                                             <Image src="/assets/img/icons/message-dark.svg" width={20} height={20} alt="Message Icon" />
-                                            <Link href={`mailto:${project.user.email}`} className="text-dark fw-medium">
+                                            <Link href={`mailto:${project.user.email}`} className="text-dark fw-medium text-truncate">
                                                 {project.user.email}
                                             </Link>
                                         </div>
@@ -503,16 +561,16 @@ export default function ProjectSubcontractorDetailsPage() {
                                         <span className="text-white">Chat Now</span>
                                     </Link>
 
-                                    <div className="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                                    <div>
                                         {project.user?.email && (
-                                            <Link href={`mailto:${project.user.email}`} className="btn btn-outline-dark rounded-3">
+                                            <Link href={`mailto:${project.user.email}`} className="btn btn-outline-dark rounded-3 w-100 justify-content-center mb-3">
                                                 <Image src="/assets/img/icons/message-dark.svg" width={20} height={20} alt="Email Icon" />
                                                 <span>Email</span>
                                             </Link>
                                         )}
 
                                         {project.user?.phone && (
-                                            <Link href={`tel:${project.user.phone}`} className="btn btn-outline-dark rounded-3">
+                                            <Link href={`tel:${project.user.phone}`} className="btn btn-outline-dark rounded-3 w-100 justify-content-center">
                                                 <Image src="/assets/img/icons/call-dark.svg" width={20} height={20} alt="Phone Icon" />
                                                 <span>Phone</span>
                                             </Link>
@@ -520,14 +578,22 @@ export default function ProjectSubcontractorDetailsPage() {
                                     </div>
                                 </div>
 
-                                <Image
-                                    src="/assets/img/filter-img.webp"
-                                    width={400}
-                                    height={400}
-                                    style={{ borderRadius: '25px', boxShadow: '0 4px 85px 0px #00000025' }}
-                                    className="img-fluid w-100"
-                                    alt="Filter Image"
-                                />
+                                <div className="slider rounded overflow-hidden">
+                                    <Slider ref={leftSliderRef} {...sliderSettings}>
+                                        {bannerImagesSidebar.map((img) => (
+                                            <div key={img.id} className="px-1">
+                                                <Image
+                                                    src={img.src}
+                                                    width={800}
+                                                    height={230}
+                                                    alt={img.alt}
+                                                    className="img-fluid w-100 h-100 rounded-4 object-fit-cover "
+                                                    // Optional: add loading="lazy" later
+                                                />
+                                            </div>
+                                        ))}
+                                    </Slider>
+                                </div>
                             </div>
                         </div>
                     </div>

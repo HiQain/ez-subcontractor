@@ -32,6 +32,57 @@ export default function CheckoutPage() {
     const [promoLoading, setPromoLoading] = useState(false);
     const [promoError, setPromoError] = useState<string | null>(null);
 
+    // 🔹 Toast Utility — identical to your register page
+    const showToast = (message: string, type: 'success' | 'error' = 'error') => {
+        const existing = document.querySelector('.checkout-toast');
+        if (existing) existing.remove();
+
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        const toast = document.createElement('div');
+        toast.className = 'checkout-toast';
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                max-width: 400px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+                font-size: 14px;
+            ">
+                <span>${icon} ${message}</span>
+<!--                <button type="button" class="btn-close" style="font-size: 12px; margin-left: auto; opacity: 0.7;" data-bs-dismiss="toast"></button>-->
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        // const closeButton = el.querySelector('.btn-close');
+        // closeButton?.addEventListener('click', () => {
+        //     clearTimeout(timeoutId);
+        //     el.classList.remove('show');
+        //     el.style.opacity = '0';
+        //     setTimeout(() => toast.remove(), 300);
+        // });
+    };
+
     // ✅ Handle Apply Promo Code
     const handleApplyPromo = async () => {
         if (!promoCode.trim()) return;
@@ -61,6 +112,7 @@ export default function CheckoutPage() {
         } catch (err: any) {
             setPromoError(err.message || 'Something went wrong');
             setAppliedPromo(null);
+            showToast(err.message || 'Invalid promo code', 'error'); // ✅ Toast added
         } finally {
             setPromoLoading(false);
         }
@@ -172,7 +224,9 @@ export default function CheckoutPage() {
 
         // 🔹 Validate name & email
         if (!name.trim() || !email.trim()) {
-            setError('Please enter your name and email');
+            const msg = 'Please enter your name and email';
+            setError(msg);
+            showToast(msg, 'error'); // ✅ Toast added
             setTimeout(() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, 500);
@@ -180,13 +234,17 @@ export default function CheckoutPage() {
         }
 
         if (!stripe || !elements) {
-            setError('Stripe not loaded yet');
+            const msg = 'Stripe not loaded yet';
+            setError(msg);
+            showToast(msg, 'error'); // ✅ Toast added
             return;
         }
 
         const cardElement = elements.getElement(CardElement);
         if (!cardElement) {
-            setError('Card details missing');
+            const msg = 'Card details missing';
+            setError(msg);
+            showToast(msg, 'error'); // ✅ Toast added
             return;
         }
 
@@ -202,7 +260,10 @@ export default function CheckoutPage() {
                 });
 
             if (stripeError || !paymentMethod) {
-                throw new Error(stripeError?.message || 'Payment method creation failed');
+                const msg = stripeError?.message || 'Payment method creation failed';
+                setError(msg);
+                showToast(msg, 'error'); // ✅ Toast added
+                throw new Error(msg);
             }
 
             // 🔹 2. Call Backend Subscription API
@@ -227,14 +288,21 @@ export default function CheckoutPage() {
             const data = await response.json();
 
             if (!response.ok || !data.success) {
-                throw new Error(data.message?.[0] || 'Subscription creation failed');
+                const msg = data.message?.[0] || 'Subscription creation failed';
+                setError(msg);
+                showToast(msg, 'error'); // ✅ Toast added
+                throw new Error(msg);
             }
 
             // ✅ Success
-            router.push('/subcontractor/my-subscription');
+            showToast('Subscription activated successfully!', 'success'); // ✅ Success toast
+            router.push('/subcontractor/thank-you');
+            console.log('ssss')
 
         } catch (err: any) {
-            setError(err.message || 'Something went wrong');
+            const msg = err.message || 'Something went wrong';
+            setError(msg);
+            showToast(msg, 'error'); // ✅ Final catch-all toast
             setTimeout(() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, 500);
@@ -270,17 +338,17 @@ export default function CheckoutPage() {
                                         <div className="input-wrapper d-flex flex-column">
                                             <label className="mb-1 fw-semibold">Full Name *</label>
                                             <input type="text" placeholder="Jason Doe"
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                disabled
+                                                   value={name}
+                                                   onChange={(e) => setName(e.target.value)}
+                                                   //disabled
                                             />
                                         </div>
                                         <div className="input-wrapper d-flex flex-column">
                                             <label className="mb-1 fw-semibold">Email Address *</label>
                                             <input type="email" placeholder="hello@example.com"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                disabled
+                                                   value={email}
+                                                   onChange={(e) => setEmail(e.target.value)}
+                                                  // disabled
                                             />
                                         </div>
                                     </div>
@@ -463,7 +531,7 @@ export default function CheckoutPage() {
                                     )}
 
                                     <button
-                                        className="btn btn-primary w-100 rounded-3 mt-4"
+                                        className="btn btn-primary rounded-3 mt-4"
                                         onClick={handleConfirmPayment}
                                         disabled={!stripe || loading}
                                     >

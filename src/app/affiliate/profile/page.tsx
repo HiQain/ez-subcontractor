@@ -27,7 +27,7 @@ export default function ProfilePage() {
                 <section className="banner-sec profile position-static">
                     <div className="container">
                         <div className="row g-4">
-                            {/* Sidebar */}
+                            {/* SidebarSubcontractor */}
                             <div className="col-xl-3">
                                 <div className="sidebar">
                                     <div className="main-wrapper bg-dark p-0">
@@ -86,7 +86,7 @@ export default function ProfilePage() {
                                             />
                                         </div>
 
-                                        {/* Sidebar Buttons */}
+                                        {/* SidebarSubcontractor Buttons */}
                                         <div className="buttons-wrapper">
                                             {sidebarLinks.map((link, i) => (
                                                 <Link

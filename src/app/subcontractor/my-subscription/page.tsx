@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import SidebarSubcontractor from '../../components/SidebarSubcontractor';
 import '../../../styles/profile.css';
 import '../../../styles/pricing.css';
 import { usePathname, useRouter } from 'next/navigation';
@@ -40,6 +41,8 @@ export default function SubscriptionPage() {
     const [error, setError] = useState<string | null>(null);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [selectedSubscription, setSelectedSubscription] = useState<Subscription>(null);
+    const [logoutLoading, setLogoutLoading] = useState(false);
+
 
     useEffect(() => {
         fetchSubscriptions();
@@ -117,6 +120,52 @@ export default function SubscriptionPage() {
         }
     };
 
+    const handleLogout = async () => {
+        setLogoutLoading(true);
+
+        try {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                router.push('/auth/login');
+                return;
+            }
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}auth/logout`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const text = await response.text();
+            let data;
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch {
+                data = { message: text };
+            }
+
+            if (response.ok) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('token');
+                router.push('/auth/login');
+            } else {
+                alert(data?.message || 'Logout failed');
+            }
+        } catch (err) {
+            console.error('Logout Error:', err);
+            alert('Network error. Please try again.');
+        } finally {
+            setLogoutLoading(false);
+        }
+    };
+
 
     return (
         <>
@@ -125,196 +174,8 @@ export default function SubscriptionPage() {
                 <section className="banner-sec profile pricing">
                     <div className="container">
                         <div className="row g-4">
-
-                            {/* Sidebar */}
                             <div className="col-xl-3">
-                                <div className="sidebar d-flex flex-column">
-                                    <div className="main-wrapper bg-dark p-0 flex-grow-1 d-flex flex-column">
-                                        <div className="topbar mb-5">
-                                            <div className="icon-wrapper">
-                                                <Image
-                                                    src="/assets/img/icons/construction-worker.webp"
-                                                    width={80}
-                                                    height={80}
-                                                    alt="Worker Icon"
-                                                    loading="lazy"
-                                                />
-                                                <div className="content-wrapper">
-                                                    <div className="title text-black fs-5 fw-medium mb-2">
-                                                        Joseph Dome
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/message-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Message Icon"
-                                                            loading="lazy"
-                                                        />
-                                                        <Link
-                                                            href="mailto:hello@example.com"
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            hello@example.com
-                                                        </Link>
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/call-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Call Icon"
-                                                            loading="lazy"
-                                                        />
-                                                        <Link
-                                                            href="tel:+(000) 000-000"
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            (000) 000-000
-                                                        </Link>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <Image
-                                                src="/assets/img/icons/arrow-dark.svg"
-                                                style={{ objectFit: 'contain' }}
-                                                width={16}
-                                                height={10}
-                                                alt="Arrow"
-                                                loading="lazy"
-                                            />
-                                        </div>
-
-                                        {/* Sidebar Links */}
-                                        <div className="buttons-wrapper flex-grow-1">
-                                            <Link
-                                                href="/sub-contractor/change-password"
-                                                className={`custom-btn ${pathname === '/subcontractor/change-password' ? 'active' : ''}`}
-                                            >
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/lock.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Icon"
-                                                        loading="lazy"
-                                                    />
-                                                    <span className="text-white">Change Password</span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    style={{ objectFit: 'contain' }}
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-
-                                            <Link
-                                                href="/sub-contractor/saved-listing"
-                                                className={`custom-btn ${pathname === '/subcontractor/saved-listing' ? 'active' : ''}`}
-                                            >
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/saved.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Icon"
-                                                        loading="lazy"
-                                                    />
-                                                    <span className="text-white">Saved Listing</span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    style={{ objectFit: 'contain' }}
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-
-                                            <Link
-                                                href="/sub-contractor/my-subscription"
-                                                className={`custom-btn ${pathname === '/subcontractor/my-subscription' ? 'active' : ''}`}
-                                            >
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/saved.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Icon"
-                                                        loading="lazy"
-                                                    />
-                                                    <span className="text-white">My Subscription</span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    style={{ objectFit: 'contain' }}
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-
-                                            <Link
-                                                href="/subcontractor/transaction-history"
-                                                className={`custom-btn ${pathname === '/subcontractor/transaction-history' ? 'active' : ''}`}
-                                            >
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/saved.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Icon"
-                                                        loading="lazy"
-                                                    />
-                                                    <span className="text-white">Transaction History</span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    style={{ objectFit: 'contain' }}
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-                                        </div>
-                                    </div>
-
-                                    {/* Logout button fixed at bottom */}
-                                    <div className="bottom-bar mt-auto">
-                                        <div className="buttons-wrapper">
-                                            <Link
-                                                href="#"
-                                                className="custom-btn s1 bg-danger"
-                                                style={{ borderColor: '#DC2626' }}
-                                            >
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/logout.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Logout Icon"
-                                                        loading="lazy"
-                                                    />
-                                                    <span className="text-white">Logout</span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    style={{ objectFit: 'contain' }}
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Arrow"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </div>
+                                <SidebarSubcontractor onLogout={handleLogout} />
                             </div>
 
                             {/* Right Content */}

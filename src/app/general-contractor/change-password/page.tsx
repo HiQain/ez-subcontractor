@@ -68,7 +68,7 @@ export default function ChangePassword() {
     const [user, setUser] = useState<{ name: string; email: string; phone: string } | null>(null);
 
     const links = [
-        { href: '/general-contractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/lock.svg' },
+        { href: '/general-contractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/user.svg' },
         { href: '/general-contractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
     ];
 
@@ -209,12 +209,12 @@ export default function ChangePassword() {
                 <section className="banner-sec profile position-static">
                     <div className="container">
                         <div className="row g-4">
-                            {/* Sidebar — now dynamic */}
+                            {/* SidebarSubcontractor — now dynamic */}
                             <div className="col-xl-3">
                                 <div className="sidebar h-100">
                                     <div className="main-wrapper bg-dark p-0 h-100 d-flex flex-column justify-content-between">
 
-                                        {/* Sidebar Links */}
+                                        {/* SidebarSubcontractor Links */}
                                         <div className="buttons-wrapper">
                                             {links.map((link) => (
                                                 <Link

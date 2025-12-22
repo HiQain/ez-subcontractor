@@ -9,6 +9,13 @@ import Footer from "../../components/Footer";
 import '../../../styles/free-trial.css';
 import Slider from "react-slick";
 
+interface BannerImage {
+    id: number;
+    src: string;
+    alt: string;
+    // caption?: string; // optional: add later if needed
+}
+
 interface Project {
     id: number;
     city: string;
@@ -58,8 +65,40 @@ export default function DashboardPage() {
     const [currentContractor, setCurrentContractor] = useState<Contractor | null>(null); // Track which contractor is being rated
     const [contractors, setContractors] = useState<Contractor[]>([]);
 
-    const selectRef = useRef(null);
+    // 🔹 NEW: Banner images state (API-ready)
+    const [bannerImages, setBannerImages] = useState<BannerImage[]>([]);
+    const [bannerImagesSidebar, setBannerImagesSidebar] = useState<BannerImage[]>([]);
+    const [bannerImagesLoading, setBannerImagesLoading] = useState(true);
+    const [bannerImagesError, setBannerImagesError] = useState<string | null>(null);
+
     const sliderRef = useRef<Slider | null>(null);
+    const leftSliderRef = useRef<Slider | null>(null);
+
+    // 🔹 Slider settings
+    const sliderSettings = {
+        dots: false,
+        infinite: true,
+        speed: 600,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        arrows: false,
+        autoplay: true,
+        autoplaySpeed: 4000,
+        pauseOnHover: true,
+    };
+    const sliderSettings2 = {
+        dots: false,
+        infinite: true,
+        speed: 600,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        arrows: true,
+        autoplay: true,
+        autoplaySpeed: 4000,
+        pauseOnHover: true,
+    };
+
+    const selectRef = useRef(null);
 
     // 🔹 Show non-blocking thank-you toast
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -179,6 +218,7 @@ export default function DashboardPage() {
 
     // 🔹 Fetch 4 most recent projects
     useEffect(() => {
+        fetchBannerImages();
         const fetchProjects = async () => {
             setLoading(true);
             setError(null);
@@ -405,6 +445,43 @@ export default function DashboardPage() {
         }
     };
 
+    const fetchBannerImages = async () => {
+        setBannerImagesLoading(true);
+        setBannerImagesError(null);
+
+        try {
+            // ✅ Replace this block with real API call later
+            // Example:
+            // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}banner-images`);
+            // const data = await res.json();
+
+            // 🔹 For now: static fallback (you can remove this when API ready)
+            const staticImages: BannerImage[] = [
+                { id: 1, src: '/assets/img/ad-posting1.webp', alt: 'Construction Project 1' },
+                { id: 2, src: '/assets/img/ad-posting1.webp', alt: 'Construction Project 2' },
+                { id: 3, src: '/assets/img/ad-posting1.webp', alt: 'Construction Project 3' },
+            ];
+
+            // Simulate API delay (remove in production)
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            console.log(setBannerImages);
+
+            setBannerImages(staticImages);
+        } catch (err) {
+            console.error('Failed to load banner images:', err);
+            setBannerImagesError('Failed to load banner images');
+            // Fallback to default images
+            setBannerImages([
+                { id: 1, src: '/assets/img/ad-posting1.webp', alt: 'Default Banner' },
+            ]);
+        } finally {
+            setBannerImagesLoading(false);
+        }
+    };
+
+
+
     const settings = {
         dots: false,
         infinite: true,
@@ -421,31 +498,55 @@ export default function DashboardPage() {
             <section className="banner-sec trial position-static">
                 <div className="container">
                     <div className="row g-4">
-                        <div className="col-lg-6">
-                            <div className="slider">
-                                <Image
-                                    src="/assets/img/dashboard-free-trial-img.webp"
-                                    width={800}
-                                    height={600}
-                                    alt="Section Image"
-                                    className="img-fluid w-100 h-100"
-                                    style={{
-                                        borderRadius: '12px',
-                                        boxShadow: '0 4px 35px 0 #00000025',
-                                        objectFit: 'cover',
-                                    }}
-                                />
-                            </div>
+                        {/* 🔹 Left: Dynamic Image Slider */}
+                        <div className="col-lg-6 position-relative">
+                            {bannerImagesLoading ? (
+                                <div className="d-flex align-items-center justify-content-center bg-light rounded-4" style={{ height: '250px' }}>
+                                    <div className="spinner-border text-primary" role="status">
+                                        <span className="visually-hidden">Loading banner...</span>
+                                    </div>
+                                </div>
+                            ) : bannerImagesError ? (
+                                <div className="alert alert-warning d-flex align-items-center" style={{ height: '250px' }}>
+                                    {bannerImagesError}
+                                </div>
+                            ) : (
+                                <div className="slider rounded overflow-hidden">
+                                    <Slider ref={leftSliderRef} {...sliderSettings}>
+                                        {bannerImages.map((img) => (
+                                            <div key={img.id} className="px-1">
+                                                <Image
+                                                    src={img.src}
+                                                    width={800}
+                                                    height={250}
+                                                    alt={img.alt}
+                                                    className="img-fluid w-100 h-100 rounded-4 object-fit-cover "
+                                                />
+                                            </div>
+                                        ))}
+                                    </Slider>
+                                </div>
+                            )}
                         </div>
+
+                        {/* 🔹 Right: Text Slider (unchanged) */}
                         <div className="col-lg-6">
-                            <div className="banner-wrapper" style={{ backgroundImage: "url('/assets/img/free-trial-img2.webp')" }}>
+                            <div
+                                className="banner-wrapper position-relative"
+                                style={{ backgroundImage: "url('/assets/img/free-trial-img2.webp')" }}
+                            >
                                 <div className="main-slider">
-                                    <Slider ref={sliderRef} {...settings}>
+                                    <Slider ref={sliderRef} {...sliderSettings2}>
                                         {[1, 2].map((_, i) => (
-                                            <div key={i} className="slider-item">
+                                            <div key={i} className="slider-item p-4">
                                                 <div className="d-flex align-items-center gap-2 mb-3">
                                                     <div className="icon bg-primary">
-                                                        <Image src="/assets/img/icons/camera.svg" width={14} height={10} alt="icon" />
+                                                        <Image
+                                                            src="/assets/img/icons/camera.svg"
+                                                            width={14}
+                                                            height={10}
+                                                            alt="icon"
+                                                        />
                                                     </div>
                                                     <div style={{ fontSize: '14px' }} className="content text-white fw-medium">
                                                         Online Webinar
@@ -453,30 +554,55 @@ export default function DashboardPage() {
                                                 </div>
                                                 <h2 className="main-title text-primary">50% Increase Sales</h2>
                                                 <div className="desc fw-medium text-white mb-3">
-                                                    Present a professional estimate with your logo and company name and colors.
+                                                    Present a professional estimate with your logo and company name and
+                                                    colors.
                                                 </div>
                                             </div>
                                         ))}
                                     </Slider>
                                 </div>
-                                <div className="slider-controls d-flex align-items-center justify-content-between">
-                                    <div className="custom-arrows d-flex align-items-center gap-2">
-                                        <button className="custom-prev" onClick={() => sliderRef.current?.slickPrev()}>
-                                            <Image src="/assets/img/dashboard-arrow.svg" alt="Prev" width={8} height={16} />
-                                        </button>
-                                        <button className="custom-next" onClick={() => sliderRef.current?.slickNext()}>
-                                            <Image src="/assets/img/dashboard-arrow1.svg" alt="Next" width={8} height={16} />
-                                        </button>
-                                    </div>
-                                    <div className="icon">
-                                        <Image src="/assets/img/icons/search-icon1.svg" alt="Search" width={14} height={14} />
-                                    </div>
-                                </div>
+                                {/*<div className="slider-controls d-flex align-items-center justify-content-between px-4">*/}
+                                {/*    <div className="custom-arrows d-flex align-items-center gap-2">*/}
+                                {/*        <button*/}
+                                {/*            className="custom-prev btn btn-sm btn-light rounded-circle px-2 py-1"*/}
+                                {/*            onClick={() => sliderRef.current?.slickPrev()}*/}
+                                {/*            aria-label="Previous content"*/}
+                                {/*        >*/}
+                                {/*            <Image*/}
+                                {/*                src="/assets/img/dashboard-arrow.svg"*/}
+                                {/*                alt="Prev"*/}
+                                {/*                width={8}*/}
+                                {/*                height={16}*/}
+                                {/*            />*/}
+                                {/*        </button>*/}
+                                {/*        <button*/}
+                                {/*            className="custom-next btn btn-sm btn-light rounded-circle"*/}
+                                {/*            onClick={() => sliderRef.current?.slickNext()}*/}
+                                {/*            aria-label="Next content"*/}
+                                {/*        >*/}
+                                {/*            <Image*/}
+                                {/*                src="/assets/img/dashboard-arrow1.svg"*/}
+                                {/*                alt="Next"*/}
+                                {/*                width={8}*/}
+                                {/*                height={16}*/}
+                                {/*            />*/}
+                                {/*        </button>*/}
+                                {/*    </div>*/}
+                                {/*    <div className="icon">*/}
+                                {/*        <Image*/}
+                                {/*            src="/assets/img/icons/search-icon1.svg"*/}
+                                {/*            alt="Search"*/}
+                                {/*            width={14}*/}
+                                {/*            height={14}*/}
+                                {/*        />*/}
+                                {/*    </div>*/}
+                                {/*</div>*/}
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
+
             {/* My Projects & Rate Subcontractor */}
             <section className="review mb-5">
                 <div className="container">
@@ -724,13 +850,13 @@ export default function DashboardPage() {
                                                         {getStatusLabel(project.status)}
                                                     </span>
                                                 </div>
-                                                <p className="description mb-0">
+                                                <p className="description mb-3">
                                                     {expandedCards.includes(index)
                                                         ? project.description
                                                         : project.description?.replace(/<[^>]*>/g, '').slice(0, 150) + '...'}
                                                 </p>
                                                 <button
-                                                    className="see-more-btn mb-3 d-block"
+                                                    className="see-more-btn mb-3 d-block d-none"
                                                     onClick={() => toggleCard(index)}
                                                 >
                                                     {expandedCards.includes(index) ? 'See less' : 'See more'}

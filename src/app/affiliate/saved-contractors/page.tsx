@@ -25,7 +25,7 @@ export default function SavedContractors() {
                 <section className="banner-sec profile filter-sec">
                     <div className="container">
                         <div className="row g-4">
-                            {/* Sidebar */}
+                            {/* SidebarSubcontractor */}
                             <div className="col-xl-3">
                                 <div className="sidebar">
                                     <div className="main-wrapper bg-dark p-0">
@@ -47,7 +47,7 @@ export default function SavedContractors() {
                                             <Image src="/assets/img/icons/arrow-dark.svg" width={16} height={10} alt="Arrow" style={{ objectFit: 'contain' }} />
                                         </div>
 
-                                        {/* Updated Sidebar Buttons */}
+                                        {/* Updated SidebarSubcontractor Buttons */}
                                         <div className="buttons-wrapper">
                                             {sidebarLinks.map((link, i) => (
                                                 <Link

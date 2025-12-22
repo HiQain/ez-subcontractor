@@ -7,11 +7,13 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/profile.css';
 import { useState, useEffect } from 'react';
+import SidebarSubcontractor from "../../components/SidebarSubcontractor";
 
 interface ProfileData {
     fullName: string;
     email: string;
     phone: string;
+    profile_image: string,
     companyName: string;
     role: string;
     city: string;
@@ -31,7 +33,7 @@ interface Category {
 export default function ProfilePage() {
     const pathname = usePathname();
     const router = useRouter();
-    const [logoutLoading, setLogoutLoading] = useState(false);
+        const [logoutLoading, setLogoutLoading] = useState(false);
     const [profile, setProfile] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -41,11 +43,11 @@ export default function ProfilePage() {
     const [categoriesLoading, setCategoriesLoading] = useState(true);
 
     const links = [
+        { href: '/subcontractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/lock.svg' },
+        { href: '/subcontractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
         { href: '/subcontractor/saved-listing', label: 'Saved Listing', icon: '/assets/img/icons/saved.svg' },
         { href: '/subcontractor/my-subscription', label: 'My Subscription', icon: '/assets/img/icons/saved.svg' },
         { href: '/subcontractor/transaction-history', label: 'Transaction History', icon: '/assets/img/icons/saved.svg' },
-        { href: '/subcontractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
-        { href: '/subcontractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/lock.svg' },
     ];
 
 
@@ -120,18 +122,18 @@ export default function ProfilePage() {
                 console.log(data);
                 if (response.ok) {
                     setProfile({
-                        fullName: data.data.name || 'N/A',
-                        email: data.data.email || 'N/A',
-                        phone: data.data.phone || 'N/A',
-                        companyName: data.data.company_name || 'N/A',
-                        role: data.data.role || 'N/A',
-                        city: data.data.city || 'N/A',
-                        state: data.data.state || 'N/A',
-                        zipCode: data.data.zip || 'N/A',
+                        fullName: data.data.name || '',
+                        email: data.data.email || '',
+                        phone: data.data.phone || '',
+                        companyName: data.data.company_name || '',
+                        profile_image: data.data.profile_image || '/assets/img/profile-placeholder.webp',
+                        role: data.data.role || '',
+                        city: data.data.city || '',
+                        state: data.data.state || '',
+                        zipCode: data.data.zip || '',
                         workRadius: data.data.work_radius || 0,
                         category: data.data.specialization ? Number(data.data.specialization) : null,
-                        // ✅ Add rating fields
-                        average_rating: data.data.average_rating || '0.00',
+                        average_rating: (parseFloat(data.data.average_rating) || 0).toString(),
                         total_ratings: data.data.total_ratings || 0,
                     });
                 } else {
@@ -291,70 +293,9 @@ export default function ProfilePage() {
                 <section className="banner-sec profile position-static">
                     <div className="container">
                         <div className="row g-4">
-                            {/* Sidebar */}
+                            {/* SidebarSubcontractor */}
                             <div className="col-xl-3">
-                                <div className="sidebar">
-                                    <div className="main-wrapper bg-dark p-0">
-                                        {/* Sidebar Links */}
-                                        <div className="buttons-wrapper">
-                                            {links.map((link) => (
-                                                <Link
-                                                    key={link.href}
-                                                    href={link.href}
-                                                    className={`custom-btn ${pathname === link.href ? 'active' : ''}`}
-                                                >
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        <Image
-                                                            src={link.icon}
-                                                            width={20}
-                                                            height={20}
-                                                            alt="Icon"
-                                                        />
-                                                        <span className="text-white">{link.label}</span>
-                                                    </div>
-                                                    <Image
-                                                        src="/assets/img/icons/angle-right.svg"
-                                                        width={15}
-                                                        height={9}
-                                                        alt="Arrow"
-                                                        style={{ objectFit: 'contain' }}
-                                                    />
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Logout Button */}
-                                    <div className="bottom-bar">
-                                        <div className="buttons-wrapper">
-                                            <button
-                                                onClick={handleLogout}
-                                                disabled={logoutLoading}
-                                                className="custom-btn bg-danger w-100 border-0"
-                                                style={{ borderColor: '#DC2626' }}
-                                            >
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/logout.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Logout Icon"
-                                                    />
-                                                    <span className="text-white">
-                                                        {logoutLoading ? 'Logging out...' : 'Logout'}
-                                                    </span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Arrow"
-                                                    style={{ objectFit: 'contain' }}
-                                                />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                                <SidebarSubcontractor onLogout={handleLogout} />
                             </div>
 
                             {/* Right Side */}
@@ -391,8 +332,8 @@ export default function ProfilePage() {
                                     <div className="review-bar d-flex align-items-center justify-content-between gap-2 flex-wrap mb-5">
                                         <div className="image-box d-flex align-items-center gap-4">
                                             <Image
-                                                src="/assets/img/profile-img.webp"
-                                                className="worker-img"
+                                                src={profile.profile_image}
+                                                className="worker-img rounded-circle"
                                                 width={180}
                                                 height={180}
                                                 alt="Worker Image"
@@ -429,24 +370,11 @@ export default function ProfilePage() {
                                                 </div>
                                             </div>
                                             <div className="col-xl-3 col-sm-6">
-                                                <div className="content">
+                                                <div className="content text-truncate">
                                                     <div className="text-gray-light fw-medium mb-2">
                                                         Company Name
                                                     </div>
                                                     <div className="fw-semibold fs-18 text-truncate">{profile.companyName}</div>
-                                                </div>
-                                            </div>
-                                            <div className="col-xl-3 col-sm-6">
-                                                <div className="content">
-                                                    <div className="text-gray-light fw-medium mb-2">
-                                                        Email Address
-                                                    </div>
-                                                    <Link
-                                                        href={`mailto:${profile.email}`}
-                                                        className="fw-semibold fs-18 text-dark text-truncate"
-                                                    >
-                                                        {profile.email}
-                                                    </Link>
                                                 </div>
                                             </div>
                                             <div className="col-xl-3 col-sm-6">
@@ -462,6 +390,20 @@ export default function ProfilePage() {
                                                     </Link>
                                                 </div>
                                             </div>
+                                            <div className="col-xl-3 col-sm-6">
+                                                <div className="content text-truncate">
+                                                    <div className="text-gray-light fw-medium mb-2">
+                                                        Email Address
+                                                    </div>
+                                                    <Link
+                                                        href={`mailto:${profile.email}`}
+                                                        className="fw-semibold fs-18 text-dark text-truncate"
+                                                    >
+                                                        {profile.email}
+                                                    </Link>
+                                                </div>
+                                            </div>
+
                                         </div>
 
                                         {/* ✅ FIXED: Show category name instead of ID */}

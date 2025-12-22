@@ -39,7 +39,6 @@ export default function RegisterPage() {
                 font-weight: 500;
             ">
                 <span>${icon} ${message}</span>
-                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
             </div>
         `;
         document.body.appendChild(toast);
@@ -48,11 +47,11 @@ export default function RegisterPage() {
             if (toast.parentNode) toast.parentNode.removeChild(toast);
         }, 4000);
 
-        const closeButton = toast.querySelector('.btn-close');
-        closeButton?.addEventListener('click', () => {
-            clearTimeout(timeoutId);
-            if (toast.parentNode) toast.parentNode.removeChild(toast);
-        });
+        // const closeButton = toast.querySelector('.btn-close');
+        // closeButton?.addEventListener('click', () => {
+        //     clearTimeout(timeoutId);
+        //     if (toast.parentNode) toast.parentNode.removeChild(toast);
+        // });
     };
 
     // 🔑 Unified form data — all fields in one object
@@ -294,7 +293,7 @@ export default function RegisterPage() {
 
                             <form className="form" onSubmit={handleSubmit}>
                                 <div className="fw-semibold fs-2 mb-4 text-center">Register</div>
-                                <div className="register-topbar">
+                                <div className="register-topbar px-4 gap-3">
                                     <Image
                                         src="/assets/img/icons/construction-worker.webp"
                                         width={50}

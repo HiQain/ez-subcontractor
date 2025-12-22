@@ -4,8 +4,7 @@ $gray-light: #9A9A9A !important;
 $dark: #272727 !important;
 
 .banner-sec.job-single {
-  padding-top: 147px;
-  padding-bottom: 50px;
+  padding: 50px 0;
   .topbar {
     margin-bottom: 40px;
     .icon {
@@ -139,8 +138,8 @@ $dark: #272727 !important;
       }
     }
     &.card-2 {
-      padding: 30px clamp(30px,5vw,50px) clamp(30px,23vw,230px) clamp(30px,5vw,50px);
-      margin-bottom: clamp(24px,6vw,62px);
+      padding: 30px;
+      margin: 0 0 30px;
     }
   }
 }

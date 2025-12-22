@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -31,7 +31,7 @@ interface Project {
 export default function DashboardPage() {
     const router = useRouter();
 
-    const [activeTab, setActiveTab] = useState("all");
+    const [activeTab, setActiveTab] = useState('all');
     const [expandedCards, setExpandedCards] = useState<number[]>([]);
 
     // 🔹 API state
@@ -41,7 +41,93 @@ export default function DashboardPage() {
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [deleteError, setDeleteError] = useState<string | null>(null);
 
-    // 🔹 Open delete modal for a specific project
+    // 🔹 ✅ Custom Toast — matches LoginPage & Design Spartans aesthetic
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 320px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 14px 20px;
+                box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-weight: 500;
+                font-size: 15px;
+                animation: toastFadeIn 0.4s ease forwards;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="
+                    font-size: 16px;
+                    margin-left: auto;
+                    opacity: 0.7;
+                " data-bs-dismiss="toast"></button>
+            </div>
+        `;
+
+        // Optional: Add fade-in animation if not globally defined
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes toastFadeIn {
+                from { opacity: 0; transform: translateX(100%); }
+                to { opacity: 1; transform: translateX(0); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            const fadeOut = document.createElement('style');
+            fadeOut.textContent = `
+                .toast { 
+                    animation: toastFadeOut 0.4s forwards !important; 
+                }
+                @keyframes toastFadeOut {
+                    from { opacity: 1; transform: translateX(0); }
+                    to { opacity: 0; transform: translateX(100%); }
+                }
+            `;
+            document.head.appendChild(fadeOut);
+            setTimeout(() => {
+                if (toast.parentNode) toast.parentNode.removeChild(toast);
+                document.head.removeChild(fadeOut);
+            }, 400);
+        }, 3500);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            const fadeOut = document.createElement('style');
+            fadeOut.textContent = `
+                @keyframes toastFadeOut {
+                    from { opacity: 1; transform: translateX(0); }
+                    to { opacity: 0; transform: translateX(100%); }
+                }
+            `;
+            document.head.appendChild(fadeOut);
+            toast.style.animation = 'toastFadeOut 0.4s forwards';
+            setTimeout(() => {
+                if (toast.parentNode) toast.parentNode.removeChild(toast);
+                document.head.removeChild(fadeOut);
+            }, 400);
+        });
+    };
+
+    // 🔹 Open delete modal
     const openDeleteModal = (id: number) => {
         setDeletingId(id);
         setDeleteError(null);
@@ -75,8 +161,8 @@ export default function DashboardPage() {
                     `${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects/my-projects?perPage=100&page=1`,
                     {
                         headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Accept': 'application/json',
+                            Authorization: `Bearer ${token}`,
+                            Accept: 'application/json',
                         },
                     }
                 );
@@ -105,6 +191,7 @@ export default function DashboardPage() {
             } catch (err: any) {
                 console.error('Fetch error:', err);
                 setError(err.message || 'Network error. Please try again.');
+                showToast('Failed to load projects.', 'error');
             } finally {
                 setLoading(false);
             }
@@ -113,18 +200,15 @@ export default function DashboardPage() {
         fetchProjects();
     }, [router]);
 
-    // 🔹 ✅ FIXED: Delete project using FormData (matches your Postman)
+    // 🔹 ✅ Delete handler with toast
     const handleDelete = async () => {
         if (!deletingId) return;
-
-        console.log(deletingId);
 
         setDeleteError(null);
         try {
             const token = localStorage.getItem('token');
             if (!token) throw new Error('Not authenticated');
 
-            // 👇 Create FormData & append project_id (as per your API)
             const formData = new FormData();
             formData.append('project_id', deletingId.toString());
 
@@ -133,25 +217,21 @@ export default function DashboardPage() {
                 {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Accept': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                        Accept: 'application/json',
                     },
                     body: formData,
                 }
             );
-
-            console.log(response);
 
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
                 throw new Error(errData.message || 'Failed to delete project');
             }
 
-            console.log(deletingId);
-
-            // ✅ Success: remove from UI
-            setProjects(prev => prev.filter(p => p.id !== deletingId));
-            alert('Project deleted successfully.');
+            // ✅ Update UI & show toast
+            setProjects((prev) => prev.filter((p) => p.id !== deletingId));
+            showToast('Project deleted successfully.', 'success');
 
             // Close modal
             const modalEl = document.getElementById('deleteProjectModal');
@@ -159,10 +239,11 @@ export default function DashboardPage() {
                 const modal = (window as any).bootstrap.Modal.getInstance(modalEl);
                 modal?.hide();
             }
-
         } catch (err: any) {
             console.error('Delete error:', err);
-            setDeleteError(err.message || 'Failed to delete project. Please try again.');
+            const msg = err.message || 'Failed to delete project. Please try again.';
+            setDeleteError(msg);
+            showToast(msg, 'error');
         } finally {
             setDeletingId(null);
         }
@@ -170,30 +251,44 @@ export default function DashboardPage() {
 
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
-            case 'hired': return '#007AFF';
-            case 'active': return '#61BA47';
-            case 'pending': return '#FF9500';
-            case 'completed': return '#8E8E93';
-            case 'cancelled': return '#FF3B30';
-            default: return '#8E8E93';
+            case 'hired':
+                return '#007AFF';
+            case 'active':
+                return '#28a745'; // Updated to match success green
+            case 'pending':
+                return '#FF9500';
+            case 'completed':
+                return '#6c757d';
+            case 'cancelled':
+                return '#dc3545';
+            default:
+                return '#6c757d';
         }
     };
 
     const getStatusLabel = (status: string) => {
         switch (status.toLowerCase()) {
-            case 'hired': return 'Hired';
-            case 'active': return 'Active';
-            case 'pending': return 'Pending';
-            case 'completed': return 'Completed';
-            case 'cancelled': return 'Cancelled';
-            default: return status.charAt(0).toUpperCase() + status.slice(1);
+            case 'hired':
+                return 'Hired';
+            case 'active':
+                return 'Active';
+            case 'pending':
+                return 'Pending';
+            case 'completed':
+                return 'Completed';
+            case 'cancelled':
+                return 'Cancelled';
+            default:
+                return status.charAt(0).toUpperCase() + status.slice(1);
         }
     };
 
     const getFilteredProjects = () => {
-        if (activeTab === "all") return projects;
-        if (activeTab === "hired") return projects.filter(p => p.status.toLowerCase() === "hired");
-        if (activeTab === "active") return projects.filter(p => p.status.toLowerCase() === "active");
+        if (activeTab === 'all') return projects;
+        if (activeTab === 'hired')
+            return projects.filter((p) => p.status.toLowerCase() === 'hired');
+        if (activeTab === 'active')
+            return projects.filter((p) => p.status.toLowerCase() === 'active');
         return [];
     };
 
@@ -215,7 +310,7 @@ export default function DashboardPage() {
                                     src="/assets/img/icons/plus.svg"
                                     width={12}
                                     height={12}
-                                    alt="Icon"
+                                    alt="Add Icon"
                                 />
                                 <span>Add Project</span>
                             </button>
@@ -224,29 +319,39 @@ export default function DashboardPage() {
                         <ul className="nav nav-tabs mb-4" role="tablist">
                             <li className="nav-item" role="presentation">
                                 <button
-                                    className={`nav-link ${activeTab === "all" ? "active" : ""}`}
+                                    className={`nav-link ${activeTab === 'all' ? 'active' : ''}`}
                                     type="button"
-                                    onClick={() => setActiveTab("all")}
+                                    onClick={() => setActiveTab('all')}
                                 >
                                     All ({projects.length})
                                 </button>
                             </li>
                             <li className="nav-item" role="presentation">
                                 <button
-                                    className={`nav-link ${activeTab === "hired" ? "active" : ""}`}
+                                    className={`nav-link ${activeTab === 'hired' ? 'active' : ''}`}
                                     type="button"
-                                    onClick={() => setActiveTab("hired")}
+                                    onClick={() => setActiveTab('hired')}
                                 >
-                                    Hired ({projects.filter(p => p.status.toLowerCase() === 'hired').length})
+                                    Hired (
+                                    {
+                                        projects.filter((p) => p.status.toLowerCase() === 'hired')
+                                            .length
+                                    }
+                                    )
                                 </button>
                             </li>
                             <li className="nav-item" role="presentation">
                                 <button
-                                    className={`nav-link ${activeTab === "active" ? "active" : ""}`}
+                                    className={`nav-link ${activeTab === 'active' ? 'active' : ''}`}
                                     type="button"
-                                    onClick={() => setActiveTab("active")}
+                                    onClick={() => setActiveTab('active')}
                                 >
-                                    Active ({projects.filter(p => p.status.toLowerCase() === 'active').length})
+                                    Active (
+                                    {
+                                        projects.filter((p) => p.status.toLowerCase() === 'active')
+                                            .length
+                                    }
+                                    )
                                 </button>
                             </li>
                             <div className="slider"></div>
@@ -261,7 +366,14 @@ export default function DashboardPage() {
                             </div>
                         ) : error ? (
                             <div className="alert alert-danger d-flex align-items-center" role="alert">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    fill="currentColor"
+                                    className="bi bi-exclamation-triangle-fill flex-shrink-0 me-2"
+                                    viewBox="0 0 16 16"
+                                >
                                     <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                                 </svg>
                                 <div>{error}</div>
@@ -277,7 +389,7 @@ export default function DashboardPage() {
                                 />
                                 <p className="fs-5 text-muted">
                                     {activeTab === 'all'
-                                        ? "You don't have any projects yet."
+                                        ? 'You don’t have any projects yet.'
                                         : `No ${activeTab} projects found.`}
                                 </p>
                             </div>
@@ -288,13 +400,17 @@ export default function DashboardPage() {
                                         <div className="project-card call-dark custom-card p-4">
                                             <div className="bar d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
                                                 <div className="fs-5 fw-semibold">
-                                                    {project.category?.name || `${project.city}, ${project.state}`}
+                                                    {project.category?.name ||
+                                                    `${project.city}, ${project.state}`}
                                                 </div>
                                                 <div
                                                     className="btn p-1 ps-3 pe-3 fs-12"
                                                     style={{
-                                                        backgroundColor: `${getStatusColor(project.status)}10`,
+                                                        backgroundColor: `${getStatusColor(
+                                                            project.status
+                                                        )}15`,
                                                         color: getStatusColor(project.status),
+                                                        fontWeight: 500,
                                                     }}
                                                 >
                                                     {getStatusLabel(project.status)}
@@ -304,40 +420,30 @@ export default function DashboardPage() {
                                             <p
                                                 className="description mb-4"
                                                 dangerouslySetInnerHTML={{
-                                                    __html:
-                                                        expandedCards.includes(index)
-                                                            ? project.description /* full html */
-                                                            : (() => {
-                                                                const tmp = document.createElement('div');
-                                                                tmp.innerHTML = project.description || '';
-                                                                const text = tmp.textContent || tmp.innerText || '';
-                                                                return text.length > 120
-                                                                    ? text.slice(0, 120) + '…'
-                                                                    : text;
-                                                            })(),
+                                                    __html: expandedCards.includes(index)
+                                                        ? project.description
+                                                        : (() => {
+                                                            const tmp = document.createElement('div');
+                                                            tmp.innerHTML = project.description || '';
+                                                            const text = tmp.textContent || tmp.innerText || '';
+                                                            return text.length > 120
+                                                                ? text.slice(0, 120) + '…'
+                                                                : text;
+                                                        })(),
                                                 }}
                                             />
-                                            {/* “see more / see less” still relies on character count of the *text* version */}
-                                            {/*{project.description &&*/}
-                                            {/*(() => {*/}
-                                            {/*    const tmp = document.createElement('div');*/}
-                                            {/*    tmp.innerHTML = project.description;*/}
-                                            {/*    return (tmp.textContent || tmp.innerText || '').length > 120;*/}
-                                            {/*})() && (*/}
-                                            {/*    <button*/}
-                                            {/*        className="see-more-btn mb-3 d-block"*/}
-                                            {/*        onClick={() => toggleCard(index)}*/}
-                                            {/*    >*/}
-                                            {/*        {expandedCards.includes(index) ? 'See less' : 'See more'}*/}
-                                            {/*    </button>*/}
-                                            {/*)}*/}
 
                                             <div className="buttons d-flex align-items-center gap-2 flex-wrap-md">
                                                 <button
                                                     className="btn btn-primary rounded-3 w-100 justify-content-center"
                                                     onClick={() => {
-                                                        localStorage.setItem('project-id', `${project.id}`);
-                                                        router.push('/general-contractor/project-details');
+                                                        localStorage.setItem(
+                                                            'project-id',
+                                                            `${project.id}`
+                                                        );
+                                                        router.push(
+                                                            '/general-contractor/project-details'
+                                                        );
                                                     }}
                                                 >
                                                     View Details
@@ -345,7 +451,10 @@ export default function DashboardPage() {
                                                 <button
                                                     className="btn bg-dark rounded-3 w-100 justify-content-center text-white"
                                                     onClick={() => {
-                                                        localStorage.setItem('project-id', `${project.id}`);
+                                                        localStorage.setItem(
+                                                            'project-id',
+                                                            `${project.id}`
+                                                        );
                                                         router.push('/general-contractor/edit-project');
                                                     }}
                                                 >

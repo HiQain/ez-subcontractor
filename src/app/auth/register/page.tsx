@@ -87,12 +87,13 @@ export default function SelectAccountType() {
                             {/* Account Cards */}
                             {accountTypes.map((acc) => (
                                 <div
-                                    className={`account-card mb-3 ${selectedType === acc.id ? 'active' : ''}`}
+                                    className={`account-card mb-3 px-4 ${selectedType === acc.id ? 'active' : ''}`}
                                     key={acc.id}
                                     onClick={() => handleSelection(acc.id)}
-                                    style={{ cursor: 'pointer' }}
+                                    style={{ cursor: 'pointer', minWidth: '430px' }}
+
                                 >
-                                    <div className="d-flex align-items-center gap-2">
+                                    <div className="d-flex align-items-center gap-3">
                                         <Image src={acc.icon} width={50} height={50} alt={`${acc.title} Icon`} />
                                         <div className="title fw-semibold">{acc.title}</div>
                                     </div>
@@ -107,7 +108,7 @@ export default function SelectAccountType() {
                                 </div>
                             ))}
 
-                            <div className="note-card mb-4">
+                            <div className="note-card mb-4 d-none">
                                 No credit card required — enjoy a free 30-day trial.
                             </div>
 

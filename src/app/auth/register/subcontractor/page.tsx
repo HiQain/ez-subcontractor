@@ -1,7 +1,7 @@
 'use client';
 
 import '../../../../styles/login.css';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import $ from 'jquery';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -28,7 +28,7 @@ export default function RegisterPage() {
         license_number: 'LC22442',
         zip: '10000',
         work_radius: '5',
-        category: '123',
+        category: '1', // default fallback
     });
 
     const [currentStep, setCurrentStep] = useState(1); // 1 = Personal, 2 = Business
@@ -41,7 +41,8 @@ export default function RegisterPage() {
     // Categories
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
-    // ✅ Eye Icon Component (same as ChangePassword page)
+
+    // ✅ Eye Icon Component
     const EyeIcon = ({ active }: { active: boolean }) => (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -86,6 +87,7 @@ export default function RegisterPage() {
 
         setFormData(prev => ({ ...prev, [name]: sanitized }));
 
+        // Clear field error on change
         if (errors[name]) {
             setErrors(prev => {
                 const { [name]: _, ...rest } = prev;
@@ -105,6 +107,70 @@ export default function RegisterPage() {
         }
     };
 
+    // 🔹 Unified Toast Utility (✅ matches your original design)
+    const showToast = (message: string, type: 'success' | 'error' = 'error') => {
+        // Remove any existing toast first
+        const existing = document.querySelector('.spartans-toast');
+        if (existing) existing.remove();
+
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        const toast = document.createElement('div');
+        toast.className = 'spartans-toast';
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                max-width: 400px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+                font-size: 14px;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 12px; margin-left: auto; opacity: 0.7;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        // const el = toast.firstChild as HTMLElement;
+        // const timeoutId = setTimeout(() => {
+        //     el.classList.remove('show');
+        //     el.style.opacity = '0';
+        //     setTimeout(() => {
+        //         if (toast.parentNode) toast.parentNode.removeChild(toast);
+        //     }, 300);
+        // }, 4000);
+        //
+        // const closeButton = el.querySelector('.btn-close');
+        // closeButton?.addEventListener('click', () => {
+        //     clearTimeout(timeoutId);
+        //     el.classList.remove('show');
+        //     el.style.opacity = '0';
+        //     setTimeout(() => {
+        //         if (toast.parentNode) toast.parentNode.removeChild(toast);
+        //     }, 300);
+        // });
+    };
+
+    // Fetch categories
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -148,10 +214,8 @@ export default function RegisterPage() {
         fetchCategories();
     }, []);
 
-
-    // ✅ Initialize Select2 ONLY when Step 2 is active AND categories are ready
+    // Initialize Select2 on Step 2 (only for GC/Sub)
     useEffect(() => {
-        // Skip if not on Step 2, or not a contractor, or still loading
         if (
             typeof window === 'undefined' ||
             currentStep !== 2 ||
@@ -161,85 +225,45 @@ export default function RegisterPage() {
             return;
         }
 
-        // Ensure the element exists before initializing
-        const $ = require('jquery');
-        require('select2');
-        require('select2/dist/css/select2.min.css');
+        // Dynamically import select2 (avoids SSR issues)
+        import('select2').then(() => {
+            require('select2/dist/css/select2.min.css');
 
-        const $select = $('#category-select');
-        if ($select.length === 0) return; // not in DOM yet
+            const $select = $('#category-select');
+            if ($select.length === 0) return;
 
-        // Destroy if already initialized (prevent duplicate)
-        if ($select.data('select2')) {
-            $select.select2('destroy');
-        }
-
-        // Initialize Select2
-        $select.select2({
-            placeholder: 'Select category',
-            allowClear: false,
-            width: '100%',
-        }).on('change', function () {
-            const val = $(this).val() as string;
-            setFormData(prev => ({ ...prev, category: val || '' }));
-            if (errors.category) {
-                setErrors(prev => {
-                    const { category: _, ...rest } = prev;
-                    return rest;
-                });
-            }
-        });
-
-        // Cleanup on unmount or step change
-        return () => {
+            // Destroy if already initialized
             if ($select.data('select2')) {
                 $select.select2('destroy');
             }
-        };
-    }, [currentStep, categoriesLoading, categories, accountType, errors.category]);
 
-    const showErrorToast = (message: string) => {
-        const toast = document.createElement('div');
-        toast.innerHTML = `
-        <div class="toast show" role="alert" style="
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            min-width: 300px;
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            border-radius: 8px;
-            padding: 12px 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
-        ">
-            <span>${message}</span>
-            <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;"></button>
-        </div>
-    `;
-        document.body.appendChild(toast);
+            $select.select2({
+                placeholder: 'Select category',
+                allowClear: false,
+                width: '100%',
+            }).on('change', function () {
+                const val = $(this).val() as string;
+                setFormData(prev => ({ ...prev, category: val || '1' }));
+                if (errors.category) {
+                    setErrors(prev => {
+                        const { category: _, ...rest } = prev;
+                        return rest;
+                    });
+                }
+            });
 
-        const timeoutId = setTimeout(() => {
-            if (toast.parentNode) toast.parentNode.removeChild(toast);
-        }, 5000);
-
-        const closeButton = toast.querySelector('.btn-close');
-        closeButton?.addEventListener('click', () => {
-            clearTimeout(timeoutId);
-            if (toast.parentNode) toast.parentNode.removeChild(toast);
+            return () => {
+                if ($select.data('select2')) {
+                    $select.select2('destroy');
+                }
+            };
         });
-    };
+    }, [currentStep, categoriesLoading, categories, accountType]);
 
-    // ✅ Next step
+    // ✅ Go to Step 2 (with validation)
     const goToNextStep = () => {
         if (accountType === 'affiliate') return;
 
-        // 🔹 Validate only Step 1 fields
         const step1Errors: Record<string, string> = {};
 
         if (!formData.name.trim()) step1Errors.name = 'Full Name is required';
@@ -257,25 +281,19 @@ export default function RegisterPage() {
         if (Object.keys(step1Errors).length > 0) {
             setErrors(step1Errors);
             const firstError = Object.values(step1Errors)[0];
-            showErrorToast(`Please fix: ${firstError}`);
-            // Optional: scroll to first error
-            setTimeout(() => {
-                document.querySelector('.text-danger')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
+            showToast(firstError, 'error');
             return;
         }
 
-        // ✅ All valid → go to Step 2
         setCurrentStep(2);
     };
 
-    // ✅ Submit handler
+    // ✅ Final Submit
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
         setErrors({});
 
-        // Validation
         const newErrors: Record<string, string> = {};
 
         if (!formData.name.trim()) newErrors.name = 'Full Name is required';
@@ -300,12 +318,14 @@ export default function RegisterPage() {
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
+            const firstError = Object.values(newErrors)[0];
+            showToast(firstError, 'error');
             setIsLoading(false);
             return;
         }
 
-        // ✅ Payload
-        const role = localStorage.getItem('role');
+        // ✅ Build payload
+        const role = localStorage.getItem('role') || accountType.replace('-', '_');
 
         const payload: Record<string, any> = {
             name: formData.name,
@@ -321,7 +341,6 @@ export default function RegisterPage() {
             role: role,
         };
 
-
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/register`, {
                 method: 'POST',
@@ -335,27 +354,40 @@ export default function RegisterPage() {
             const data = await response.json();
 
             if (response.ok) {
-                const paths: Record<string, string> = {
-                    'general-contractor': '/general-contractor/subscription',
-                    'sub-contractor': '/subcontractor/subscription',
-                    'affiliate': '/affiliate/dashboard',
-                };
-                router.push(paths[accountType] || '/');
+                const token = data.data?.token;
+                if (token) {
+                    localStorage.setItem('token', token);
+                }
+
+                showToast('Registration successful! Redirecting...', 'success');
+
+                // Delay for UX
+                setTimeout(() => {
+                    const paths: Record<string, string> = {
+                        'general-contractor': '/general-contractor/subscription',
+                        'sub-contractor': '/subcontractor/subscription',
+                        'affiliate': '/affiliate/dashboard',
+                    };
+                    router.push(paths[accountType] || '/');
+                }, 1500);
             } else {
                 const msg = Array.isArray(data.message)
                     ? data.message[0]
                     : data.message || 'Registration failed. Please try again.';
                 setErrors({ api: msg });
+                showToast(msg, 'error');
             }
         } catch (err) {
             console.error('Network error:', err);
-            setErrors({ api: 'Network error. Please check your connection.' });
+            const errMsg = 'Network error. Please check your connection.';
+            setErrors({ api: errMsg });
+            showToast(errMsg, 'error');
         } finally {
             setIsLoading(false);
         }
     };
 
-    // UI info per role
+    // Role display config
     const accountTypeInfo = {
         'general-contractor': { title: 'General Contractor', icon: '/assets/img/icons/construction-worker.webp' },
         'sub-contractor': { title: 'Subcontractor', icon: '/assets/img/icons/settings.svg' },
@@ -401,13 +433,13 @@ export default function RegisterPage() {
                             </Link>
 
                             <form className="form" onSubmit={handleSubmit}>
-                                <div style={{ position: 'relative', overflow: 'hidden', transition: 'height 0.3s' }}>
+                                <div style={{ position: 'relative', overflow: 'hidden' }}>
                                     {/* STEP 1: Personal Info */}
                                     {currentStep === 1 && (
                                         <div className="step-one animate__animated animate__fadeIn">
                                             <div className="fw-semibold fs-2 mb-4 text-center">Register</div>
 
-                                            <div className="register-topbar mb-4">
+                                            <div className="register-topbar px-4 gap-3">
                                                 <Image
                                                     src={displayInfo.icon}
                                                     width={50}
@@ -477,7 +509,6 @@ export default function RegisterPage() {
                                                 {errors.phone && <span className="text-danger animate-slide-up">{errors.phone}</span>}
                                             </div>
 
-                                            {/* ✅ Password Field — identical to ChangePassword page */}
                                             <div className="input-wrapper d-flex flex-column position-relative mb-3">
                                                 <label htmlFor="password" className="mb-1 fw-semibold">Password <span className="text-danger">*</span></label>
                                                 <input
@@ -500,7 +531,6 @@ export default function RegisterPage() {
                                                 {errors.password && <span className="text-danger animate-slide-up">{errors.password}</span>}
                                             </div>
 
-                                            {/* ✅ Confirm Password — identical to ChangePassword page */}
                                             <div className="input-wrapper d-flex flex-column position-relative mb-3">
                                                 <label htmlFor="password_confirmation" className="mb-1 fw-semibold">Confirm Password <span className="text-danger">*</span></label>
                                                 <input
@@ -534,8 +564,8 @@ export default function RegisterPage() {
                                                 />
                                                 <label className="form-check-label fs-12" htmlFor="agreement">
                                                     By registering, you confirm that you have reviewed and accepted our{' '}
-                                                    <Link href="/privacy" style={{color: '#8F9B1F'}}>Privacy Policy</Link> and{' '}
-                                                    <Link href="/terms" style={{color: '#8F9B1F'}}>Terms &amp; Conditions.</Link>
+                                                    <Link href="/privacy-policy" style={{ color: '#8F9B1F' }}>Privacy Policy</Link> and{' '}
+                                                    <Link href="/terms-and-conditions" style={{ color: '#8F9B1F' }}>Terms &amp; Conditions.</Link>
                                                 </label>
                                                 {errors.agreement && <span className="text-danger animate-slide-up d-block mt-1">{errors.agreement}</span>}
                                             </div>
@@ -560,7 +590,7 @@ export default function RegisterPage() {
                                         </div>
                                     )}
 
-                                    {/* STEP 2: Business Details */}
+                                    {/* STEP 2: Business Details (GC/Sub only) */}
                                     {currentStep === 2 && ['general-contractor', 'sub-contractor'].includes(accountType) && (
                                         <div className="step-two animate__animated animate__fadeIn">
                                             <div className="fw-semibold fs-2 mb-4 text-center">Business Details</div>
@@ -575,14 +605,12 @@ export default function RegisterPage() {
                                                 <div className="fw-semibold">{displayInfo.title}</div>
                                             </div>
 
-                                            {/* ✅ SELECT2 CATEGORY DROPDOWN */}
                                             <div className="input-wrapper d-flex flex-column mb-3">
                                                 <label htmlFor="category" className="mb-1 fw-semibold">Category <span className="text-danger">*</span></label>
                                                 <select
                                                     id="category-select"
                                                     className="form-control"
                                                     value={formData.category}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                                                     disabled={categoriesLoading || isLoading}
                                                 >
                                                     <option value="">Select category</option>
@@ -663,7 +691,7 @@ export default function RegisterPage() {
                                         </div>
                                     )}
 
-                                    {/* Affiliate: no Step 2 */}
+                                    {/* Affiliate: single step */}
                                     {accountType === 'affiliate' && currentStep === 1 && (
                                         <>
                                             {errors.api && <p className="text-danger animate-slide-up mb-3">{errors.api}</p>}

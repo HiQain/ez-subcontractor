@@ -2,6 +2,7 @@ $primary: #C9DA2B;
 $gray: #F9F9F9;
 $gray-light: #9A9A9A;
 $dark: #272727;
+$white: #fff;
 
 .home-banner-sec {
   position: relative;
@@ -31,7 +32,7 @@ $dark: #272727;
   .slick-list,
   .slick-track,
   .banner-wrapper {
-    height: 100vh;
+    height: 60vh;
   }
   .slick-dots {
     bottom: 100px;
@@ -115,6 +116,23 @@ $dark: #272727;
         font-size: 18px;
         text-decoration: none;
       }
+    }
+  }
+}
+.role-cards {
+  position: relative;
+  z-index: 2;
+  margin-top: -60px;
+  .account-card {
+    min-width: 100% !important;
+    border-radius: 10px;
+    background-color: rgba($white, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 30px 20px;
+    margin-bottom: 10px;
+    input {
+      display: none;
     }
   }
 }

@@ -168,7 +168,7 @@ export default function RegisterPage() {
 
                             <form className="form" onSubmit={handleSubmit}>
                                 <div className="fw-semibold fs-2 mb-4 text-center">Register</div>
-                                <div className="register-topbar">
+                                <div className="register-topbar px-4 gap-3">
                                     <Image
                                         src="/assets/img/icons/portfolio.webp"
                                         width={50}

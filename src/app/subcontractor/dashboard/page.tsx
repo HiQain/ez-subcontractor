@@ -506,13 +506,13 @@ export default function DashboardSubContractor() {
                             {/* 🔹 Left: Dynamic Image Slider */}
                             <div className="col-lg-6 position-relative">
                                 {bannerImagesLoading ? (
-                                    <div className="d-flex align-items-center justify-content-center" style={{ height: '400px' }}>
+                                    <div className="d-flex align-items-center justify-content-center bg-light rounded-4" style={{ height: '272px' }}>
                                         <div className="spinner-border text-primary" role="status">
                                             <span className="visually-hidden">Loading banner...</span>
                                         </div>
                                     </div>
                                 ) : bannerImagesError ? (
-                                    <div className="alert alert-warning d-flex align-items-center" style={{ height: '400px' }}>
+                                    <div className="alert alert-warning d-flex align-items-center" style={{ height: '272px' }}>
                                         {bannerImagesError}
                                     </div>
                                 ) : (
@@ -533,36 +533,6 @@ export default function DashboardSubContractor() {
                                         </Slider>
                                     </div>
                                 )}
-
-                                {/* Optional arrows (uncomment if needed) */}
-                                {/*
-                                <div className="slider-controls d-flex gap-2 position-absolute top-50 start-0 translate-middle-y ps-3 z-index-1">
-                                    <button
-                                        className="btn btn-sm btn-light rounded-circle shadow-sm"
-                                        onClick={() => leftSliderRef.current?.slickPrev()}
-                                        aria-label="Previous slide"
-                                    >
-                                        <Image
-                                            src="/assets/img/dashboard-arrow.svg"
-                                            alt="Prev"
-                                            width={8}
-                                            height={16}
-                                        />
-                                    </button>
-                                    <button
-                                        className="btn btn-sm btn-light rounded-circle shadow-sm"
-                                        onClick={() => leftSliderRef.current?.slickNext()}
-                                        aria-label="Next slide"
-                                    >
-                                        <Image
-                                            src="/assets/img/dashboard-arrow1.svg"
-                                            alt="Next"
-                                            width={8}
-                                            height={16}
-                                        />
-                                    </button>
-                                </div>
-                                */}
                             </div>
 
                             {/* 🔹 Right: Text Slider (unchanged) */}
@@ -665,21 +635,23 @@ export default function DashboardSubContractor() {
                                     onChange={(e) => setZipCode(e.target.value)}
                                 />
 
-                                <span className="d-block mb-2 fw-medium">Category</span>
-                                <div className="input-wrapper d-flex flex-column position-relative w-100 mb-3">
-                                    <select
-                                        className="form-control"
-                                        value={categoryId}
-                                        onChange={(e) => setCategoryId(e.target.value)}
-                                        disabled={categoriesLoading}
-                                    >
-                                        <option value="">All Categories</option>
-                                        {categories.map(cat => (
-                                            <option key={cat.id} value={cat.id}>
-                                                {cat.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                <div className="d-none">
+                                    <span className="d-block mb-2 fw-medium">Category</span>
+                                    <div className="input-wrapper d-flex flex-column position-relative w-100 mb-3">
+                                        <select
+                                            className="form-control"
+                                            value={categoryId}
+                                            onChange={(e) => setCategoryId(e.target.value)}
+                                            disabled={categoriesLoading}
+                                        >
+                                            <option value="">All Categories</option>
+                                            {categories.map(cat => (
+                                                <option key={cat.id} value={cat.id}>
+                                                    {cat.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <span className="d-block mb-2 fw-medium">Work Radius</span>
@@ -793,7 +765,7 @@ export default function DashboardSubContractor() {
                                                     <div className="d-flex align-items-center gap-2">
                                                         <div className="date">{formatTimeAgo(project.created_at)}</div>
                                                         <button
-                                                            className={`icon bg-white ${savedproject.has(project.id) ? 'Saved' : 'Save'}`}
+                                                            className={`icon bg-white ${savedproject.has(project.id) ? 'Saved bg-primary' : 'Save'}`}
                                                             onClick={() => toggleSaveproject(project.id)}
                                                             aria-label={savedproject.has(project.id) ? 'Remove from saved' : 'Save project'}
                                                         >

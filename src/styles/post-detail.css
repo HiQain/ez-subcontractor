@@ -1,6 +1,6 @@
 .banner-sec.post {
   background: #fff;
-  padding: 160px 0 70px 0;
+  padding: 50px 0;
   margin: 0 auto;
 }
 .banner-sec.post .top-bar {
@@ -115,8 +115,7 @@
 }
 
 .banner-sec.post {
-  padding-top: 170px;
-  padding-bottom: 60px;
+  padding: 50px 0;
 }
 .banner-sec.post .image-wrapper {
   position: relative;

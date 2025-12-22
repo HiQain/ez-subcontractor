@@ -7,17 +7,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import '../../../styles/profile.css';
+import SidebarSubcontractor from "../../components/SidebarSubcontractor";
 
-// 🔗 Sidebar links
-const links = [
-    { href: '/subcontractor/saved-listing', label: 'Saved Listing', icon: '/assets/img/icons/saved.svg' },
-    { href: '/subcontractor/my-subscription', label: 'My Subscription', icon: '/assets/img/icons/saved.svg' },
-    { href: '/subcontractor/transaction-history', label: 'Transaction History', icon: '/assets/img/icons/saved.svg' },
-    { href: '/subcontractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
-    { href: '/subcontractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/lock.svg' },
-];
-
-const DEFAULT_PROFILE_IMAGE = '/assets/img/construction-worker.png';
+const DEFAULT_PROFILE_IMAGE = '/assets/img/profile-placeholder.webp';
 
 interface Category {
     id: string;
@@ -31,7 +23,7 @@ export default function EditProfile() {
     const [error, setError] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [success, setSuccess] = useState<string | null>(null);
-
+    const [logoutLoading, setLogoutLoading] = useState(false);
     const imageFileInputRef = useRef<HTMLInputElement>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -383,27 +375,50 @@ export default function EditProfile() {
         }
     };
 
-    // Logout
     const handleLogout = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/auth/login');
-            return;
-        }
+        setLogoutLoading(true);
 
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/logout`, {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${token}` },
-            });
-        } catch (err) {
-            console.warn('Logout failed, still clearing local storage.');
-        }
+            const token = localStorage.getItem('token');
 
-        localStorage.removeItem('token');
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userEmail');
-        router.push('/auth/login');
+            if (!token) {
+                router.push('/auth/login');
+                return;
+            }
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}auth/logout`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const text = await response.text();
+            let data;
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch {
+                data = { message: text };
+            }
+
+            if (response.ok) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('token');
+                router.push('/auth/login');
+            } else {
+                alert(data?.message || 'Logout failed');
+            }
+        } catch (err) {
+            console.error('Logout Error:', err);
+            alert('Network error. Please try again.');
+        } finally {
+            setLogoutLoading(false);
+        }
     };
 
     // 🌀 Loading
@@ -436,65 +451,9 @@ export default function EditProfile() {
                 <section className="banner-sec profile position-static">
                     <div className="container">
                         <div className="row g-4">
-                            {/* Sidebar */}
+                            {/* SidebarSubcontractor */}
                             <div className="col-xl-3">
-                                <div className="sidebar h-100">
-                                    <div className="main-wrapper bg-dark p-0 h-100 d-flex flex-column justify-content-between">
-                                        <div className="buttons-wrapper">
-                                            {links.map((link) => (
-                                                <Link
-                                                    key={link.href}
-                                                    href={link.href}
-                                                    className={`custom-btn ${pathname === link.href ? 'active' : ''}`}
-                                                >
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        <Image
-                                                            src={link.icon}
-                                                            width={20}
-                                                            height={20}
-                                                            alt={link.label}
-                                                        />
-                                                        <span className="text-white">{link.label}</span>
-                                                    </div>
-                                                    <Image
-                                                        src="/assets/img/icons/angle-right.svg"
-                                                        width={15}
-                                                        height={9}
-                                                        alt="Arrow"
-                                                        style={{ objectFit: 'contain' }}
-                                                    />
-                                                </Link>
-                                            ))}
-                                        </div>
-
-                                        <div className="bottom-bar mt-auto">
-                                            <div className="buttons-wrapper">
-                                                <button
-                                                    onClick={handleLogout}
-                                                    className="custom-btn bg-danger w-100 border-0"
-                                                    style={{ borderColor: '#DC2626' }}
-                                                >
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        <Image
-                                                            src="/assets/img/icons/logout.svg"
-                                                            width={20}
-                                                            height={20}
-                                                            alt="Logout Icon"
-                                                        />
-                                                        <span className="text-white">Logout</span>
-                                                    </div>
-                                                    <Image
-                                                        src="/assets/img/icons/angle-right.svg"
-                                                        width={15}
-                                                        height={9}
-                                                        alt="Arrow"
-                                                        style={{ objectFit: 'contain' }}
-                                                    />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <SidebarSubcontractor onLogout={handleLogout} />
                             </div>
 
                             {/* Right Content */}
@@ -630,43 +589,7 @@ export default function EditProfile() {
                                                 />
                                             </div>
 
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="category-select" className="mb-1 fw-semibold">
-                                                    Category
-                                                </label>
-                                                <select
-                                                    id="category-select"
-                                                    className="form-control"
-                                                    value={formData.category}
-                                                    onChange={(e) => setFormData(prev => ({
-                                                        ...prev,
-                                                        category: e.target.value
-                                                    }))}
-                                                    disabled={categoriesLoading}
-                                                >
-                                                    <option value="">Select category</option>
-                                                    {categories.map((cat) => (
-                                                        <option key={cat.id} value={cat.id}>
-                                                            {cat.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
 
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="license_number" className="mb-1 fw-semibold">
-                                                    License Number
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id="license_number"
-                                                    name="license_number"
-                                                    className="form-control"
-                                                    placeholder="223546"
-                                                    value={formData.license_number}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
 
                                             <div className="input-wrapper d-flex flex-column">
                                                 <label htmlFor="address" className="mb-1 fw-semibold">
@@ -724,6 +647,44 @@ export default function EditProfile() {
                                                     className="form-control"
                                                     placeholder="12345"
                                                     value={formData.zip}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+
+                                            <div className="input-wrapper d-flex flex-column">
+                                                <label htmlFor="category-select" className="mb-1 fw-semibold">
+                                                    Category
+                                                </label>
+                                                <select
+                                                    id="category-select"
+                                                    className="form-control"
+                                                    value={formData.category}
+                                                    onChange={(e) => setFormData(prev => ({
+                                                        ...prev,
+                                                        category: e.target.value
+                                                    }))}
+                                                    disabled={categoriesLoading}
+                                                >
+                                                    <option value="">Select category</option>
+                                                    {categories.map((cat) => (
+                                                        <option key={cat.id} value={cat.id}>
+                                                            {cat.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className="input-wrapper d-flex flex-column">
+                                                <label htmlFor="license_number" className="mb-1 fw-semibold">
+                                                    License Number
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    id="license_number"
+                                                    name="license_number"
+                                                    className="form-control"
+                                                    placeholder="223546"
+                                                    value={formData.license_number}
                                                     onChange={handleChange}
                                                 />
                                             </div>

@@ -502,20 +502,20 @@ export default function EditProjectPage() {
                                             </select>
                                         </div>
                                     </div>
-                                    <button
-                                        type="button"
-                                        className="icon delete"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#deleteProjectModal"
-                                        style={{backgroundColor: '#DC2626 !important'}}
-                                    >
-                                        <Image
-                                            src="/assets/img/icons/delete.svg"
-                                            width={24}
-                                            height={24}
-                                            alt="Delete Icon"
-                                        />
-                                    </button>
+                                    {/*<button*/}
+                                    {/*    type="button"*/}
+                                    {/*    className="icon delete"*/}
+                                    {/*    data-bs-toggle="modal"*/}
+                                    {/*    data-bs-target="#deleteProjectModal"*/}
+                                    {/*    style={{backgroundColor: '#DC2626 !important'}}*/}
+                                    {/*>*/}
+                                    {/*    <Image*/}
+                                    {/*        src="/assets/img/icons/delete.svg"*/}
+                                    {/*        width={24}*/}
+                                    {/*        height={24}*/}
+                                    {/*        alt="Delete Icon"*/}
+                                    {/*    />*/}
+                                    {/*</button>*/}
                                 </div>
                             </div>
                         </div>
