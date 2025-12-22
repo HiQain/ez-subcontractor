@@ -32,6 +32,8 @@ export default function PostAnAd() {
     const [adLoading, setAdLoading] = useState(false);
     const [selectedAd, setSelectedAd] = useState<any | null>(null);
     const durationWeeks = 7; // 7 weeks
+    const [horizontalUrl, setHorizontalUrl] = useState('');
+    const [verticalUrl, setVerticalUrl] = useState('');
 
     // 🔹 Toast Utility — identical to your register page
     const showToast = (message: string, type: 'success' | 'error' = 'error') => {
@@ -151,8 +153,129 @@ export default function PostAnAd() {
     };
 
     // Handle Post Ad button click
-    const handlePostAd = () => {
-        router.push('/affiliate/ad-posted');
+    const handlePostAd = async () => {
+        if (!selectedAd) {
+            showToast('Please select an ad', 'error');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showToast('User not authenticated', 'error');
+            return;
+        }
+
+        const isValidUrl = (url: string) => {
+            try {
+                new URL(url);
+                return true;
+            } catch {
+                return false;
+            }
+        };
+
+        // 🔹 Validate URLs
+        if (orientation === 'Horizontal' || orientation === 'Both') {
+            if (!horizontalUrl.trim()) {
+                showToast('Please enter Horizontal URL', 'error');
+                return;
+            }
+            if (!isValidUrl(horizontalUrl.trim())) {
+                showToast('Horizontal URL must be a valid URL (include https://)', 'error');
+                return;
+            }
+        }
+
+        if (orientation === 'Vertical' || orientation === 'Both') {
+            if (!verticalUrl.trim()) {
+                showToast('Please enter Vertical URL', 'error');
+                return;
+            }
+            if (!isValidUrl(verticalUrl.trim())) {
+                showToast('Vertical URL must be a valid URL (include https://)', 'error');
+                return;
+            }
+        }
+
+        // 🔹 Validate images
+        if (
+            (orientation === 'Horizontal' && !mainFileRef.current?.files?.[0]) ||
+            (orientation === 'Vertical' && !smallFileRef.current?.files?.[0]) ||
+            (orientation === 'Both' && (!mainFileRef.current?.files?.[0] || !smallFileRef.current?.files?.[0]))
+        ) {
+            showToast('Please upload the required image(s)', 'error');
+            return;
+        }
+
+        // 🔹 Validate card
+        const defaultCardId = cards.find(c => c.is_default)?.id;
+        if (!defaultCardId) {
+            showToast('Please select a default card', 'error');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('ad_placement_id', selectedAd.id);
+            formData.append('orientation', orientation.toLowerCase());
+            formData.append('can_pause', '0');
+            formData.append('card_id', defaultCardId);
+
+            // 🔹 Dates for 7 weeks
+            const today = new Date();
+            const endDate = new Date();
+            endDate.setDate(today.getDate() + 7 * 7); // 7 weeks
+
+            formData.append('start_date', today.toISOString().split('T')[0]);
+            formData.append('end_date', endDate.toISOString().split('T')[0]);
+
+            // 🔹 Images + URLs
+            if (orientation === 'Horizontal' || orientation === 'Both') {
+                formData.append('horizontal_image', mainFileRef.current!.files![0]);
+                formData.append('horizontal_url', horizontalUrl.trim());
+            }
+            if (orientation === 'Vertical' || orientation === 'Both') {
+                formData.append('vertical_image', smallFileRef.current!.files![0]);
+                formData.append('vertical_url', verticalUrl.trim());
+            }
+
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/create`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: formData,
+            });
+
+            const data = await res.json();
+            console.log('Post Ad Response:', JSON.stringify(data, null, 2));
+
+            if (res.ok && data.success) {
+                showToast('Ad posted successfully!', 'success');
+                router.push('/affiliate/ad-posted');
+            } else {
+                // 🔹 Show backend validation errors
+                let serverMessage = '';
+                if (Array.isArray(data.message)) {
+                    serverMessage = data.message
+                        .map((msg: any) => {
+                            if (typeof msg === 'object') return Object.values(msg).join(', ');
+                            return msg;
+                        })
+                        .join(', ');
+                } else {
+                    serverMessage = data.message || 'Failed to post ad';
+                }
+                showToast(serverMessage, 'error');
+            }
+        } catch (err: any) {
+            console.error('Error posting ad:', err);
+            showToast(err.message || 'Something went wrong', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // ✅ Load name & email from localStorage
@@ -289,7 +412,6 @@ export default function PostAnAd() {
         }
     };
 
-
     return (
         <>
             <Header />
@@ -339,10 +461,19 @@ export default function PostAnAd() {
                             </div>
 
                             <div className="input-wrapper mb-4">
-                                <label className="fw-semibold mb-1">
-                                    {selectedAd?.orientation_type === 'horizontal' ? 'Horizontal URL' : selectedAd?.orientation_type === 'vertical' ? 'Vertical URL' : 'URL'}
-                                </label>
-                                <input type="text" placeholder="Enter URL" />
+                                {(orientation === 'Horizontal' || orientation === 'Both') && (
+                                    <div className="input-wrapper mb-4">
+                                        <label className="fw-semibold mb-1">Horizontal URL</label>
+                                        <input type="text" value={horizontalUrl} onChange={e => setHorizontalUrl(e.target.value)} placeholder="Enter Horizontal URL" />
+                                    </div>
+                                )}
+
+                                {(orientation === 'Vertical' || orientation === 'Both') && (
+                                    <div className="input-wrapper mb-4">
+                                        <label className="fw-semibold mb-1">Vertical URL</label>
+                                        <input type="text" value={verticalUrl} onChange={e => setVerticalUrl(e.target.value)} placeholder="Enter Vertical URL" />
+                                    </div>
+                                )}
                             </div>
 
                             <div className="fs-4 fw-semibold mb-3">Payment Details</div>
@@ -536,31 +667,59 @@ export default function PostAnAd() {
 
                         {/* Right Side Upload Boxes */}
                         <div className="right-side align-lg-end">
-                            <div className="image-box" onClick={() => mainFileRef.current?.click()} style={{ cursor: 'pointer' }}>
-                                {mainImage ? <Image src={mainImage} alt="Upload" width={760} height={246} /> : (
-                                    <>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-                                        </svg>
-                                        <p>Drag and drop image here<br />or click to upload</p>
-                                        <small>Resolution: 760x246 | 200 MB Max</small>
-                                    </>
-                                )}
-                                <input type="file" accept="image/*,application/pdf" ref={mainFileRef} style={{ display: 'none' }} onChange={(e) => handleFileChange(e, setMainImage)} />
-                            </div>
+                            {(orientation === 'Horizontal' || orientation === 'Both') && (
+                                <div
+                                    className="image-box"
+                                    onClick={() => mainFileRef.current?.click()}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {mainImage ? (
+                                        <Image src={mainImage} alt="Upload" width={760} height={246} />
+                                    ) : (
+                                        <>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                                            </svg>
+                                            <p>Drag and drop image here<br />or click to upload</p>
+                                            <small>Resolution: 760x246 | 200 MB Max</small>
+                                        </>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*,application/pdf"
+                                        ref={mainFileRef}
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => handleFileChange(e, setMainImage)}
+                                    />
+                                </div>
+                            )}
 
-                            <div className="image-box small margin-right" style={{ maxWidth: '371px', cursor: 'pointer' }} onClick={() => smallFileRef.current?.click()}>
-                                {smallImage ? <Image src={smallImage} alt="Upload" width={371} height={426} /> : (
-                                    <>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-                                        </svg>
-                                        <p>Drag and drop image here<br />or click to upload</p>
-                                        <small>Resolution: 571x426 | 200 MB Max</small>
-                                    </>
-                                )}
-                                <input type="file" accept="image/*,application/pdf" ref={smallFileRef} style={{ display: 'none' }} onChange={(e) => handleFileChange(e, setSmallImage)} />
-                            </div>
+                            {(orientation === 'Vertical' || orientation === 'Both') && (
+                                <div
+                                    className="image-box small margin-right"
+                                    style={{ maxWidth: '371px', cursor: 'pointer' }}
+                                    onClick={() => smallFileRef.current?.click()}
+                                >
+                                    {smallImage ? (
+                                        <Image src={smallImage} alt="Upload" width={371} height={426} />
+                                    ) : (
+                                        <>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                                            </svg>
+                                            <p>Drag and drop image here<br />or click to upload</p>
+                                            <small>Resolution: 571x426 | 200 MB Max</small>
+                                        </>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*,application/pdf"
+                                        ref={smallFileRef}
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => handleFileChange(e, setSmallImage)}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
