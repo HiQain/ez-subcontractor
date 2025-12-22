@@ -27,6 +27,12 @@ export default function PostAnAd() {
     const [loading, setLoading] = useState(false);
     const [cards, setCards] = useState<any[]>([]);
     const [cardsLoading, setCardsLoading] = useState(false);
+    const [orientation, setOrientation] = useState<'Horizontal' | 'Vertical' | 'Both'>('Horizontal');
+    const [adPlacements, setAdPlacements] = useState<any[]>([]);
+    const [adLoading, setAdLoading] = useState(false);
+    const [selectedAd, setSelectedAd] = useState<any | null>(null);
+    const durationWeeks = 7; // 7 weeks
+
 
     // 🔹 Toast Utility — identical to your register page
     const showToast = (message: string, type: 'success' | 'error' = 'error') => {
@@ -76,6 +82,39 @@ export default function PostAnAd() {
             fetchSavedCards();
         }
     }, [activeTab]);
+
+    useEffect(() => {
+        fetchAdPlacements(orientation);
+    }, []);
+
+    // 🔹 Function to fetch ad placements based on orientation
+    const fetchAdPlacements = async (selectedOrientation: string) => {
+        setAdLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ad-placements?orientation=${selectedOrientation}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { Authorization: `Bearer ${token}` }),
+                },
+            });
+            const data = await res.json();
+            if (data.success) {
+                setAdPlacements(data.data);
+
+                // 🔹 Set default selected ad based on orientation
+                const defaultAd = data.data.find(ad => ad.name === orientation);
+                if (defaultAd) setSelectedAd(defaultAd);
+            } else {
+                showToast('Failed to fetch ad placements', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Something went wrong', 'error');
+        } finally {
+            setAdLoading(false);
+        }
+    };
 
     const fetchSavedCards = async () => {
         setCardsLoading(true);
@@ -277,24 +316,33 @@ export default function PostAnAd() {
                         {/* Left Side */}
                         <div className="left-side">
                             <div className="fw-semibold fs-18 mb-3">Select Orientation</div>
+                            {adLoading && <p>Loading orientation...</p>}
 
                             <div className="radio-group mb-4">
-                                <div className="radio-wrapper mb-3">
-                                    <input type="radio" id="radio1" className="radio" defaultChecked />
-                                    <label htmlFor="radio1" className="fw-medium">Horizontal</label>
-                                </div>
-                                <div className="radio-wrapper mb-3">
-                                    <input type="radio" id="radio2" className="radio" />
-                                    <label htmlFor="radio2" className="fw-medium">Vertical</label>
-                                </div>
-                                <div className="radio-wrapper">
-                                    <input type="radio" id="radio3" className="radio" />
-                                    <label htmlFor="radio3" className="fw-medium">Both</label>
-                                </div>
+                                {adPlacements.map((ad) => (
+                                    <div key={ad.id} className="radio-wrapper mb-3">
+                                        <input
+                                            type="radio"
+                                            id={`radio-${ad.id}`}
+                                            className="radio"
+                                            name="orientation"
+                                            checked={orientation.toLowerCase() === ad.orientation_type}
+                                            onChange={() => {
+                                                setOrientation(ad.name as 'Horizontal' | 'Vertical' | 'Both');
+                                                setSelectedAd(ad); // 🔹 update selected ad
+                                            }}
+                                        />
+                                        <label htmlFor={`radio-${ad.id}`} className="fw-medium">
+                                            {ad.name} (${ad.price} / {ad.price_type})
+                                        </label>
+                                    </div>
+                                ))}
                             </div>
 
                             <div className="input-wrapper mb-4">
-                                <label className="fw-semibold mb-1">Horizontal URL</label>
+                                <label className="fw-semibold mb-1">
+                                    {selectedAd?.orientation_type === 'horizontal' ? 'Horizontal URL' : selectedAd?.orientation_type === 'vertical' ? 'Vertical URL' : 'URL'}
+                                </label>
                                 <input type="text" placeholder="Enter URL" />
                             </div>
 
@@ -455,18 +503,28 @@ export default function PostAnAd() {
                                     <Image src="/assets/img/summary.svg" width={24} height={24} alt="Icon" loading="lazy" />
                                     <div className="content w-100">
                                         <div className="fs-14 fw-semibold mb-2">Summary</div>
+
                                         <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap w-100 mb-1">
                                             <div className="fs-14 text-gray-light fw-medium">Orientation</div>
-                                            <div className="fs-14 fw-semibold">Horizontal</div>
+                                            <div className="fs-14 fw-semibold">{selectedAd?.name || '-'}</div>
                                         </div>
+
                                         <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap w-100 mb-1">
-                                            <div className="fs-14 text-gray-light fw-medium">Duration (7 Weeks X $50)</div>
-                                            <div className="fs-14 fw-semibold">$350.00</div>
+                                            <div className="fs-14 text-gray-light fw-medium">
+                                                Duration ({durationWeeks} Weeks X ${selectedAd?.price || '0'})
+                                            </div>
+                                            <div className="fs-14 fw-semibold">
+                                                ${selectedAd ? (Number(selectedAd.price) * durationWeeks).toFixed(2) : '0.00'}
+                                            </div>
                                         </div>
+
                                         <hr className="mb-2 mt-2" />
+
                                         <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap w-100">
                                             <div className="fs-14 text-gray-light fw-medium">Total</div>
-                                            <div className="fs-14 fw-semibold">$350.00</div>
+                                            <div className="fs-14 fw-semibold">
+                                                ${selectedAd ? (Number(selectedAd.price) * durationWeeks).toFixed(2) : '0.00'}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
