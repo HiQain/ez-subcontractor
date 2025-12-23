@@ -15,6 +15,10 @@ export default function Header() {
 
 
     useEffect(() => {
+        const role = localStorage.getItem('role');
+        setUserRole(role);
+
+
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         const fetchProfile = async () => {
             try {
@@ -28,15 +32,12 @@ export default function Header() {
                 const data = await response.json();
                 console.log(data)
                 if (response.ok) {
-                    const role = localStorage.getItem('role');
-                    setUserRole(role);
 
                     const isLoggedIn = !!localStorage.getItem('token');
                     setLogin(isLoggedIn ? localStorage.getItem('role') : null);
                 }
             } catch (err) {
                 localStorage.setItem('token', null);
-                localStorage.setItem('role', null);
                 setLogin(null);
             }
         };
@@ -119,35 +120,93 @@ export default function Header() {
                                 pathname === '/blogs' ||
                                 pathname === '/how-it-works'
                             ) &&
-                            <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
-                                <li className="nav-item">
-                                    <Link className="nav-link" aria-current="page" href={'/'}>Home</Link>
-                                </li>
-                                <li className="nav-item">
-                                    <Link className="nav-link" aria-current="page" href={'/subscription'}>Free
-                                        Trial</Link>
-                                </li>
+                            <ul className="navbar-nav ms-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
+                                {userRole && (
+                                    <>
+                                        <li className="nav-item">
+                                            <Link className="nav-link" aria-current="page" href={'/'}>Home</Link>
+                                        </li>
+                                        <li className="nav-item">
+                                            <Link className="nav-link" aria-current="page" href={'/subscription'}>Free
+                                                Trial</Link>
+                                        </li>
+                                        <li className="nav-item">
+                                            <Link className="nav-link" href={'/how-it-works'}>How It Works</Link>
+                                        </li>
+                                        <li className="nav-item">
+                                            <Link className="nav-link" href={'/blogs'}>Blogs</Link>
+                                        </li>
+                                    </>
+                                )}
+
                                 <li className="nav-item dropdown">
-                                    <Link className="nav-link dropdown-toggle" href={'/'} role="button"
-                                          data-bs-toggle="dropdown" aria-expanded="false">How It Works</Link>
+                                    <Link
+                                        className="nav-link dropdown-toggle"
+                                        href="#"
+                                        role="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                    >
+                                        Contractor
+                                    </Link>
                                     <ul className="dropdown-menu">
-                                        <li><Link className="dropdown-item" href={'/how-it-works'}>General
-                                            Contractor</Link>
+                                        <li>
+                                            <button
+                                                className={`dropdown-item d-flex align-items-center ${
+                                                    userRole === 'general_contractor' ? 'fw-bold' : ''
+                                                }`}
+                                                type="button"
+                                                onclick={(e) => {
+                                                    e.preventDefault();
+                                                    const role = 'general_contractor';
+                                                    localStorage.setItem('role', role);
+                                                    setUserRole(role);
+                                                }}
+                                            >
+                                                {userRole === 'general_contractor' && (
+                                                    <span className="me-2">✓</span>
+                                                )}
+                                                General Contractor
+                                            </button>
                                         </li>
-                                        <li><Link className="dropdown-item" href={'/how-it-works'}>Subcontractor</Link>
+                                        <li>
+                                            <button
+                                                className={`dropdown-item d-flex align-items-center ${
+                                                    userRole === 'subcontractor' ? 'fw-bold' : ''
+                                                }`}
+                                                type="button"
+                                                onclick={(e) => {
+                                                    e.preventDefault();
+                                                    const role = 'subcontractor';
+                                                    localStorage.setItem('role', role);
+                                                    setUserRole(role);
+                                                }}
+                                            >
+                                                {userRole === 'subcontractor' && (
+                                                    <span className="me-2">✓</span>
+                                                )}
+                                                Subcontractor
+                                            </button>
                                         </li>
-                                        <li><Link className="dropdown-item" href={'/how-it-works'}>Affiliates</Link>
+                                        <li>
+                                            <button
+                                                className={`dropdown-item d-flex align-items-center ${
+                                                    userRole === 'affiliate' ? 'fw-bold' : ''
+                                                }`}
+                                                type="button"
+                                                onclick={(e) => {
+                                                    e.preventDefault();
+                                                    const role = 'affiliate';
+                                                    localStorage.setItem('role', role);
+                                                    setUserRole(role);
+                                                }}
+                                            >
+                                                {userRole === 'affiliate' && (
+                                                    <span className="me-2">✓</span>
+                                                )}
+                                                Affiliates
+                                            </button>
                                         </li>
-                                    </ul>
-                                </li>
-                                <li className="nav-item dropdown">
-                                    <Link className="nav-link dropdown-toggle" href={'/'} role="button"
-                                          data-bs-toggle="dropdown" aria-expanded="false">Blogs</Link>
-                                    <ul className="dropdown-menu">
-                                        <li><Link className="dropdown-item" href={'/blogs'}>General Contractor</Link>
-                                        </li>
-                                        <li><Link className="dropdown-item" href={'/blogs'}>Subcontractor</Link></li>
-                                        <li><Link className="dropdown-item" href={'/blogs'}>Affiliates</Link></li>
                                     </ul>
                                 </li>
                             </ul>
