@@ -11,6 +11,50 @@ export default function MyAds() {
     const router = useRouter();
     const [ads, setAds] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+
+    // 🔹 Toast Utility — identical to your register page
+    const showToast = (message: string, type: 'success' | 'error' = 'error') => {
+        const existing = document.querySelector('.checkout-toast');
+        if (existing) existing.remove();
+
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        const toast = document.createElement('div');
+        toast.className = 'checkout-toast';
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                max-width: 400px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+                font-size: 14px;
+            ">
+                <span>${icon} ${message}</span>
+<!--                <button type="button" class="btn-close" style="font-size: 12px; margin-left: auto; opacity: 0.7;" data-bs-dismiss="toast"></button>-->
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+    };
 
     // 🔹 Get My Ads API
     const getMyAds = async () => {
@@ -44,9 +88,34 @@ export default function MyAds() {
     };
 
     // Delete ad
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this ad?')) {
-            setAds((prevAds) => prevAds.filter((ad) => ad.id !== id));
+    const handleDelete = async (id: number) => {
+        setDeletingId(id);
+        try {
+            const token = localStorage.getItem('token');
+
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/${id}/delete`, {
+                method: 'DELETE', // DELETE method
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                // 🔹 Remove ad from state
+                setAds(prev => prev.filter(ad => ad.id !== id));
+                // 🔹 Success toast
+                showToast('Ad deleted successfully!', 'success');
+            } else {
+                // 🔹 Error toast
+                showToast(data.message?.[0] || 'Failed to delete ad', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Something went wrong while deleting ad', 'error');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -109,13 +178,13 @@ export default function MyAds() {
                                                 <button
                                                     onClick={() => handleDelete(ad.id)}
                                                     className="icon bg-transparent border-0 p-0"
+                                                    disabled={deletingId === ad.id}
                                                 >
-                                                    <Image
-                                                        src="/assets/img/icons/delete-dark.svg"
-                                                        width={24}
-                                                        height={24}
-                                                        alt="Delete"
-                                                    />
+                                                    {deletingId === ad.id ? (
+                                                        <span className="spinner-border spinner-border-sm" />
+                                                    ) : (
+                                                        <Image src="/assets/img/icons/delete-dark.svg" width={24} height={24} alt="Delete" />
+                                                    )}
                                                 </button>
                                             </div>
                                         </div>
