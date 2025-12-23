@@ -96,7 +96,6 @@ export default function PricingPage() {
             p.is_cancelled !== true
     );
 
-
     const renderPlanCard = (plan: any) => (
         <div key={plan.id} className="col-lg-3 col-md-6">
             <div className={`price-card ${plan.isPopular ? 'popular' : ''} free`}>
