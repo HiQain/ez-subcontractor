@@ -3,9 +3,15 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import Header from "../../components/Header";
+import Header from "../components/Header";
 
 export default function SuccessPage() {
+    const userRole = localStorage.getItem('role');
+    const dashboardLink =
+        userRole === 'affiliate'
+            ? '/affiliate/dashboard'
+            : '/subcontractor/dashboard';
+
     return (
         <div className="sections overflow-hidden">
             <Header />
@@ -36,7 +42,7 @@ export default function SuccessPage() {
                                 Your subscription is now active. You have full access to all premium features.
                             </p>
                             <Link
-                                href="/subcontractor/dashboard" // ✅ Updated href
+                                href={dashboardLink}
                                 className="btn btn-primary rounded-3 w-100 justify-content-center"
                             >
                                 Go to Dashboard

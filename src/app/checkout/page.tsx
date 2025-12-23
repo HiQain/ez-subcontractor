@@ -3,17 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import '../../../styles/pricing.css';
-import '../../../styles/checkout.css';
-
-const PLAN_RULES: any = {
-    1: { free: 1, extraPrice: 0, max: 1 },
-    2: { free: 1, extraPrice: 25 },
-    3: { free: 1, extraPrice: 200 },
-};
+import '../../styles/pricing.css';
+import '../../styles/checkout.css';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 export default function CheckoutPage() {
     const stripe = useStripe();
@@ -31,6 +25,15 @@ export default function CheckoutPage() {
     const [appliedPromo, setAppliedPromo] = useState<any>(null);
     const [promoLoading, setPromoLoading] = useState(false);
     const [promoError, setPromoError] = useState<string | null>(null);
+
+    const getPlanRule = (plan: any) => {
+        if (!plan) return { free: 0, extraPrice: 0 };
+
+        const freeCategories = plan.type === 'free' ? 1 : 1;
+        const extraPrice = plan.extra_category_price || 0;
+
+        return { free: freeCategories, extraPrice };
+    };
 
     // 🔹 Toast Utility — identical to your register page
     const showToast = (message: string, type: 'success' | 'error' = 'error') => {
@@ -160,7 +163,6 @@ export default function CheckoutPage() {
     const toggleCategory = (category: { id: number; name: string }) => {
         if (!selectedPlan) return;
 
-        const rule = PLAN_RULES[selectedPlan.id];
         const alreadySelected = selectedCategories.some(c => c.id === category.id);
 
         // 🔹 If already selected → remove normally
@@ -171,7 +173,8 @@ export default function CheckoutPage() {
 
         // ✅ PLAN 1 SPECIAL BEHAVIOR
         // Only 1 allowed → replace existing with new one
-        if (selectedPlan.id === 1) {
+        console.log('PlanType', selectedPlan)
+        if (selectedPlan.title === 'Free Registration') {
             setSelectedCategories([category]);
             return;
         }
@@ -180,22 +183,24 @@ export default function CheckoutPage() {
         setSelectedCategories([...selectedCategories, category]);
     };
 
-    // ✅ Price summary
-    const basePrice = selectedPlan ? parseFloat(selectedPlan.price) || 0 : 0;
 
-    const rule = selectedPlan ? PLAN_RULES[selectedPlan.id] : null;
-    const freeCategories = rule?.free || 0;
+    // Price summary calculation
+    const rule = getPlanRule(selectedPlan);
+
+    const freeCategories = rule.free;
     const extraCategoryCount = Math.max(selectedCategories.length - freeCategories, 0);
-    const extraCategoriesPrice = extraCategoryCount * (rule?.extraPrice || 0);
+    const extraCategoriesPrice = extraCategoryCount * rule.extraPrice;
 
-    const tax = Math.round((basePrice + extraCategoriesPrice) * 0.08);
-    const total = basePrice + extraCategoriesPrice + tax;
-    let finalTotal = basePrice + extraCategoriesPrice + tax;
+    // ✅ Safely handle null selectedPlan
+    const planPrice = parseFloat(selectedPlan?.price || '0');
 
-    if (appliedPromo) {
-        if (appliedPromo.type === 'fixed') {
-            finalTotal = Math.max(finalTotal - parseFloat(appliedPromo.value), 0);
-        }
+    const tax = Math.round((planPrice + extraCategoriesPrice) * 0.08);
+    const total = planPrice + extraCategoriesPrice + tax;
+    let finalTotal = total;
+
+    // Promo logic
+    if (appliedPromo?.type === 'fixed') {
+        finalTotal = Math.max(finalTotal - parseFloat(appliedPromo.value), 0);
     }
 
     // ✅ Note card for Trial plan
@@ -296,8 +301,7 @@ export default function CheckoutPage() {
 
             // ✅ Success
             showToast('Subscription activated successfully!', 'success'); // ✅ Success toast
-            router.push('/subcontractor/thank-you');
-            console.log('ssss')
+            router.push('/thank-you');
 
         } catch (err: any) {
             const msg = err.message || 'Something went wrong';

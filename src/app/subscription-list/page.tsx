@@ -1,15 +1,14 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import '../../../styles/pricing.css';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import '../../styles/pricing.css';
 import { useState, useEffect } from 'react';
 
 export default function PricingPage() {
     const router = useRouter();
-    const pathname = usePathname();
 
     // State
     const [plans, setPlans] = useState<any[]>([]);
@@ -20,8 +19,8 @@ export default function PricingPage() {
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                const token = localStorage.getItem('token'); // Optional: auth not required for public plans
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/plans?role=subcontractor`, {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/plans?role=${localStorage.getItem('role')}`, {
                     headers: token ? { Authorization: `Bearer ${token}` } : {},
                 });
                 const data = await res.json();
@@ -65,8 +64,8 @@ export default function PricingPage() {
     }, []);
 
     const handleSelectPlan = (plan: any) => {
-        localStorage.setItem('selectedPlan', JSON.stringify({ ...plan, type: 'sub-contractor' }));
-        router.push('/subcontractor/checkout');
+        localStorage.setItem('selectedPlan', JSON.stringify({ ...plan, type: localStorage.getItem('role') }));
+        router.push('/checkout');
     };
 
     const renderNoteCard = () => (

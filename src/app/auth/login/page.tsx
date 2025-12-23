@@ -155,9 +155,9 @@ export default function LoginPage() {
                     if (role === 'general_contractor') {
                         router.push('/general-contractor/dashboard');
                     } else if (role === 'subcontractor') {
-                        router.push('/subcontractor/subscription');
+                        router.push('/subscription-list');
                     } else if (role === 'affiliate') {
-                        router.push('/affiliate/subscription');
+                        router.push('/subscription-list');
                     } else {
                         router.push('/');
                     }

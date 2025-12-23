@@ -364,8 +364,8 @@ export default function RegisterPage() {
                 // Delay for UX
                 setTimeout(() => {
                     const paths: Record<string, string> = {
-                        'general-contractor': '/general-contractor/subscription',
-                        'sub-contractor': '/subcontractor/subscription',
+                        'general-contractor': '/subscription-list',
+                        'sub-contractor': '/subscription-list',
                         'affiliate': '/affiliate/dashboard',
                     };
                     router.push(paths[accountType] || '/');
