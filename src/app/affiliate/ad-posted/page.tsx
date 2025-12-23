@@ -40,7 +40,7 @@ export default function MyAds() {
 
     // Edit ad
     const handleEdit = (id: number) => {
-        router.push('/affiliate/post-an-ad');
+        router.push(`/affiliate/post-an-ad?ad_id=${id}`);
     };
 
     // Delete ad

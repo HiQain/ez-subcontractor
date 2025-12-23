@@ -1,8 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/post-detail.css';
@@ -13,6 +12,9 @@ export default function PostAnAd() {
     const router = useRouter();
     const stripe = useStripe();
     const elements = useElements();
+    const searchParams = useSearchParams();
+    const adId = searchParams.get('ad_id');
+    const isEditMode = !!adId;
 
     // Tabs state
     const [activeTab, setActiveTab] = useState('saved-cards');
@@ -412,6 +414,124 @@ export default function PostAnAd() {
         }
     };
 
+    const fetchAdFromMyAds = async () => {
+        if (!adId) return;
+
+        try {
+            const token = localStorage.getItem('token');
+
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/my-ads`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const data = await res.json();
+
+            if (!data.success) {
+                showToast('Failed to load ad', 'error');
+                return;
+            }
+
+            const ad = data.data.find((item: any) => item.id === Number(adId));
+
+            if (!ad) {
+                showToast('Ad not found', 'error');
+                return;
+            }
+
+            // 🔹 Orientation
+            setOrientation(
+                ad.orientation.charAt(0).toUpperCase() + ad.orientation.slice(1)
+            );
+
+            // 🔹 URLs
+            setHorizontalUrl(ad.horizontal_url || '');
+            setVerticalUrl(ad.vertical_url || '');
+
+            // 🔹 Images preview
+            if (ad.horizontal_image) {
+                setMainImage(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}${ad.horizontal_image}`
+                );
+            }
+
+            if (ad.vertical_image) {
+                setSmallImage(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}${ad.vertical_image}`
+                );
+            }
+
+            // 🔹 Placement
+            setSelectedAd(ad.placement);
+
+        } catch (err) {
+            console.error(err);
+            showToast('Something went wrong', 'error');
+        }
+    };
+
+    useEffect(() => {
+        if (isEditMode) {
+            fetchAdFromMyAds();
+        }
+    }, [adId]);
+
+    const handleUpdateAd = async () => {
+        if (!adId || !selectedAd) return;
+
+        setLoading(true);
+
+        try {
+            const token = localStorage.getItem('token');
+            const formData = new FormData();
+
+            formData.append('ad_placement_id', selectedAd.id);
+            formData.append('orientation', orientation.toLowerCase());
+            formData.append('can_pause', '0');
+
+            // 🔹 URLs
+            if (horizontalUrl) formData.append('horizontal_url', horizontalUrl);
+            if (verticalUrl) formData.append('vertical_url', verticalUrl);
+
+            // 🔹 Images (ONLY if user selected new)
+            if (mainFileRef.current?.files?.[0]) {
+                formData.append('horizontal_image', mainFileRef.current.files[0]);
+            }
+            if (smallFileRef.current?.files?.[0]) {
+                formData.append('vertical_image', smallFileRef.current.files[0]);
+            }
+
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/${adId}/update`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                }
+            );
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                showToast('Ad updated successfully!', 'success');
+                router.back();
+            } else {
+                showToast(data.message?.[0] || 'Update failed', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Something went wrong', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <>
             <Header />
@@ -429,7 +549,9 @@ export default function PostAnAd() {
                                     loading="lazy"
                                 />
                             </div>
-                            <span className="fs-4 fw-semibold">Post an Ad</span>
+                            <span className="fs-4 fw-semibold">
+                                {isEditMode ? 'Edit Ad' : 'Post an Ad'}
+                            </span>
                         </div>
                     </div>
 
@@ -661,18 +783,14 @@ export default function PostAnAd() {
                             </div>
 
                             <button
-                                className="btn btn-primary w-100 rounded-3 justify-content-center d-flex align-items-center justify-content-center gap-2"
-                                onClick={handlePostAd}
+                                className="btn btn-primary w-100 rounded-3 d-flex align-items-center justify-content-center gap-2"
+                                onClick={isEditMode ? handleUpdateAd : handlePostAd}
                                 disabled={loading}
                             >
-                                {loading && (
-                                    <span
-                                        className="spinner-border spinner-border-sm"
-                                        role="status"
-                                        aria-hidden="true"
-                                    ></span>
-                                )}
-                                {loading ? 'Posting...' : 'Post an Ad'}
+                                {loading && <span className="spinner-border spinner-border-sm" />}
+                                {loading
+                                    ? isEditMode ? 'Updating...' : 'Posting...'
+                                    : isEditMode ? 'Update Ad' : 'Post an Ad'}
                             </button>
                         </div>
 
