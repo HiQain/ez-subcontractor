@@ -6,6 +6,7 @@
   border-radius: 0 0 24px 24px;
   overflow: hidden;
 }
+
 .hero-sec.pricing::before {
   content: "";
   position: absolute;
@@ -18,9 +19,27 @@
   z-index: -1;
   display: block;
 }
+
 .hero-sec.pricing .content-wrapper {
   max-width: 890px;
   margin: 0 auto;
+}
+
+.active-btn {
+  width: 100%;
+  border-radius: 10px;
+  padding: 12px;
+  background: #C8DA2A !important;
+  color: #fff !important;
+  font-size: 18px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  font-weight: 600;
+  margin: 0 auto;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
 }
 
 .nav.nav-tabs {
@@ -32,11 +51,13 @@
   display: flex;
   overflow: hidden;
 }
+
 .nav.nav-tabs .nav-item {
   z-index: 2;
   flex: 1;
   width: 50%;
 }
+
 .nav.nav-tabs .nav-item .nav-link {
   display: flex;
   justify-content: center;
@@ -54,11 +75,13 @@
   white-space: nowrap;
   text-align: center;
 }
+
 .nav.nav-tabs .nav-item .nav-link.active {
   color: #000;
   box-shadow: none !important;
   outline: none !important;
 }
+
 .nav.nav-tabs .slider {
   position: absolute;
   top: 0;
@@ -71,9 +94,11 @@
   transition: left 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
   pointer-events: none;
 }
+
 .nav.nav-tabs:has(.nav-item:nth-child(1) .nav-link.active) .slider {
   left: 0;
 }
+
 .nav.nav-tabs:has(.nav-item:nth-child(2) .nav-link.active) .slider {
   left: 50%;
 }
@@ -89,6 +114,7 @@
 .hero-sec.pricing {
   padding: 50px 0;
 }
+
 .pricing-sec .nav-tabs,
 .hero-sec.pricing .nav-tabs {
   background-color: white;
@@ -102,6 +128,7 @@
   overflow: hidden;
   border: none;
 }
+
 .pricing-sec .nav-tabs .tabs .tab-btn,
 .hero-sec.pricing .nav-tabs .tabs .tab-btn {
   border: 1px solid transparent;
@@ -114,6 +141,7 @@
   color: #272727;
   border-bottom: 1px solid transparent;
 }
+
 .pricing-sec .nav-tabs .tabs .tab-btn:hover,
 .hero-sec.pricing .nav-tabs .tabs .tab-btn:hover {
   background-color: #C9DA2B !important;
@@ -121,6 +149,7 @@
   border-color: #C9DA2B !important;
   border-bottom: 1px solid #C9DA2B !important;
 }
+
 .pricing-sec .nav-tabs .tabs .tab-btn.active,
 .hero-sec.pricing .nav-tabs .tabs .tab-btn.active {
   background-color: #C9DA2B !important;
@@ -128,14 +157,17 @@
   border: 1px solid #C9DA2B !important;
   border-bottom-color: #C9DA2B !important;
 }
+
 .pricing-sec .pricing-content,
 .hero-sec.pricing .pricing-content {
   display: none;
 }
+
 .pricing-sec .pricing-content.active,
 .hero-sec.pricing .pricing-content.active {
   display: block;
 }
+
 .pricing-sec .price-card,
 .hero-sec.pricing .price-card {
   display: flex;
@@ -150,11 +182,13 @@
   position: relative;
   transition: transform 0.3s ease;
 }
+
 .pricing-sec .price-card:hover,
 .hero-sec.pricing .price-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.145);
 }
+
 .pricing-sec .price-card .pricing-header,
 .hero-sec.pricing .price-card .pricing-header {
   border: 2px solid #C9DA2B !important;
@@ -164,6 +198,7 @@
   margin-bottom: 25px;
   box-shadow: 0 4px 0 4px #C9DA2B;
 }
+
 .pricing-sec .price-card .pricing-header .title1,
 .hero-sec.pricing .price-card .pricing-header .title1 {
   font-size: clamp(20px, 2vw, 24px);
@@ -171,16 +206,19 @@
   margin-bottom: 20px;
   display: block;
 }
+
 .pricing-sec .price-card .pricing-header .price,
 .hero-sec.pricing .price-card .pricing-header .price {
   font-size: clamp(36px, 4vw, 48px);
   font-weight: 400;
   color: #000;
 }
+
 .pricing-sec .price-card .pricing-body,
 .hero-sec.pricing .price-card .pricing-body {
   padding: 0 25px;
 }
+
 .pricing-sec .price-card .pricing-body .list-with-icon,
 .hero-sec.pricing .price-card .pricing-body .list-with-icon {
   list-style: none;
@@ -190,6 +228,7 @@
   flex-direction: column;
   gap: 15px;
 }
+
 .pricing-sec .price-card .pricing-body .list-with-icon li,
 .hero-sec.pricing .price-card .pricing-body .list-with-icon li {
   position: relative;
@@ -199,6 +238,7 @@
   font-weight: 500;
   color: #000;
 }
+
 .pricing-sec .price-card .pricing-body .list-with-icon li::before,
 .hero-sec.pricing .price-card .pricing-body .list-with-icon li::before {
   content: "";
@@ -209,6 +249,7 @@
   width: 16px;
   height: 16px;
 }
+
 .pricing-sec .price-card .note-card,
 .hero-sec.pricing .price-card .note-card {
   border: 1px solid #00bbff;
@@ -217,10 +258,12 @@
   padding: 10px;
   margin: 20px 25px;
 }
+
 .pricing-sec .price-card .pricing-button,
 .hero-sec.pricing .price-card .pricing-button {
   padding: 20px;
 }
+
 .pricing-sec .price-card .pricing-button .btn,
 .hero-sec.pricing .price-card .pricing-button .btn {
   width: 100%;
@@ -238,21 +281,25 @@
   text-decoration: none;
   transition: all 0.3s ease;
 }
+
 .pricing-sec .price-card .pricing-button .btn:hover,
 .hero-sec.pricing .price-card .pricing-button .btn:hover {
   background: #272727 !important;
   color: white;
   opacity: 0.8;
 }
+
 .pricing-sec .popular,
 .hero-sec.pricing .popular {
   border-color: #f3705a !important;
 }
+
 .pricing-sec .popular .pricing-header,
 .hero-sec.pricing .popular .pricing-header {
   border-color: #f3705a !important;
   box-shadow: 0 4px 0 4px #f3705a;
 }
+
 .pricing-sec .popular .pricing-body .list-with-icon li::before,
 .hero-sec.pricing .popular .pricing-body .list-with-icon li::before {
   background-image: url("/assets/img/icons/check-red.svg") !important;

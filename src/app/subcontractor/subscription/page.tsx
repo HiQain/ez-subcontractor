@@ -169,7 +169,7 @@ export default function PricingPage() {
                     <div className="pricing-button w-100 pt-0">
                         <div className="pricing-button w-100 pt-0">
                             <button
-                                className={plan.is_subscribed ? 'active-btn btn btn-primary' : 'btn'}
+                                className={plan.is_subscribed ? 'active-btn' : 'btn'}
                                 disabled={hasAnyActiveSubscription && !plan.is_subscribed}
                                 onClick={() => {
                                     if (!hasAnyActiveSubscription && !plan.is_subscribed) {
