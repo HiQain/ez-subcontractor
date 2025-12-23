@@ -1,16 +1,14 @@
 'use client';
 
-import {useRouter, usePathname} from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../../styles/pricing.css';
-import {useState, useEffect} from 'react';
-import Link from "next/link";
+import { useState, useEffect } from 'react';
 
 export default function PricingPage() {
     const router = useRouter();
-    const pathname = usePathname();
 
     // State
     const [activeTab, setActiveTab] = useState<'subcontractor' | 'affiliate'>('subcontractor');
@@ -27,7 +25,7 @@ export default function PricingPage() {
 
                 const token = localStorage.getItem('token'); // Optional: auth not required for public plans
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/plans?role=${activeTab}`, {
-                    headers: token ? {Authorization: `Bearer ${token}`} : {},
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
                 });
                 const data = await res.json();
 
@@ -68,7 +66,7 @@ export default function PricingPage() {
     }, [activeTab]); // 🔁 Re-fetch when tab changes
 
     const handleSelectPlan = (plan: any) => {
-        localStorage.setItem('selectedPlan', JSON.stringify({...plan, type: activeTab}));
+        localStorage.setItem('selectedPlan', JSON.stringify({ ...plan, type: activeTab }));
         router.push('/subcontractor/checkout');
     };
 
@@ -83,10 +81,10 @@ export default function PricingPage() {
                 className="d-block"
             />
             <div className="content">
-                <span style={{fontSize: '14px'}} className="d-block fw-semibold mb-1">
+                <span style={{ fontSize: '14px' }} className="d-block fw-semibold mb-1">
                     Note
                 </span>
-                <p style={{fontSize: '12px'}} className="mb-0">
+                <p style={{ fontSize: '12px' }} className="mb-0">
                     After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with
                     contractors, and accessing premium tools.
                 </p>
@@ -103,7 +101,7 @@ export default function PricingPage() {
                             <div className="d-flex align-items-center justify-content-between mb-3">
                                 <span className="title1 mb-0 text-truncate">{plan.title}</span>
                                 <div
-                                    style={{fontSize: '14px'}}
+                                    style={{ fontSize: '14px' }}
                                     className="custom-btn bg-white shadow p-2 rounded-pill"
                                 >
                                     🔥 Popular
@@ -125,7 +123,7 @@ export default function PricingPage() {
                                     </span>
                                     {plan.saveText && (
                                         <div
-                                            style={{backgroundColor: plan.saveColor}}
+                                            style={{ backgroundColor: plan.saveColor }}
                                             className="custom-btn text-white py-2 px-3 rounded-pill"
                                         >
                                             {parseFloat(plan.discount)} % OFF
@@ -141,7 +139,7 @@ export default function PricingPage() {
                                 {plan.saveText && (
                                     <button
                                         type="button"
-                                        style={{backgroundColor: plan.saveColor}}
+                                        style={{ backgroundColor: plan.saveColor }}
                                         className="custom-btn text-white p-2 rounded-pill"
                                     >
                                         {plan.saveText}
@@ -177,7 +175,7 @@ export default function PricingPage() {
 
     return (
         <div>
-            <Header/>
+            <Header />
             <div className="sections overflow-hidden">
                 <section
                     style={{
@@ -220,21 +218,21 @@ export default function PricingPage() {
                 </section>
 
                 {loading ?
-                <>
-                    <div className="sections overflow-hidden py-5 my-5">
-                        <section className="banner-sec profile position-static">
-                            <div className="container">
-                                <div className="row">
-                                    <div className="col-12 text-center py-5">
-                                        <div className="spinner-border text-primary" role="status">
-                                            <span className="visually-hidden">Loading...</span>
+                    <>
+                        <div className="sections overflow-hidden py-5 my-5">
+                            <section className="banner-sec profile position-static">
+                                <div className="container">
+                                    <div className="row">
+                                        <div className="col-12 text-center py-5">
+                                            <div className="spinner-border text-primary" role="status">
+                                                <span className="visually-hidden">Loading...</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </section>
-                    </div>
-                </> :
+                            </section>
+                        </div>
+                    </> :
                     <section className="pricing-sec">
                         <div className="container-fluid">
                             <div className="tab-content pricing-wrapper">
@@ -289,7 +287,7 @@ export default function PricingPage() {
                 }
 
             </div>
-            <Footer/>
+            <Footer />
         </div>
     );
 }
