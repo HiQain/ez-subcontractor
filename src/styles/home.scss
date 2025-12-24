@@ -41,7 +41,7 @@ $white: #fff;
   .banner-wrapper {
     position: relative;
     display: flex;
-    align-items: end;
+    align-items: center;
     justify-content: center;
     background: center / cover no-repeat;
     padding: clamp(140px, 28vw, 140px) 20px;
@@ -374,11 +374,38 @@ $white: #fff;
     justify-content: center;
   }
   .home-banner-sec {
+    .slick-slider, .slick-list, .slick-track {
+      height: auto;
+    }
     .content-wrapper {
       .notice-button {
         font-size: 18px;
         border-radius: 16px;
         padding: 10px 20px;
+      }
+    }
+    .banner-wrapper {
+      padding: 50px 0;
+      height: auto;
+    }
+  }
+  .role-cards {
+    margin-top: 0;
+    padding: 30px 0 0;
+    background-color: rgba(0, 0, 0, 0.05);
+    .account-card {
+      border-radius: 6px;
+      background-color: $white;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      padding: 15px;
+      margin-bottom: 0;
+      img {
+        height: 30px;
+        width: auto;
+      }
+      .title {
+        font-size: 16px;
       }
     }
   }

@@ -93,6 +93,14 @@ h2 {
   background-color: #C9DA2B;
   border-color: #C9DA2B;
 }
+.btn.current-plan {
+  background-color: #C9DA2B !important;
+  color: #272727 !important;
+}
+.btn.current-plan:hover {
+  background-color: #C9DA2B !important;
+  color: #272727 !important;
+}
 
 /* Card */
 .custom-card {
@@ -402,6 +410,11 @@ body .quill .ql-container {
 }
 .slick-slider .slick-arrow.slick-next {
   left: 50px;
+}
+
+.toast {
+  width: 100% !important;
+  max-width: 500px !important;
 }
 
 /*# sourceMappingURL=style.css.map */

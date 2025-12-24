@@ -36,7 +36,7 @@
 .home-banner-sec .banner-wrapper {
   position: relative;
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: center;
   background: center/cover no-repeat;
   padding: clamp(140px, 28vw, 140px) 20px;
@@ -365,10 +365,37 @@
     min-width: 250px;
     justify-content: center;
   }
+  .home-banner-sec .slick-slider, .home-banner-sec .slick-list, .home-banner-sec .slick-track {
+    height: auto;
+  }
   .home-banner-sec .content-wrapper .notice-button {
     font-size: 18px;
     border-radius: 16px;
     padding: 10px 20px;
+  }
+  .home-banner-sec .banner-wrapper {
+    padding: 50px 0;
+    height: auto;
+  }
+  .role-cards {
+    margin-top: 0;
+    padding: 30px 0 0;
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  .role-cards .account-card {
+    border-radius: 6px;
+    background-color: #fff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 15px;
+    margin-bottom: 0;
+  }
+  .role-cards .account-card img {
+    height: 30px;
+    width: auto;
+  }
+  .role-cards .account-card .title {
+    font-size: 16px;
   }
 }
 

@@ -269,8 +269,8 @@
   width: 100%;
   border-radius: 10px;
   padding: 12px;
-  background: #272727 !important;
-  color: #fff !important;
+  background: #272727;
+  color: #fff;
   font-size: 18px;
   text-align: center;
   display: flex;
@@ -284,7 +284,7 @@
 
 .pricing-sec .price-card .pricing-button .btn:hover,
 .hero-sec.pricing .price-card .pricing-button .btn:hover {
-  background: #272727 !important;
+  background: #272727;
   color: white;
   opacity: 0.8;
 }

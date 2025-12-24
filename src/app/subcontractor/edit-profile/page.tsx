@@ -140,7 +140,7 @@ export default function EditProfile() {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 const data = await res.json();
-                console.log(data)
+
                 if (res.ok && data.data) {
                     setFormData({
                         name: data.data.name || '',
@@ -328,9 +328,7 @@ export default function EditProfile() {
             return;
         }
 
-        setSubmitting(false);
-
-        console.log(formData.category);
+        setSubmitting(true); // ✅ Was `false` — now corrected
 
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/update-profile`, {
@@ -346,8 +344,8 @@ export default function EditProfile() {
                     license_number: formData.license_number,
                     zip: formData.zip,
                     work_radius: formData.work_radius,
-                    category: formData.category, // string, e.g. "17"
-                    specialization: formData.category, // string, e.g. "17"
+                    category: formData.category,
+                    specialization: formData.category,
                     address: formData.address,
                     city: formData.city,
                     state: formData.state,
@@ -421,29 +419,6 @@ export default function EditProfile() {
         }
     };
 
-    // 🌀 Loading
-    if (loading) {
-        return (
-            <>
-                <Header />
-                <div className="sections overflow-hidden">
-                    <section className="banner-sec profile position-static">
-                        <div className="container">
-                            <div className="row">
-                                <div className="col-12 text-center py-5">
-                                    <div className="spinner-border text-primary" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-                <Footer />
-            </>
-        );
-    }
-
     return (
         <>
             <Header />
@@ -451,253 +426,259 @@ export default function EditProfile() {
                 <section className="banner-sec profile position-static">
                     <div className="container">
                         <div className="row g-4">
-                            {/* SidebarSubcontractor */}
+                            {/* ✅ Sidebar always visible */}
                             <div className="col-xl-3">
                                 <SidebarSubcontractor onLogout={handleLogout} />
                             </div>
 
-                            {/* Right Content */}
+                            {/* ✅ Right Content — loading spinner centered in content area */}
                             <div className="col-xl-9">
-                                <div className="right-bar">
-                                    <div className="d-flex align-items-center gap-2 justify-content-between flex-wrap mb-5">
-                                        <div className="icon-wrapper d-flex align-items-center gap-3">
+                                {loading ? (
+                                    <div className="right-bar d-flex align-items-center justify-content-center" style={{ height: '500px' }}>
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="right-bar">
+                                        <div className="d-flex align-items-center gap-2 justify-content-between flex-wrap mb-5">
+                                            <div className="icon-wrapper d-flex align-items-center gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => router.back()}
+                                                    className="icon"
+                                                    aria-label="Go back"
+                                                >
+                                                    <Image
+                                                        src="/assets/img/button-angle.svg"
+                                                        width={10}
+                                                        height={15}
+                                                        alt="Back"
+                                                    />
+                                                </button>
+                                                <span className="fs-4 fw-semibold">Edit Profile</span>
+                                            </div>
+                                        </div>
+
+                                        {error && (
+                                            <div className="alert alert-danger mb-4" role="alert">
+                                                {error}
+                                            </div>
+                                        )}
+
+                                        {success && (
+                                            <div className="alert alert-success mb-4" role="alert">
+                                                {success}
+                                            </div>
+                                        )}
+
+                                        <div className="image-wrapper-s1">
+                                            <Image
+                                                src={formData.profile_image}
+                                                width={234}
+                                                height={234}
+                                                alt="Worker Image"
+                                                className="d-block mb-4 img-fluid rounded-circle"
+                                                style={{ width: '234px', height: '234px' }}
+                                            />
                                             <button
                                                 type="button"
-                                                onClick={() => router.back()}
                                                 className="icon"
-                                                aria-label="Go back"
+                                                onClick={() => imageFileInputRef.current?.click()}
+                                                disabled={uploadingImage}
+                                                aria-label="Upload profile image"
                                             >
                                                 <Image
-                                                    src="/assets/img/button-angle.svg"
-                                                    width={10}
-                                                    height={15}
-                                                    alt="Back"
+                                                    src="/assets/img/camera-icon.svg"
+                                                    width={24}
+                                                    height={24}
+                                                    alt="Camera Icon"
+                                                    style={{ maxWidth: '24px' }}
                                                 />
                                             </button>
-                                            <span className="fs-4 fw-semibold">Edit Profile</span>
-                                        </div>
-                                    </div>
-
-                                    {error && (
-                                        <div className="alert alert-danger mb-4" role="alert">
-                                            {error}
-                                        </div>
-                                    )}
-
-                                    {success && (
-                                        <div className="alert alert-success mb-4" role="alert">
-                                            {success}
-                                        </div>
-                                    )}
-
-                                    <div className="image-wrapper-s1">
-                                        <Image
-                                            src={formData.profile_image}
-                                            width={234}
-                                            height={234}
-                                            alt="Worker Image"
-                                            className="d-block mb-4 img-fluid rounded-circle"
-                                            style={{ width: '234px', height: '234px' }}
-                                        />
-                                        <button
-                                            type="button"
-                                            className="icon"
-                                            onClick={() => imageFileInputRef.current?.click()}
-                                            disabled={uploadingImage}
-                                            aria-label="Upload profile image"
-                                        >
-                                            <Image
-                                                src="/assets/img/camera-icon.svg"
-                                                width={24}
-                                                height={24}
-                                                alt="Camera Icon"
-                                                style={{ maxWidth: '24px' }}
+                                            <input
+                                                type="file"
+                                                ref={imageFileInputRef}
+                                                accept="image/*"
+                                                onChange={handleProfileImageUpload}
+                                                style={{ display: 'none' }}
                                             />
-                                        </button>
-                                        <input
-                                            type="file"
-                                            ref={imageFileInputRef}
-                                            accept="image/*"
-                                            onChange={handleProfileImageUpload}
-                                            style={{ display: 'none' }}
-                                        />
-                                    </div>
-
-                                    <form onSubmit={handleSubmit}>
-                                        <div className="form">
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="name" className="mb-1 fw-semibold">
-                                                    Full Name <span className="text-danger">*</span>
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id="name"
-                                                    name="name"
-                                                    className="form-control"
-                                                    placeholder="Jason Doe"
-                                                    value={formData.name}
-                                                    onChange={handleChange}
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="company_name" className="mb-1 fw-semibold">
-                                                    Company Name <span className="text-danger">*</span>
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id="company_name"
-                                                    name="company_name"
-                                                    className="form-control"
-                                                    placeholder="Jason Tiles Limited"
-                                                    value={formData.company_name}
-                                                    onChange={handleChange}
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="email" className="mb-1 fw-semibold">
-                                                    Email Address <span className="text-danger">*</span>
-                                                </label>
-                                                <input
-                                                    type="email"
-                                                    id="email"
-                                                    name="email"
-                                                    className="form-control"
-                                                    placeholder="hello@example.com"
-                                                    value={formData.email}
-                                                    onChange={handleChange}
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="phone" className="mb-1 fw-semibold">
-                                                    Phone Number <span className="text-danger">*</span>
-                                                </label>
-                                                <input
-                                                    id="phone"
-                                                    name="phone"
-                                                    type="tel"
-                                                    className="form-control"
-                                                    placeholder="(000) 000-0000"
-                                                    value={formData.phone}
-                                                    onChange={handleChange}
-                                                    required
-                                                />
-                                            </div>
-
-
-
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="address" className="mb-1 fw-semibold">
-                                                    Address
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id="address"
-                                                    name="address"
-                                                    className="form-control"
-                                                    placeholder="abc street"
-                                                    value={formData.address}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
-
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="city" className="mb-1 fw-semibold">
-                                                    City
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id="city"
-                                                    name="city"
-                                                    className="form-control"
-                                                    placeholder="New York"
-                                                    value={formData.city}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
-
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="state" className="mb-1 fw-semibold">
-                                                    State
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id="state"
-                                                    name="state"
-                                                    className="form-control"
-                                                    placeholder="Texas"
-                                                    value={formData.state}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
-
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="zip" className="mb-1 fw-semibold">
-                                                    ZIP Code
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id="zip"
-                                                    name="zip"
-                                                    className="form-control"
-                                                    placeholder="12345"
-                                                    value={formData.zip}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
-
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="category-select" className="mb-1 fw-semibold">
-                                                    Category
-                                                </label>
-                                                <select
-                                                    id="category-select"
-                                                    className="form-control"
-                                                    value={formData.category}
-                                                    onChange={(e) => setFormData(prev => ({
-                                                        ...prev,
-                                                        category: e.target.value
-                                                    }))}
-                                                    disabled={categoriesLoading}
-                                                >
-                                                    <option value="">Select category</option>
-                                                    {categories.map((cat) => (
-                                                        <option key={cat.id} value={cat.id}>
-                                                            {cat.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="license_number" className="mb-1 fw-semibold">
-                                                    License Number
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id="license_number"
-                                                    name="license_number"
-                                                    className="form-control"
-                                                    placeholder="223546"
-                                                    value={formData.license_number}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
                                         </div>
-                                        <button
-                                            type="submit" // ✅ Fixed: was 'onClick'
-                                            disabled={submitting}
-                                            className="btn btn-primary rounded-3 mt-4"
-                                        >
-                                            {submitting ? 'Saving...' : 'Save Changes'}
-                                        </button>
-                                    </form>
-                                </div>
+
+                                        <form onSubmit={handleSubmit}>
+                                            <div className="form">
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label htmlFor="name" className="mb-1 fw-semibold">
+                                                        Full Name <span className="text-danger">*</span>
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        id="name"
+                                                        name="name"
+                                                        className="form-control"
+                                                        placeholder="Jason Doe"
+                                                        value={formData.name}
+                                                        onChange={handleChange}
+                                                        required
+                                                    />
+                                                </div>
+
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label htmlFor="company_name" className="mb-1 fw-semibold">
+                                                        Company Name <span className="text-danger">*</span>
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        id="company_name"
+                                                        name="company_name"
+                                                        className="form-control"
+                                                        placeholder="Jason Tiles Limited"
+                                                        value={formData.company_name}
+                                                        onChange={handleChange}
+                                                        required
+                                                    />
+                                                </div>
+
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label htmlFor="email" className="mb-1 fw-semibold">
+                                                        Email Address <span className="text-danger">*</span>
+                                                    </label>
+                                                    <input
+                                                        type="email"
+                                                        id="email"
+                                                        name="email"
+                                                        className="form-control"
+                                                        placeholder="hello@example.com"
+                                                        value={formData.email}
+                                                        onChange={handleChange}
+                                                        required
+                                                    />
+                                                </div>
+
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label htmlFor="phone" className="mb-1 fw-semibold">
+                                                        Phone Number <span className="text-danger">*</span>
+                                                    </label>
+                                                    <input
+                                                        id="phone"
+                                                        name="phone"
+                                                        type="tel"
+                                                        className="form-control"
+                                                        placeholder="(000) 000-0000"
+                                                        value={formData.phone}
+                                                        onChange={handleChange}
+                                                        required
+                                                    />
+                                                </div>
+
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label htmlFor="address" className="mb-1 fw-semibold">
+                                                        Address
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        id="address"
+                                                        name="address"
+                                                        className="form-control"
+                                                        placeholder="abc street"
+                                                        value={formData.address}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label htmlFor="city" className="mb-1 fw-semibold">
+                                                        City
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        id="city"
+                                                        name="city"
+                                                        className="form-control"
+                                                        placeholder="New York"
+                                                        value={formData.city}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label htmlFor="state" className="mb-1 fw-semibold">
+                                                        State
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        id="state"
+                                                        name="state"
+                                                        className="form-control"
+                                                        placeholder="Texas"
+                                                        value={formData.state}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label htmlFor="zip" className="mb-1 fw-semibold">
+                                                        ZIP Code
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        id="zip"
+                                                        name="zip"
+                                                        className="form-control"
+                                                        placeholder="12345"
+                                                        value={formData.zip}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label htmlFor="category-select" className="mb-1 fw-semibold">
+                                                        Category
+                                                    </label>
+                                                    <select
+                                                        id="category-select"
+                                                        className="form-control"
+                                                        value={formData.category}
+                                                        onChange={(e) => setFormData(prev => ({
+                                                            ...prev,
+                                                            category: e.target.value
+                                                        }))}
+                                                        disabled={categoriesLoading}
+                                                    >
+                                                        <option value="">Select category</option>
+                                                        {categories.map((cat) => (
+                                                            <option key={cat.id} value={cat.id}>
+                                                                {cat.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label htmlFor="license_number" className="mb-1 fw-semibold">
+                                                        License Number
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        id="license_number"
+                                                        name="license_number"
+                                                        className="form-control"
+                                                        placeholder="223546"
+                                                        value={formData.license_number}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="submit"
+                                                disabled={submitting}
+                                                className="btn btn-primary rounded-3 mt-4"
+                                            >
+                                                {submitting ? 'Saving...' : 'Save Changes'}
+                                            </button>
+                                        </form>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

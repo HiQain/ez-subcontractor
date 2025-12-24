@@ -100,6 +100,14 @@ h2 {
       border-color: $primary;
     }
   }
+  &.current-plan{
+    background-color: $primary !important;
+    color: #272727 !important;
+    &:hover{
+      background-color: $primary !important;
+      color: #272727 !important;
+    }
+  }
 }
 
 /* Card */
@@ -458,4 +466,8 @@ body {
   .slick-arrow.slick-next {
     left: 50px
   }
+}
+.toast {
+  width: 100% !important;
+  max-width: 500px !important;
 }

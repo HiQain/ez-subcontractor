@@ -35,15 +35,6 @@ export default function SavedListingPage() {
 
     const descriptionRefs = useRef<(HTMLParagraphElement | null)[]>([]);
 
-    // SidebarSubcontractor links
-    const links = [
-        { href: '/subcontractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/lock.svg' },
-        { href: '/subcontractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
-        { href: '/subcontractor/saved-listing', label: 'Saved Listing', icon: '/assets/img/icons/saved.svg' },
-        { href: '/subcontractor/my-subscription', label: 'My Subscription', icon: '/assets/img/icons/saved.svg' },
-        { href: '/subcontractor/transaction-history', label: 'Transaction History', icon: '/assets/img/icons/saved.svg' },
-    ];
-
     // 🔹 Toast
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
         const toast = document.createElement('div');
@@ -323,56 +314,6 @@ export default function SavedListingPage() {
         }
     };
 
-    // 🌀 Loading State
-    if (loading) {
-        return (
-            <>
-                <Header />
-                <div className="sections overflow-hidden">
-                    <section className="banner-sec profile">
-                        <div className="container">
-                            <div className="row">
-                                <div className="col-12 text-center py-5">
-                                    <div className="spinner-border text-primary" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-                <Footer />
-            </>
-        );
-    }
-
-    if (error) {
-        return (
-            <>
-                <Header />
-                <div className="sections overflow-hidden">
-                    <section className="banner-sec profile">
-                        <div className="container">
-                            <div className="row">
-                                <div className="col-12 text-center py-5">
-                                    <p className="text-danger">{error}</p>
-                                    <button
-                                        className="btn btn-primary mt-3"
-                                        onClick={() => window.location.reload()}
-                                    >
-                                        Retry
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-                <Footer />
-            </>
-        );
-    }
-
-
     return (
         <>
             <Header />
@@ -381,151 +322,165 @@ export default function SavedListingPage() {
                 <section className="banner-sec profile">
                     <div className="container">
                         <div className="row g-4">
-                            {/* SidebarSubcontractor */}
+                            {/* SidebarSubcontractor — always visible */}
                             <div className="col-xl-3">
                                 <SidebarSubcontractor onLogout={handleLogout} />
                             </div>
 
-                            {/* Right Bar */}
+                            {/* Right Bar — loading or content */}
                             <div className="col-xl-9">
-                                <div className="right-bar">
-                                    <div className="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-5">
-                                        <div className="change fw-semibold fs-4">Saved Listing</div>
-                                        <div className="d-flex align-items-center gap-2">
-                                            <div
-                                                className="form-wrapper mt-0 mb-0 d-flex flex-nowrap"
-                                                style={{ minWidth: 'clamp(200px,34vw,335px)' }}
-                                            >
-                                                <Image
-                                                    src="/assets/img/icons/search-gray.svg"
-                                                    width={18}
-                                                    height={18}
-                                                    alt="Search Icon"
-                                                    loading="lazy"
-                                                />
-                                                <input
-                                                    type="text"
-                                                    placeholder="Search city, state, category..."
-                                                    value={searchQuery}
-                                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                                    className="form-control shadow-none"
-                                                />
-                                            </div>
-                                            {searchQuery && (
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-sm btn-outline-dark"
-                                                    onClick={handleResetSearch}
-                                                    aria-label="Clear search"
-                                                >
-                                                    Clear
-                                                </button>
-                                            )}
+                                {loading ? (
+                                    <div className="right-bar d-flex align-items-center justify-content-center" style={{ height: '500px' }}>
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Loading...</span>
                                         </div>
                                     </div>
-
-                                    {filteredProjects.length === 0 ? (
-                                        <div className="text-center py-5">
-                                            <p>
-                                                {searchQuery
-                                                    ? `No projects match "${searchQuery}".`
-                                                    : 'You haven’t saved any projects yet.'}
-                                            </p>
-                                            {searchQuery && (
-                                                <button
-                                                    className="btn btn-outline-primary mt-2"
-                                                    onClick={handleResetSearch}
+                                ) : (
+                                    <div className="right-bar">
+                                        <div className="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-5">
+                                            <div className="change fw-semibold fs-4">Saved Listing</div>
+                                            <div className="d-flex align-items-center gap-2">
+                                                <div
+                                                    className="form-wrapper mt-0 mb-0 d-flex flex-nowrap"
+                                                    style={{ minWidth: 'clamp(200px,34vw,335px)' }}
                                                 >
-                                                    Clear Search
-                                                </button>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        filteredProjects.map((job, index) => (
-                                            <div key={job.id} className="posted-card posted-card-1 custom-card mb-3">
-                                                <div className="topbar mb-2">
-                                                    <div className="title">{job.city}, {job.state}</div>
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        <div className="date">{timeAgo(job.created_at)}</div>
-                                                        <button
-                                                            className={`icon bg-white ${savedproject.has(job.id) ? 'Saved bg-primary' : 'Save'}`}
-                                                            onClick={() => toggleSaveproject(job.id)}
-                                                            aria-label={savedproject.has(job.id) ? 'Remove from saved' : 'Save project'}
-                                                        >
-                                                            <Image
-                                                                src={
-                                                                    savedproject.has(job.id)
-                                                                        ? '/assets/img/bookmark-filled.svg'
-                                                                        : '/assets/img/bookmark-outline.svg'
-                                                                }
-                                                                width={16}
-                                                                height={16}
-                                                                alt="save"
-                                                            />
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <div className="description-wrapper mb-2 position-relative">
-                                                    <p
-                                                        className={`description mb-0 ${
-                                                            expanded.includes(index) ? 'expanded' : 'collapsed'
-                                                        }`}
-                                                        style={{
-                                                            display: '-webkit-box',
-                                                            WebkitLineClamp: expanded.includes(index) ? 'unset' : 3,
-                                                            WebkitBoxOrient: 'vertical',
-                                                            overflow: 'hidden',
-                                                            textOverflow: 'ellipsis',
-                                                            maxHeight: expanded.includes(index) ? 'none' : 'calc(1.5em * 3)',
-                                                            transition: 'max-height 0.2s ease',
-                                                        }}
-                                                        dangerouslySetInnerHTML={{
-                                                            __html: job.description.replace(/<[^>]*>/g, '').trim() || 'No description provided.'
-                                                        }}
+                                                    <Image
+                                                        src="/assets/img/icons/search-gray.svg"
+                                                        width={18}
+                                                        height={18}
+                                                        alt="Search Icon"
+                                                        loading="lazy"
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Search city, state, category..."
+                                                        value={searchQuery}
+                                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                                        className="form-control shadow-none"
                                                     />
                                                 </div>
-
-                                                {shouldShowSeeMore[index] && (
+                                                {searchQuery && (
                                                     <button
-                                                        className="see-more-btn d-block"
-                                                        onClick={() => toggleExpand(index)}
+                                                        type="button"
+                                                        className="btn btn-sm btn-outline-dark"
+                                                        onClick={handleResetSearch}
+                                                        aria-label="Clear search"
                                                     >
-                                                        {expanded.includes(index) ? 'See less' : 'See more'}
+                                                        Clear
                                                     </button>
                                                 )}
+                                            </div>
+                                        </div>
 
-                                                <div className="bottom-bar">
-                                                    <div className="left">
-                                                        <Image
-                                                            src="/assets/img/icons/p-icon.svg"
-                                                            width={50}
-                                                            height={50}
-                                                            alt="P Icon"
-                                                            loading="lazy"
-                                                        />
-                                                        <p className="mb-0 fs-5 fw-semibold">ProBuilds Express</p>
+                                        {error && (
+                                            <div className="alert alert-danger mb-4" role="alert">
+                                                {error}
+                                            </div>
+                                        )}
+
+                                        {filteredProjects.length === 0 ? (
+                                            <div className="text-center py-5">
+                                                <p>
+                                                    {searchQuery
+                                                        ? `No projects match "${searchQuery}".`
+                                                        : 'You haven’t saved any projects yet.'}
+                                                </p>
+                                                {searchQuery && (
+                                                    <button
+                                                        className="btn btn-outline-primary mt-2"
+                                                        onClick={handleResetSearch}
+                                                    >
+                                                        Clear Search
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            filteredProjects.map((job, index) => (
+                                                <div key={job.id} className="posted-card posted-card-1 custom-card mb-3">
+                                                    <div className="topbar mb-2">
+                                                        <div className="title">{job.city}, {job.state}</div>
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <div className="date">{timeAgo(job.created_at)}</div>
+                                                            <button
+                                                                className={`icon bg-white ${savedproject.has(job.id) ? 'Saved bg-primary' : 'Save'}`}
+                                                                onClick={() => toggleSaveproject(job.id)}
+                                                                aria-label={savedproject.has(job.id) ? 'Remove from saved' : 'Save project'}
+                                                            >
+                                                                <Image
+                                                                    src={
+                                                                        savedproject.has(job.id)
+                                                                            ? '/assets/img/bookmark-filled.svg'
+                                                                            : '/assets/img/bookmark-outline.svg'
+                                                                    }
+                                                                    width={16}
+                                                                    height={16}
+                                                                    alt="save"
+                                                                />
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div className="social-icons">
-                                                        {['message-white.svg', 'chat.svg', 'call-white.svg'].map(
-                                                            (icon, i) => (
-                                                                <Link href="#" key={i} className="icon">
-                                                                    <Image
-                                                                        src={`/assets/img/icons/${icon}`}
-                                                                        width={20}
-                                                                        height={20}
-                                                                        alt="Social Icon"
-                                                                        loading="lazy"
-                                                                    />
-                                                                </Link>
-                                                            )
-                                                        )}
+
+                                                    <div className="description-wrapper mb-2 position-relative">
+                                                        <p
+                                                            className={`description mb-0 ${
+                                                                expanded.includes(index) ? 'expanded' : 'collapsed'
+                                                            }`}
+                                                            style={{
+                                                                display: '-webkit-box',
+                                                                WebkitLineClamp: expanded.includes(index) ? 'unset' : 3,
+                                                                WebkitBoxOrient: 'vertical',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                maxHeight: expanded.includes(index) ? 'none' : 'calc(1.5em * 3)',
+                                                                transition: 'max-height 0.2s ease',
+                                                            }}
+                                                            dangerouslySetInnerHTML={{
+                                                                __html: job.description.replace(/<[^>]*>/g, '').trim() || 'No description provided.'
+                                                            }}
+                                                        />
+                                                    </div>
+
+                                                    {shouldShowSeeMore[index] && (
+                                                        <button
+                                                            className="see-more-btn d-block"
+                                                            onClick={() => toggleExpand(index)}
+                                                        >
+                                                            {expanded.includes(index) ? 'See less' : 'See more'}
+                                                        </button>
+                                                    )}
+
+                                                    <div className="bottom-bar">
+                                                        <div className="left">
+                                                            <Image
+                                                                src="/assets/img/icons/p-icon.svg"
+                                                                width={50}
+                                                                height={50}
+                                                                alt="P Icon"
+                                                                loading="lazy"
+                                                            />
+                                                            <p className="mb-0 fs-5 fw-semibold">ProBuilds Express</p>
+                                                        </div>
+                                                        <div className="social-icons">
+                                                            {['message-white.svg', 'chat.svg', 'call-white.svg'].map(
+                                                                (icon, i) => (
+                                                                    <Link href="#" key={i} className="icon">
+                                                                        <Image
+                                                                            src={`/assets/img/icons/${icon}`}
+                                                                            width={20}
+                                                                            height={20}
+                                                                            alt="Social Icon"
+                                                                            loading="lazy"
+                                                                        />
+                                                                    </Link>
+                                                                )
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
