@@ -155,9 +155,9 @@ export default function MyAds() {
                                     >
                                         <div className="image-wrapper position-relative">
                                             <Image
-                                                src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${imagePath}`}
+                                                src={imagePath}
                                                 width={isHorizontal ? 769 : 370}
-                                                height={426}
+                                                height={isHorizontal ? 300 : 200}
                                                 className="img-fluid w-100 h-100 post-img"
                                                 alt="Ad"
                                             />

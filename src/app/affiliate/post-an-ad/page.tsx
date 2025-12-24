@@ -455,13 +455,13 @@ export default function PostAnAd() {
             // 🔹 Images preview
             if (ad.horizontal_image) {
                 setMainImage(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}${ad.horizontal_image}`
+                    ad.horizontal_image
                 );
             }
 
             if (ad.vertical_image) {
                 setSmallImage(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}${ad.vertical_image}`
+                    ad.vertical_image
                 );
             }
 
