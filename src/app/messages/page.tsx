@@ -8,8 +8,16 @@ import '../../styles/chat-2.css';
 import { useEffect, useRef, useState } from 'react';
 import { capitalizeEachWord, ChatMessage, clearChatAPI, Contractor, getContractors, getInitials, getMessages, sendMessageAPI } from '../api/chat';
 import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
+import { useSearchParams } from 'next/navigation';
 
 export default function ChatPage() {
+  const searchParams = useSearchParams();
+  const chatUserId = searchParams.get('userId');
+  const chatUserName = searchParams.get('name');
+  const chatUserEmail = searchParams.get('email');
+  const chatUserPhone = searchParams.get('phone');
+  const chatUserCompanyName = searchParams.get('companyName');
+
   const [results, setResults] = useState<Contractor[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
@@ -50,7 +58,18 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    getContractors().then(setResults);
+    getContractors().then(apiUsers => {
+      setResults(prev => {
+        const existingIds = new Set(prev.map(u => u.id));
+
+        const merged = [
+          ...prev,
+          ...apiUsers.filter(u => !existingIds.has(u.id)),
+        ];
+
+        return merged;
+      });
+    });
   }, []);
 
   const loadMessages = async (chatId: number) => {
@@ -166,6 +185,44 @@ export default function ChatPage() {
       console.error("Failed to clear chat:", err);
     }
   };
+
+  useEffect(() => {
+    if (!chatUserId) return;
+
+    const userId = Number(chatUserId);
+
+    setResults(prev => {
+      const exists = prev.find(u => u.id === userId);
+      if (exists) return prev;
+
+      const incomingUser: Contractor = {
+        id: userId,
+        name: chatUserName || 'Unknown',
+        email: chatUserEmail || '',
+        phone: chatUserPhone || '',
+        last_message: '',
+        last_message_time: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        company_name: chatUserCompanyName,
+      };
+
+      return [incomingUser, ...prev];
+    });
+  }, [chatUserId]);
+
+  useEffect(() => {
+    if (!chatUserId || results.length === 0) return;
+
+    const userId = Number(chatUserId);
+    const user = results.find(u => u.id === userId);
+
+    if (!user) return;
+
+    setSelectedChatId(userId);
+    setSelectedUser(user);
+    loadMessages(userId);
+
+  }, [chatUserId, results]);
 
   return (
     <div className="sections overflow-hidden">
