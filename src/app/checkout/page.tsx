@@ -194,8 +194,7 @@ export default function CheckoutPage() {
     // ✅ Safely handle null selectedPlan
     const planPrice = parseFloat(selectedPlan?.price || '0');
 
-    const tax = Math.round((planPrice + extraCategoriesPrice) * 0.08);
-    const total = planPrice + extraCategoriesPrice + tax;
+    const total = planPrice + extraCategoriesPrice;
     let finalTotal = total;
 
     // Promo logic
@@ -477,7 +476,7 @@ export default function CheckoutPage() {
 
                                                 <div className="d-flex align-items-center justify-content-between mt-2">
                                                     <span style={{ fontSize: '14px' }}>{selectedPlan.title}</span>
-                                                    <span className="fw-semibold" style={{ fontSize: '14px' }}>{
+                                                    <span className="fw-semibold" style={{ fontSize: '14px' }}>${
                                                         selectedPlan.discount
                                                             ? selectedPlan.price - (selectedPlan.price / 100) * selectedPlan.discount
                                                             : selectedPlan.price
@@ -494,11 +493,6 @@ export default function CheckoutPage() {
                                                         </span>
                                                     </div>
                                                 )}
-
-                                                <div className="d-flex align-items-center justify-content-between mt-2">
-                                                    <span style={{ fontSize: '14px' }}>Tax (8%)</span>
-                                                    <span className="fw-semibold" style={{ fontSize: '14px' }}>${tax}</span>
-                                                </div>
 
                                                 {/* ✅ Promo Discount */}
                                                 {appliedPromo && appliedPromo.type === 'fixed' && (

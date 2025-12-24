@@ -130,6 +130,15 @@ export default function PricingPage() {
                             <span className="title1 text-truncate">{plan.title}</span>
                         )}
 
+                        {plan.saveText && (
+                            <div
+                                style={{ backgroundColor: plan.saveColor, maxWidth: '130px' }}
+                                className="custom-btn text-white py-2 px-3 rounded-pill"
+                            >
+                                {parseFloat(plan.discount)} % OFF
+                            </div>
+                        )}
+
                         {plan.showStrike ? (
                             <div className="d-flex align-items-center gap-1 flex-wrap">
                                 <del className="fs-18 fw-medium text-black">$ {plan.price.toFixed(2)}</del>
@@ -140,14 +149,6 @@ export default function PricingPage() {
                                             {plan.discount ? plan.price - plan.price / 100 * plan.discount : plan.price}
                                         </span>
                                     </span>
-                                    {plan.saveText && (
-                                        <div
-                                            style={{ backgroundColor: plan.saveColor }}
-                                            className="custom-btn text-white py-2 px-3 rounded-pill"
-                                        >
-                                            {plan.saveText}
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         ) : (
