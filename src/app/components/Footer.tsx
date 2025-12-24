@@ -40,11 +40,11 @@ export default function Footer() {
                                 aria-label="Home"
                             >
                                 <Image
-                                    src="/assets/img/icons/logo.webp"
-                                    width={283}
-                                    height={81}
+                                    src="/assets/img/icons/footer-logo.webp"
+                                    width={175}
+                                    height={49}
                                     alt="EZ Subcontractor Logo"
-                                    className="img-fluid w-100"
+
                                     loading="lazy"
                                 />
                             </Link>

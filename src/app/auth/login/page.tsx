@@ -90,22 +90,26 @@ export default function LoginPage() {
         setError('');
         setIsLoading(true);
 
+        // Trim inputs for robustness
+        const trimmedEmail = email.trim();
+        const trimmedPassword = password.trim();
+
         // Validation
-        if (!email.trim()) {
+        if (!trimmedEmail) {
             setError('Email is required');
             showToast('Email is required', 'error');
             setIsLoading(false);
             return;
         }
 
-        if (!/\S+@\S+\.\S+/.test(email)) {
+        if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
             setError('Email is invalid');
             showToast('Email is invalid', 'error');
             setIsLoading(false);
             return;
         }
 
-        if (!password.trim()) {
+        if (!trimmedPassword) {
             setError('Password is required');
             showToast('Password is required', 'error');
             setIsLoading(false);
@@ -120,14 +124,12 @@ export default function LoginPage() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    email,
-                    password,
+                    email: trimmedEmail,
+                    password: trimmedPassword,
                 }),
             });
 
             const data = await response.json();
-
-            console.log(data);
 
             if (response.ok) {
                 const token = data.data?.token;
@@ -139,27 +141,36 @@ export default function LoginPage() {
                     return;
                 }
 
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userEmail', email);
+                // ✅ Persist auth
                 localStorage.setItem('token', token);
                 localStorage.setItem('role', user.role);
-                localStorage.setItem('userName', user.name);
+                localStorage.setItem('userName', user.name || '');
+                localStorage.setItem('userEmail', trimmedEmail);
 
-                const role = user.role;
+                // Optional: persist email if "Remember me"
+                if (rememberMe) {
+                    localStorage.setItem('rememberedEmail', trimmedEmail);
+                } else {
+                    localStorage.removeItem('rememberedEmail');
+                }
 
-                // 🔹 Show thank-you toast before redirect
+                // 🔹 Show success toast
                 showToast('Login successful! Redirecting to dashboard...');
 
-                // Delay redirect to show toast
+                // Delay for UX
                 setTimeout(() => {
-                    if (role === 'general_contractor') {
-                        router.push('/general-contractor/dashboard');
-                    } else if (role === 'subcontractor') {
-                        router.push('/subcontractor/subscription');
-                    } else if (role === 'affiliate') {
-                        router.push('/affiliate/subscription');
-                    } else {
-                        router.push('/');
+                    switch (user.role) {
+                        case 'general_contractor':
+                            router.push('/general-contractor/dashboard');
+                            break;
+                        case 'subcontractor':
+                            router.push('/subcontractor/subscription');
+                            break;
+                        case 'affiliate':
+                            router.push('/affiliate/subscription');
+                            break;
+                        default:
+                            router.push('/');
                     }
                 }, 1000);
 
@@ -177,6 +188,15 @@ export default function LoginPage() {
             setIsLoading(false);
         }
     };
+
+    // 🔁 Optional: Auto-fill remembered email on mount
+    React.useEffect(() => {
+        const remembered = localStorage.getItem('rememberedEmail');
+        if (remembered) {
+            setEmail(remembered);
+            setRememberMe(true);
+        }
+    }, []);
 
     return (
         <section className="hero-sec login login-s1 overflow-hidden position-static">
@@ -213,7 +233,7 @@ export default function LoginPage() {
 
                             <div className="fw-semibold fs-2 mb-4 text-center">Login</div>
 
-                            <form className="form" onSubmit={handleSubmit}>
+                            <form className="form" onSubmit={handleSubmit} noValidate>
                                 <div className="input-wrapper d-flex flex-column">
                                     <label htmlFor="email" className="mb-1 fw-semibold">
                                         Email Address <span className="text-danger">*</span>
@@ -228,7 +248,6 @@ export default function LoginPage() {
                                     />
                                 </div>
 
-                                {/* ✅ Password field — with SVG EyeIcon (same as RegisterPage) */}
                                 <div className="input-wrapper d-flex flex-column position-relative">
                                     <label htmlFor="password" className="mb-1 fw-semibold">
                                         Password <span className="text-danger">*</span>
@@ -245,6 +264,15 @@ export default function LoginPage() {
                                         className="toggle-password position-absolute"
                                         style={{ right: '10px', top: '38px', cursor: 'pointer' }}
                                         onClick={() => setShowPassword(!showPassword)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                setShowPassword(!showPassword);
+                                            }
+                                        }}
+                                        tabIndex={0} // make it focusable
+                                        role="button"
+                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     >
                                         <EyeIcon active={showPassword} />
                                     </span>
@@ -256,7 +284,7 @@ export default function LoginPage() {
                                             className="form-check-input"
                                             type="checkbox"
                                             checked={rememberMe}
-                                            onChange={() => setRememberMe(!rememberMe)}
+                                            onChange={(e) => setRememberMe(e.target.checked)}
                                             id="rememberMe"
                                         />
                                         <label className="form-check-label" htmlFor="rememberMe">

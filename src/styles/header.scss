@@ -317,6 +317,24 @@ $white: #fff;
         height: auto;
       }
     }
+    .navbar-nav {
+      background-color: transparent !important;
+      .nav-link {
+        &:hover,
+        &:focus {
+          color: $dark;
+        }
+      }
+    }
+    .navbar-collapse {
+      background-color: $primary;
+      padding: 20px;
+      position: absolute;
+      top: 60px;
+      left: 0;
+      width: 100%;
+      z-index: 9999;
+    }
     .dropdown-menu {
       margin-left: 0;
     }

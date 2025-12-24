@@ -88,7 +88,7 @@ export default function HomePage() {
         {
             id: 1,
             image: "/assets/img/home-banner-img1.webp",
-            title: "Real Subs. Real Work. Real Results.",
+            title: "Real Leads, Good subs and excellent results",
             btn1Text: "Post a Project",
             btn1Link: "/auth/login",
             btn2Text: "Search a Project",
@@ -216,7 +216,8 @@ export default function HomePage() {
                                         muted
                                         loop
                                         playsInline
-                                        poster={banner.video_poster}
+                                        preload="none"
+                                        poster="/assets/img/poster.webp"
                                         className="hero-video"
                                         style={{
                                             position: 'absolute',
@@ -230,7 +231,7 @@ export default function HomePage() {
                                     >
                                         <source src={banner.video} type="video/mp4" />
                                     </video>
-                                    <div className="content-wrapper text-center text-white px-3 d-none">
+                                    <div className="content-wrapper text-center text-white px-3">
                                         {/* ✅ First slide <h1>, others <h2> */}
                                         {banner.id === 1 ? (
                                             <h1 className="main-title mb-4">{banner.title}</h1>
@@ -238,7 +239,7 @@ export default function HomePage() {
                                             <h2 className="main-title h1 mb-4">{banner.title}</h2>
                                         )}
 
-                                        <div className="main-wrapper mx-auto" style={{ maxWidth: "876px" }}>
+                                        <div className="main-wrapper mx-auto d-none" style={{ maxWidth: "876px" }}>
                                             <div className="buttons d-flex flex-wrap justify-content-center gap-3 mb-4">
                                                 <Link
                                                     href={banner.btn1Link}
@@ -300,7 +301,7 @@ export default function HomePage() {
                                     {accountTypes.map((acc) => (
                                         <div className="col-lg-4">
                                             <div
-                                                className={`account-card mb-3 px-4 shadow-sm ${selectedType === acc.id ? 'active' : ''}`}
+                                                className={`account-card mb-3 px-lg-4 shadow-sm ${selectedType === acc.id ? 'active' : ''}`}
                                                 key={acc.id}
                                                 onClick={() => handleSelection(acc.id)}
                                                 style={{cursor: 'pointer', minWidth: '430px'}}
