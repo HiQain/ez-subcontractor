@@ -154,7 +154,26 @@ export default function PostAnAd() {
         }
     };
 
-    // Handle Post Ad button click
+    const normalizeUrl = (url: string) => {
+        let finalUrl = url.trim();
+
+        if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+            finalUrl = `https://${finalUrl}`;
+        }
+
+        return finalUrl;
+    };
+
+    const isValidUrl = (url: string) => {
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    // 🔹 Handle Post Ad button click
     const handlePostAd = async () => {
         if (!selectedAd) {
             showToast('Please select an ad', 'error');
@@ -167,23 +186,20 @@ export default function PostAnAd() {
             return;
         }
 
-        const isValidUrl = (url: string) => {
-            try {
-                new URL(url);
-                return true;
-            } catch {
-                return false;
-            }
-        };
+        // 🔹 URL validation (UPDATED)
+        let finalHorizontalUrl = '';
+        let finalVerticalUrl = '';
 
-        // 🔹 Validate URLs
         if (orientation === 'Horizontal' || orientation === 'Both') {
             if (!horizontalUrl.trim()) {
                 showToast('Please enter Horizontal URL', 'error');
                 return;
             }
-            if (!isValidUrl(horizontalUrl.trim())) {
-                showToast('Horizontal URL must be a valid URL (include https://)', 'error');
+
+            finalHorizontalUrl = normalizeUrl(horizontalUrl);
+
+            if (!isValidUrl(finalHorizontalUrl)) {
+                showToast('Please enter a valid Horizontal URL', 'error');
                 return;
             }
         }
@@ -193,8 +209,11 @@ export default function PostAnAd() {
                 showToast('Please enter Vertical URL', 'error');
                 return;
             }
-            if (!isValidUrl(verticalUrl.trim())) {
-                showToast('Vertical URL must be a valid URL (include https://)', 'error');
+
+            finalVerticalUrl = normalizeUrl(verticalUrl);
+
+            if (!isValidUrl(finalVerticalUrl)) {
+                showToast('Please enter a valid Vertical URL', 'error');
                 return;
             }
         }
@@ -203,7 +222,8 @@ export default function PostAnAd() {
         if (
             (orientation === 'Horizontal' && !mainFileRef.current?.files?.[0]) ||
             (orientation === 'Vertical' && !smallFileRef.current?.files?.[0]) ||
-            (orientation === 'Both' && (!mainFileRef.current?.files?.[0] || !smallFileRef.current?.files?.[0]))
+            (orientation === 'Both' &&
+                (!mainFileRef.current?.files?.[0] || !smallFileRef.current?.files?.[0]))
         ) {
             showToast('Please upload the required image(s)', 'error');
             return;
@@ -225,47 +245,50 @@ export default function PostAnAd() {
             formData.append('can_pause', '0');
             formData.append('card_id', defaultCardId);
 
-            // 🔹 Dates for 7 weeks
+            // 🔹 Dates (7 weeks)
             const today = new Date();
             const endDate = new Date();
-            endDate.setDate(today.getDate() + 7 * 7); // 7 weeks
+            endDate.setDate(today.getDate() + 7 * 7);
 
             formData.append('start_date', today.toISOString().split('T')[0]);
             formData.append('end_date', endDate.toISOString().split('T')[0]);
 
-            // 🔹 Images + URLs
+            // 🔹 Images + NORMALIZED URLs
             if (orientation === 'Horizontal' || orientation === 'Both') {
                 formData.append('horizontal_image', mainFileRef.current!.files![0]);
-                formData.append('horizontal_url', horizontalUrl.trim());
+                formData.append('horizontal_url', finalHorizontalUrl);
             }
+
             if (orientation === 'Vertical' || orientation === 'Both') {
                 formData.append('vertical_image', smallFileRef.current!.files![0]);
-                formData.append('vertical_url', verticalUrl.trim());
+                formData.append('vertical_url', finalVerticalUrl);
             }
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/create`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                body: formData,
-            });
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/create`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                }
+            );
 
             const data = await res.json();
-            console.log('Post Ad Response:', JSON.stringify(data, null, 2));
 
             if (res.ok && data.success) {
                 showToast('Ad posted successfully!', 'success');
                 router.push('/affiliate/ad-posted');
             } else {
-                // 🔹 Show backend validation errors
                 let serverMessage = '';
                 if (Array.isArray(data.message)) {
                     serverMessage = data.message
-                        .map((msg: any) => {
-                            if (typeof msg === 'object') return Object.values(msg).join(', ');
-                            return msg;
-                        })
+                        .map((msg: any) =>
+                            typeof msg === 'object'
+                                ? Object.values(msg).join(', ')
+                                : msg
+                        )
                         .join(', ');
                 } else {
                     serverMessage = data.message || 'Failed to post ad';
@@ -487,20 +510,47 @@ export default function PostAnAd() {
 
         try {
             const token = localStorage.getItem('token');
+            if (!token) {
+                showToast('User not authenticated', 'error');
+                return;
+            }
+
             const formData = new FormData();
 
             formData.append('ad_placement_id', selectedAd.id);
             formData.append('orientation', orientation.toLowerCase());
             formData.append('can_pause', '0');
 
-            // 🔹 URLs
-            if (horizontalUrl) formData.append('horizontal_url', horizontalUrl);
-            if (verticalUrl) formData.append('vertical_url', verticalUrl);
+            // 🔹 URLs (UPDATED: normalize + validate)
+            if (horizontalUrl?.trim()) {
+                const finalHorizontalUrl = normalizeUrl(horizontalUrl);
+
+                if (!isValidUrl(finalHorizontalUrl)) {
+                    showToast('Please enter a valid Horizontal URL', 'error');
+                    setLoading(false);
+                    return;
+                }
+
+                formData.append('horizontal_url', finalHorizontalUrl);
+            }
+
+            if (verticalUrl?.trim()) {
+                const finalVerticalUrl = normalizeUrl(verticalUrl);
+
+                if (!isValidUrl(finalVerticalUrl)) {
+                    showToast('Please enter a valid Vertical URL', 'error');
+                    setLoading(false);
+                    return;
+                }
+
+                formData.append('vertical_url', finalVerticalUrl);
+            }
 
             // 🔹 Images (ONLY if user selected new)
             if (mainFileRef.current?.files?.[0]) {
                 formData.append('horizontal_image', mainFileRef.current.files[0]);
             }
+
             if (smallFileRef.current?.files?.[0]) {
                 formData.append('vertical_image', smallFileRef.current.files[0]);
             }
@@ -522,7 +572,12 @@ export default function PostAnAd() {
                 showToast('Ad updated successfully!', 'success');
                 router.back();
             } else {
-                showToast(data.message?.[0] || 'Update failed', 'error');
+                showToast(
+                    Array.isArray(data.message)
+                        ? data.message.join(', ')
+                        : data.message || 'Update failed',
+                    'error'
+                );
             }
         } catch (err) {
             console.error(err);
