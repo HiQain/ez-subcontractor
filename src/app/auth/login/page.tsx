@@ -164,7 +164,7 @@ export default function LoginPage() {
                             router.push('/general-contractor/dashboard');
                             break;
                         case 'subcontractor':
-                            router.push('/subcontractor/subscription');
+                            router.push('/subscription-list');
                             break;
                         case 'affiliate':
                             router.push('/subscription-list');
