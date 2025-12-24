@@ -216,7 +216,7 @@ export default function SubscriptionPage() {
                                                 {
                                                     subscriptions.length !== 0 ? (
                                                         <button
-                                                            onClick={() => router.push('/subcontractor/subscription')}
+                                                            onClick={() => router.push('/subscription-list')}
                                                             className="btn btn-primary"
                                                         >
                                                             View Plans
@@ -238,7 +238,7 @@ export default function SubscriptionPage() {
                                                         You don’t have any active or expired subscriptions yet.
                                                     </p>
                                                     <button
-                                                        onClick={() => router.push('/subcontractor/subscription')}
+                                                        onClick={() => router.push('/subscription-list')}
                                                         className="btn btn-primary"
                                                     >
                                                         View Plans
