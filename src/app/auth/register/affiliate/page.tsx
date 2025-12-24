@@ -113,7 +113,7 @@ export default function RegisterPage() {
             const data = await response.json();
 
             if (response.ok) {
-                router.push('/affiliate/subscription');
+                router.push('/subscription-list');
             } else {
                 let errorMessage = 'Registration failed. Please try again.';
                 if (data?.message) {

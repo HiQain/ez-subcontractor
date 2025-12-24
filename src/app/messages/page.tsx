@@ -8,8 +8,18 @@ import '../../styles/chat-2.css';
 import { useEffect, useRef, useState } from 'react';
 import { capitalizeEachWord, ChatMessage, clearChatAPI, Contractor, getContractors, getInitials, getMessages, sendMessageAPI } from '../api/chat';
 import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 export default function ChatPage() {
+  const router = useRouter();
+  const chatNowHandledRef = useRef(false);
+  const searchParams = useSearchParams();
+  const chatUserId = searchParams.get('userId');
+  const chatUserName = searchParams.get('name');
+  const chatUserEmail = searchParams.get('email');
+  const chatUserPhone = searchParams.get('phone');
+  const chatUserCompanyName = searchParams.get('companyName');
+
   const [results, setResults] = useState<Contractor[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
@@ -50,14 +60,34 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    getContractors().then(setResults);
+    getContractors().then(apiUsers => {
+      setResults(prev => {
+        const existingIds = new Set(prev.map(u => u.id));
+
+        const merged = [
+          ...prev,
+          ...apiUsers.filter(u => !existingIds.has(u.id)),
+        ];
+
+        return merged;
+      });
+    });
   }, []);
 
   const loadMessages = async (chatId: number) => {
     setLoadingMessages(true);
     try {
       const msgs = await getMessages(chatId);
-      setMessages(msgs);
+
+      setMessages(prev => {
+        const tempMsgs = prev.filter(
+          m => m.sending && m.receiver_id === chatId
+        );
+
+        // ✅ API messages first, temp messages last
+        return [...msgs, ...tempMsgs];
+      });
+
     } catch (err) {
       console.error(err);
       setMessages([]);
@@ -99,11 +129,13 @@ export default function ChatPage() {
   }, [messages]);
 
   const sendMessage = async () => {
+    if (!selectedChatId || loadingMessages) return;
+    if (!selectedChatId) return;
     if ((!messageText || messageText.trim() === "") && files.length === 0) return;
 
     const tempId = Date.now();
 
-    const tempMessage = {
+    const tempMessage: ChatMessage = {
       id: tempId,
       sender_id: 0,
       receiver_id: selectedChatId,
@@ -113,29 +145,34 @@ export default function ChatPage() {
       sending: true,
     };
 
+    // Append temp message
     setMessages(prev => [...prev, tempMessage]);
 
+    // Update last message in sidebar
     setResults(prev =>
-      Array.isArray(prev)
-        ? prev.map(user =>
-          user.id === selectedChatId
-            ? {
-              ...user,
-              last_message: messageText || (files.length > 0 ? "📎 Attachment" : ""),
-              last_message_time: new Date().toISOString(),
-            }
-            : user
-        )
-        : prev
+      prev.map(user =>
+        user.id === selectedChatId
+          ? {
+            ...user,
+            last_message: messageText || (files.length > 0 ? "📎 Attachment" : ""),
+            last_message_time: new Date().toISOString(),
+          }
+          : user
+      )
     );
 
     setMessageText("");
     setFiles([]);
 
     try {
-      await sendMessageAPI(selectedChatId, messageText, files);
+      const sentMsg = await sendMessageAPI(selectedChatId, messageText, files);
+      // Replace temp message with real message if API returns it
+      setMessages(prev =>
+        prev.map(msg => (msg.id === tempId ? { ...sentMsg, sending: false } : msg))
+      );
     } catch (error) {
       console.error("Send message error:", error);
+      // Remove temp message if failed
       setMessages(prev => prev.filter(msg => msg.id !== tempId));
     }
   };
@@ -166,6 +203,50 @@ export default function ChatPage() {
       console.error("Failed to clear chat:", err);
     }
   };
+
+  useEffect(() => {
+    if (!chatUserId) return;
+
+    const userId = Number(chatUserId);
+
+    setResults(prev => {
+      const exists = prev.find(u => u.id === userId);
+      if (exists) return prev;
+
+      const incomingUser: Contractor = {
+        id: userId,
+        name: chatUserName || 'Unknown',
+        email: chatUserEmail || '',
+        phone: chatUserPhone || '',
+        last_message: '',
+        last_message_time: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        company_name: chatUserCompanyName,
+      };
+
+      return [incomingUser, ...prev];
+    });
+  }, [chatUserId]);
+
+  useEffect(() => {
+    if (!chatUserId || results.length === 0) return;
+    if (chatNowHandledRef.current) return; // ✅ sirf 1 baar
+
+    const userId = Number(chatUserId);
+    const user = results.find(u => u.id === userId);
+
+    if (!user) return;
+
+    chatNowHandledRef.current = true;
+
+    setSelectedChatId(userId);
+    setSelectedUser(user);
+    loadMessages(userId);
+
+    // ✅ URL clean — taake dobara effect trigger na ho
+    router.replace('/messages');
+
+  }, [chatUserId, results, router]);
 
   return (
     <div className="sections overflow-hidden">
@@ -211,7 +292,8 @@ export default function ChatPage() {
                       className={`chat-item ${selectedChatId === item.id ? 'selected' : ''}`}
                       onClick={() => {
                         if (selectedChatId === item.id) return;
-
+                        setMessages([]);
+                        setLoadingMessages(false);
                         setSelectedChatId(item.id);
                         setSelectedUser(item);
                         loadMessages(item.id);
@@ -356,7 +438,7 @@ export default function ChatPage() {
               {/* Chat Messages */}
               <div className="chat-messages" ref={chatMessagesRef}>
                 {selectedUser ? (
-                  loadingMessages ? (
+                  loadingMessages && messages.length === 0 ? (
                     <div className="text-center p-4">Loading messages...</div>
                   ) : filteredMessages.length === 0 ? (
                     <div className="text-center p-4">No messages found</div>
@@ -366,7 +448,9 @@ export default function ChatPage() {
                         key={msg.id}
                         className={`message ${msg.sender_id === selectedChatId ? 'incoming' : 'outgoing'}`}
                       >
-                        <div className="message-content">
+                        <div className="message-content" style={{
+                          minWidth: '80px'
+                        }}>
                           <div className="message-bubble">
                             {/* Attachments first */}
                             {msg.attachment && msg.attachment.length > 0 && (

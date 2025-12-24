@@ -1,11 +1,9 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import '../../../styles/profile.css';
-import {usePathname, useRouter} from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import SidebarSubcontractor from "../../components/SidebarSubcontractor";
 

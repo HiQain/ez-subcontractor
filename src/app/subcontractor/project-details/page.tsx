@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useRef, useState} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Header from '../../components/Header';
@@ -8,7 +8,7 @@ import Footer from '../../components/Footer';
 import Slider from 'react-slick';
 
 import '../../../styles/job-single.css';
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 
 // 🔹 Helper: Extract file name from path
 const getFileName = (filePath: string): string => {
@@ -288,7 +288,7 @@ export default function ProjectSubcontractorDetailsPage() {
                                     onClick={() => router.back()}
                                     className="icon"
                                     aria-label="Go back"
-                                    style={{background: 'none', border: 'none', padding: 0, cursor: 'pointer'}}
+                                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
                                 >
                                     <Image
                                         src="/assets/img/button-angle.svg"
@@ -315,7 +315,7 @@ export default function ProjectSubcontractorDetailsPage() {
                                                 {timeAgo(project.created_at)}
                                             </div>
                                             <span
-                                                style={{backgroundColor: bg, color: color}}
+                                                style={{ backgroundColor: bg, color: color }}
                                                 className="btn pt-2 pb-2 ps-3 pe-3"
                                             >
                                                 {label}
@@ -329,7 +329,7 @@ export default function ProjectSubcontractorDetailsPage() {
 
                                     <div
                                         className="mb-4"
-                                        dangerouslySetInnerHTML={{__html: project.description || ''}}
+                                        dangerouslySetInnerHTML={{ __html: project.description || '' }}
                                     />
                                     {project.state}
 
@@ -338,7 +338,7 @@ export default function ProjectSubcontractorDetailsPage() {
                                         <div className="estimated-card">
                                             <div className="icon">
                                                 <Image src="/assets/img/icons/calander.svg" width={24} height={24}
-                                                       alt="Calendar Icon"/>
+                                                    alt="Calendar Icon" />
                                             </div>
                                             <div className="content">
                                                 <div className="fs-12 mb-1">Estimate Due Date</div>
@@ -351,7 +351,7 @@ export default function ProjectSubcontractorDetailsPage() {
                                         <div className="estimated-card card-1">
                                             <div className="icon">
                                                 <Image src="/assets/img/icons/calander.svg" width={24} height={24}
-                                                       alt="Calendar Icon"/>
+                                                    alt="Calendar Icon" />
                                             </div>
                                             <div className="content">
                                                 <div>
@@ -384,7 +384,7 @@ export default function ProjectSubcontractorDetailsPage() {
                                                     <div
                                                         key={img.id}
                                                         onClick={openAttachmentsModal}
-                                                        style={{cursor: 'pointer'}}
+                                                        style={{ cursor: 'pointer' }}
                                                     >
                                                         <Image
                                                             src={`${img.file.replace(/^\/+/, '')}`}
@@ -411,7 +411,7 @@ export default function ProjectSubcontractorDetailsPage() {
                                                         key={file.id}
                                                         className={`pdf-card mb-2 ${i === pdfs.length - 1 ? 'card-1' : ''}`}
                                                         onClick={openAttachmentsModal}
-                                                        style={{cursor: 'pointer'}}
+                                                        style={{ cursor: 'pointer' }}
                                                     >
                                                         <Image
                                                             src="/assets/img/icons/pdf-img.svg"
@@ -556,7 +556,19 @@ export default function ProjectSubcontractorDetailsPage() {
                                         </div>
                                     )}
 
-                                    <Link href="#" className="btn bg-dark w-100 justify-content-center rounded-3 mt-4 mb-3">
+                                    <Link
+                                        href={{
+                                            pathname: '/messages',
+                                            query: {
+                                                userId: project.user.id,
+                                                name: project.user.name,
+                                                email: project.user.email,
+                                                phone: project.user.phone,
+                                                companyName: project.user.company_name,
+                                            },
+                                        }}
+                                        className="btn bg-dark w-100 justify-content-center rounded-3 mt-4 mb-3 d-flex align-items-center gap-2"
+                                    >
                                         <Image src="/assets/img/Chat-light.svg" width={20} height={20} alt="Chat Icon" />
                                         <span className="text-white">Chat Now</span>
                                     </Link>
@@ -588,7 +600,7 @@ export default function ProjectSubcontractorDetailsPage() {
                                                     height={230}
                                                     alt={img.alt}
                                                     className="img-fluid w-100 h-100 rounded-4 object-fit-cover "
-                                                    // Optional: add loading="lazy" later
+                                                // Optional: add loading="lazy" later
                                                 />
                                             </div>
                                         ))}

@@ -1,16 +1,15 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import '../../../styles/pricing.css';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import '../../styles/pricing.css';
 import { useState, useEffect } from 'react';
 import Link from 'next/link'; // ✅ Add this
 
 export default function PricingPage() {
     const router = useRouter();
-    const pathname = usePathname();
 
     // State
     const [plans, setPlans] = useState<any[]>([]);
@@ -30,8 +29,8 @@ export default function PricingPage() {
 
         const fetchPlans = async () => {
             try {
-                const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/plans?role=subcontractor`, {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/plans?role=${localStorage.getItem('role')}`, {
                     headers: token ? { Authorization: `Bearer ${token}` } : {},
                 });
 
@@ -80,8 +79,8 @@ export default function PricingPage() {
     }, [isLoggedIn]); // ✅ Run after auth check
 
     const handleSelectPlan = (plan: any) => {
-        localStorage.setItem('selectedPlan', JSON.stringify({ ...plan, type: 'sub-contractor' }));
-        router.push('/subcontractor/checkout');
+        localStorage.setItem('selectedPlan', JSON.stringify({ ...plan, type: localStorage.getItem('role') }));
+        router.push('/checkout');
     };
 
     const renderNoteCard = () => (
@@ -181,23 +180,25 @@ export default function PricingPage() {
                 <div className="d-flex align-items-center flex-column">
                     {plan.hasNote && renderNoteCard()}
                     <div className="pricing-button w-100 pt-0">
-                        <button
-                            className={plan.is_subscribed ? 'current-plan btn' : 'btn'}
-                            disabled={hasAnyActiveSubscription && !plan.is_subscribed}
-                            onClick={() => {
-                                if (!hasAnyActiveSubscription && !plan.is_subscribed) {
-                                    handleSelectPlan(plan);
-                                }
-                            }}
-                        >
-                            {plan.is_subscribed && plan.status !== 'cancelled'
-                                ? 'Current Plan'
-                                : 'Buy Now'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+                        <div className="pricing-button w-100 pt-0">
+                            <button
+                                className={plan.is_subscribed ? 'active-btn' : 'btn'}
+                                disabled={hasAnyActiveSubscription && !plan.is_subscribed}
+                                onClick={() => {
+                                    if (!hasAnyActiveSubscription && !plan.is_subscribed) {
+                                        handleSelectPlan(plan);
+                                    }
+                                }}
+                            >
+                                {plan.is_subscribed && plan.status !== 'cancelled'
+                                    ? 'Current Plan'
+                                    : 'Buy Now'}
+                            </button>
+                        </div>
+                    </div >
+                </div >
+            </div >
+        </div >
     );
 
     // 🌀 Loading State — Only show spinner while waiting for auth + plans

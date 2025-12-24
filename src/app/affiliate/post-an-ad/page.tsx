@@ -1,15 +1,20 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/post-detail.css';
 import '../../../styles/profile.css';
+import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 
 export default function PostAnAd() {
     const router = useRouter();
+    const stripe = useStripe();
+    const elements = useElements();
+    const searchParams = useSearchParams();
+    const adId = searchParams.get('ad_id');
+    const isEditMode = !!adId;
 
     // Tabs state
     const [activeTab, setActiveTab] = useState('saved-cards');
@@ -19,6 +24,126 @@ export default function PostAnAd() {
     const [smallImage, setSmallImage] = useState<string | null>(null);
     const mainFileRef = useRef<HTMLInputElement>(null);
     const smallFileRef = useRef<HTMLInputElement>(null);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [cards, setCards] = useState<any[]>([]);
+    const [cardsLoading, setCardsLoading] = useState(false);
+    const [orientation, setOrientation] = useState<'Horizontal' | 'Vertical' | 'Both'>('Horizontal');
+    const [adPlacements, setAdPlacements] = useState<any[]>([]);
+    const [adLoading, setAdLoading] = useState(false);
+    const [selectedAd, setSelectedAd] = useState<any | null>(null);
+    const durationWeeks = 7; // 7 weeks
+    const [horizontalUrl, setHorizontalUrl] = useState('');
+    const [verticalUrl, setVerticalUrl] = useState('');
+
+    // 🔹 Toast Utility — identical to your register page
+    const showToast = (message: string, type: 'success' | 'error' = 'error') => {
+        const existing = document.querySelector('.checkout-toast');
+        if (existing) existing.remove();
+
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        const toast = document.createElement('div');
+        toast.className = 'checkout-toast';
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                max-width: 400px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+                font-size: 14px;
+            ">
+                <span>${icon} ${message}</span>
+<!--                <button type="button" class="btn-close" style="font-size: 12px; margin-left: auto; opacity: 0.7;" data-bs-dismiss="toast"></button>-->
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+    };
+
+    useEffect(() => {
+        if (activeTab === 'saved-cards') {
+            fetchSavedCards();
+        }
+    }, [activeTab]);
+
+    useEffect(() => {
+        fetchAdPlacements(orientation);
+    }, []);
+
+    // 🔹 Function to fetch ad placements based on orientation
+    const fetchAdPlacements = async (selectedOrientation: string) => {
+        setAdLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ad-placements?orientation=${selectedOrientation}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { Authorization: `Bearer ${token}` }),
+                },
+            });
+            const data = await res.json();
+            if (data.success) {
+                setAdPlacements(data.data);
+
+                // 🔹 Set default selected ad based on orientation
+                const defaultAd = data.data.find(ad => ad.name === orientation);
+                if (defaultAd) setSelectedAd(defaultAd);
+            } else {
+                showToast('Failed to fetch ad placements', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Something went wrong', 'error');
+        } finally {
+            setAdLoading(false);
+        }
+    };
+
+    const fetchSavedCards = async () => {
+        setCardsLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/cards`,
+                {
+                    headers: {
+                        ...(token && { Authorization: `Bearer ${token}` }),
+                    },
+                }
+            );
+
+            const data = await res.json();
+
+            if (data.success) {
+                setCards(data.data);
+            }
+        } catch (err) {
+            console.error('Failed to load cards');
+        } finally {
+            setCardsLoading(false);
+        }
+    };
 
     // Handle file change
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setImage: (url: string) => void) => {
@@ -29,9 +154,437 @@ export default function PostAnAd() {
         }
     };
 
-    // Handle Post Ad button click
-    const handlePostAd = () => {
-        router.push('/affiliate/ad-posted');
+    const normalizeUrl = (url: string) => {
+        let finalUrl = url.trim();
+
+        if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+            finalUrl = `https://${finalUrl}`;
+        }
+
+        return finalUrl;
+    };
+
+    const isValidUrl = (url: string) => {
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    // 🔹 Handle Post Ad button click
+    const handlePostAd = async () => {
+        if (!selectedAd) {
+            showToast('Please select an ad', 'error');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showToast('User not authenticated', 'error');
+            return;
+        }
+
+        // 🔹 URL validation (UPDATED)
+        let finalHorizontalUrl = '';
+        let finalVerticalUrl = '';
+
+        if (orientation === 'Horizontal' || orientation === 'Both') {
+            if (!horizontalUrl.trim()) {
+                showToast('Please enter Horizontal URL', 'error');
+                return;
+            }
+
+            finalHorizontalUrl = normalizeUrl(horizontalUrl);
+
+            if (!isValidUrl(finalHorizontalUrl)) {
+                showToast('Please enter a valid Horizontal URL', 'error');
+                return;
+            }
+        }
+
+        if (orientation === 'Vertical' || orientation === 'Both') {
+            if (!verticalUrl.trim()) {
+                showToast('Please enter Vertical URL', 'error');
+                return;
+            }
+
+            finalVerticalUrl = normalizeUrl(verticalUrl);
+
+            if (!isValidUrl(finalVerticalUrl)) {
+                showToast('Please enter a valid Vertical URL', 'error');
+                return;
+            }
+        }
+
+        // 🔹 Validate images
+        if (
+            (orientation === 'Horizontal' && !mainFileRef.current?.files?.[0]) ||
+            (orientation === 'Vertical' && !smallFileRef.current?.files?.[0]) ||
+            (orientation === 'Both' &&
+                (!mainFileRef.current?.files?.[0] || !smallFileRef.current?.files?.[0]))
+        ) {
+            showToast('Please upload the required image(s)', 'error');
+            return;
+        }
+
+        // 🔹 Validate card
+        const defaultCardId = cards.find(c => c.is_default)?.id;
+        if (!defaultCardId) {
+            showToast('Please select a default card', 'error');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('ad_placement_id', selectedAd.id);
+            formData.append('orientation', orientation.toLowerCase());
+            formData.append('can_pause', '0');
+            formData.append('card_id', defaultCardId);
+
+            // 🔹 Dates (7 weeks)
+            const today = new Date();
+            const endDate = new Date();
+            endDate.setDate(today.getDate() + 7 * 7);
+
+            formData.append('start_date', today.toISOString().split('T')[0]);
+            formData.append('end_date', endDate.toISOString().split('T')[0]);
+
+            // 🔹 Images + NORMALIZED URLs
+            if (orientation === 'Horizontal' || orientation === 'Both') {
+                formData.append('horizontal_image', mainFileRef.current!.files![0]);
+                formData.append('horizontal_url', finalHorizontalUrl);
+            }
+
+            if (orientation === 'Vertical' || orientation === 'Both') {
+                formData.append('vertical_image', smallFileRef.current!.files![0]);
+                formData.append('vertical_url', finalVerticalUrl);
+            }
+
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/create`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                }
+            );
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                showToast('Ad posted successfully!', 'success');
+                router.push('/affiliate/ad-posted');
+            } else {
+                let serverMessage = '';
+                if (Array.isArray(data.message)) {
+                    serverMessage = data.message
+                        .map((msg: any) =>
+                            typeof msg === 'object'
+                                ? Object.values(msg).join(', ')
+                                : msg
+                        )
+                        .join(', ');
+                } else {
+                    serverMessage = data.message || 'Failed to post ad';
+                }
+                showToast(serverMessage, 'error');
+            }
+        } catch (err: any) {
+            console.error('Error posting ad:', err);
+            showToast(err.message || 'Something went wrong', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ✅ Load name & email from localStorage
+    useEffect(() => {
+        const storedName = localStorage.getItem('userName');
+        const storedEmail = localStorage.getItem('userEmail');
+
+        if (storedName) setName(storedName);
+        if (storedEmail) setEmail(storedEmail);
+    }, []);
+
+    const handleAddCard = async () => {
+        // 🔹 Validate name & email
+        if (!name.trim() || !email.trim()) {
+            const msg = 'Please enter your name and email';
+            showToast(
+                msg,
+                'error'
+            );
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 500);
+            return;
+        }
+
+        if (!stripe || !elements) {
+            const msg = 'Stripe not loaded yet';
+            showToast(msg, 'error'); // ✅ Toast added
+            return;
+        }
+
+        const cardElement = elements.getElement(CardElement);
+        if (!cardElement) {
+            const msg = 'Card details missing';
+            showToast(msg, 'error'); // ✅ Toast added
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // 🔹 1. Create Stripe Payment Method
+            const { error: stripeError, paymentMethod } =
+                await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardElement,
+                    billing_details: { name, email },
+                });
+
+            if (stripeError || !paymentMethod) {
+                const msg = stripeError?.message || 'Payment method creation failed';
+                showToast(msg, 'error'); // ✅ Toast added
+                throw new Error(msg);
+            }
+
+            // 🔹 2. Call Backend Subscription API
+            const token = localStorage.getItem('token');
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/cards/add`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` }),
+                    },
+                    body: JSON.stringify({
+                        payment_method_id: paymentMethod.id,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                const msg = data.message?.[0] || 'Subscription creation failed';
+                showToast(msg, 'error'); // ✅ Toast added
+                throw new Error(msg);
+            }
+
+            // ✅ Success
+            showToast('Card added successfully!', 'success');
+
+            // 🔥 SWITCH TAB TO SAVED CARDS
+            setActiveTab('saved-cards');
+
+            // 🔥 REFRESH SAVED CARDS
+            fetchSavedCards();
+        } catch (err: any) {
+            const msg = err.message || 'Something went wrong';
+            showToast(msg, 'error'); // ✅ Final catch-all toast
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 500);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSetDefaultCard = async (cardId: string) => {
+        // 🔹 UI pehle update (optimistic)
+        setCards(prev =>
+            prev.map(card => ({
+                ...card,
+                is_default: card.id === cardId,
+            }))
+        );
+
+        try {
+            const token = localStorage.getItem('token');
+
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/cards/${cardId}/default`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` }),
+                    },
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.message?.[0] || 'Failed to set default card');
+            }
+
+        } catch (err) {
+            console.error(err);
+
+            // ❌ rollback
+            fetchSavedCards();
+        }
+    };
+
+    const fetchAdFromMyAds = async () => {
+        if (!adId) return;
+
+        try {
+            const token = localStorage.getItem('token');
+
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/my-ads`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const data = await res.json();
+
+            if (!data.success) {
+                showToast('Failed to load ad', 'error');
+                return;
+            }
+
+            const ad = data.data.find((item: any) => item.id === Number(adId));
+
+            if (!ad) {
+                showToast('Ad not found', 'error');
+                return;
+            }
+
+            // 🔹 Orientation
+            setOrientation(
+                ad.orientation.charAt(0).toUpperCase() + ad.orientation.slice(1)
+            );
+
+            // 🔹 URLs
+            setHorizontalUrl(ad.horizontal_url || '');
+            setVerticalUrl(ad.vertical_url || '');
+
+            // 🔹 Images preview
+            if (ad.horizontal_image) {
+                setMainImage(
+                    ad.horizontal_image
+                );
+            }
+
+            if (ad.vertical_image) {
+                setSmallImage(
+                    ad.vertical_image
+                );
+            }
+
+            // 🔹 Placement
+            setSelectedAd(ad.placement);
+
+        } catch (err) {
+            console.error(err);
+            showToast('Something went wrong', 'error');
+        }
+    };
+
+    useEffect(() => {
+        if (isEditMode) {
+            fetchAdFromMyAds();
+        }
+    }, [adId]);
+
+    const handleUpdateAd = async () => {
+        if (!adId || !selectedAd) return;
+
+        setLoading(true);
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showToast('User not authenticated', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+
+            formData.append('ad_placement_id', selectedAd.id);
+            formData.append('orientation', orientation.toLowerCase());
+            formData.append('can_pause', '0');
+
+            // 🔹 URLs (UPDATED: normalize + validate)
+            if (horizontalUrl?.trim()) {
+                const finalHorizontalUrl = normalizeUrl(horizontalUrl);
+
+                if (!isValidUrl(finalHorizontalUrl)) {
+                    showToast('Please enter a valid Horizontal URL', 'error');
+                    setLoading(false);
+                    return;
+                }
+
+                formData.append('horizontal_url', finalHorizontalUrl);
+            }
+
+            if (verticalUrl?.trim()) {
+                const finalVerticalUrl = normalizeUrl(verticalUrl);
+
+                if (!isValidUrl(finalVerticalUrl)) {
+                    showToast('Please enter a valid Vertical URL', 'error');
+                    setLoading(false);
+                    return;
+                }
+
+                formData.append('vertical_url', finalVerticalUrl);
+            }
+
+            // 🔹 Images (ONLY if user selected new)
+            if (mainFileRef.current?.files?.[0]) {
+                formData.append('horizontal_image', mainFileRef.current.files[0]);
+            }
+
+            if (smallFileRef.current?.files?.[0]) {
+                formData.append('vertical_image', smallFileRef.current.files[0]);
+            }
+
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/${adId}/update`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                }
+            );
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                showToast('Ad updated successfully!', 'success');
+                router.back();
+            } else {
+                showToast(
+                    Array.isArray(data.message)
+                        ? data.message.join(', ')
+                        : data.message || 'Update failed',
+                    'error'
+                );
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Something went wrong', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -42,7 +595,7 @@ export default function PostAnAd() {
                 <div className="container">
                     <div className="right-bar mb-5">
                         <div className="icon-wrapper d-flex align-items-center gap-3">
-                            <Link href="#" className="icon">
+                            <div className="icon" onClick={() => router.back()}>
                                 <Image
                                     src="/assets/img/button-angle.svg"
                                     width={10}
@@ -50,8 +603,10 @@ export default function PostAnAd() {
                                     alt="Icon"
                                     loading="lazy"
                                 />
-                            </Link>
-                            <span className="fs-4 fw-semibold">Post an Ad</span>
+                            </div>
+                            <span className="fs-4 fw-semibold">
+                                {isEditMode ? 'Edit Ad' : 'Post an Ad'}
+                            </span>
                         </div>
                     </div>
 
@@ -59,25 +614,43 @@ export default function PostAnAd() {
                         {/* Left Side */}
                         <div className="left-side">
                             <div className="fw-semibold fs-18 mb-3">Select Orientation</div>
+                            {adLoading && <p>Loading orientation...</p>}
 
                             <div className="radio-group mb-4">
-                                <div className="radio-wrapper mb-3">
-                                    <input type="radio" id="radio1" className="radio" defaultChecked />
-                                    <label htmlFor="radio1" className="fw-medium">Horizontal</label>
-                                </div>
-                                <div className="radio-wrapper mb-3">
-                                    <input type="radio" id="radio2" className="radio" />
-                                    <label htmlFor="radio2" className="fw-medium">Vertical</label>
-                                </div>
-                                <div className="radio-wrapper">
-                                    <input type="radio" id="radio3" className="radio" />
-                                    <label htmlFor="radio3" className="fw-medium">Both</label>
-                                </div>
+                                {adPlacements.map((ad) => (
+                                    <div key={ad.id} className="radio-wrapper mb-3">
+                                        <input
+                                            type="radio"
+                                            id={`radio-${ad.id}`}
+                                            className="radio"
+                                            name="orientation"
+                                            checked={orientation.toLowerCase() === ad.orientation_type}
+                                            onChange={() => {
+                                                setOrientation(ad.name as 'Horizontal' | 'Vertical' | 'Both');
+                                                setSelectedAd(ad); // 🔹 update selected ad
+                                            }}
+                                        />
+                                        <label htmlFor={`radio-${ad.id}`} className="fw-medium">
+                                            {ad.name} (${ad.price} / {ad.price_type})
+                                        </label>
+                                    </div>
+                                ))}
                             </div>
 
                             <div className="input-wrapper mb-4">
-                                <label className="fw-semibold mb-1">Horizontal URL</label>
-                                <input type="text" placeholder="Enter URL" />
+                                {(orientation === 'Horizontal' || orientation === 'Both') && (
+                                    <div className="input-wrapper mb-4">
+                                        <label className="fw-semibold mb-1">Horizontal URL</label>
+                                        <input type="text" value={horizontalUrl} onChange={e => setHorizontalUrl(e.target.value)} placeholder="Enter Horizontal URL" />
+                                    </div>
+                                )}
+
+                                {(orientation === 'Vertical' || orientation === 'Both') && (
+                                    <div className="input-wrapper mb-4">
+                                        <label className="fw-semibold mb-1">Vertical URL</label>
+                                        <input type="text" value={verticalUrl} onChange={e => setVerticalUrl(e.target.value)} placeholder="Enter Vertical URL" />
+                                    </div>
+                                )}
                             </div>
 
                             <div className="fs-4 fw-semibold mb-3">Payment Details</div>
@@ -108,74 +681,46 @@ export default function PostAnAd() {
                                         <div className="tab-pane fade show active">
                                             <div className="cards-wrapper">
                                                 <div className="row g-3">
-                                                    <div className="col-xl-6">
-                                                        <div className="credit-card mb-2 position-relative">
-                                                            <div className="checkbox-wrapper">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    id="checkbox1"
-                                                                    className="checkbox checkbox1"
-                                                                    defaultChecked
-                                                                />
-                                                            </div>
-                                                            <div className="numbers fs-4 fw-semibold mb-4">
-                                                                ***************4854
-                                                            </div>
-                                                            <div className="content-wrapper d-flex align-items-center gap-2 flex-wrap justify-content-between">
-                                                                <div className="left d-flex align-items-center gap-4 flex-wrap">
-                                                                    <div>
-                                                                        <div className="fs-12 mb-1">Card Holder Name</div>
-                                                                        <div className="fs-14 fw-semibold">Christopher Charles</div>
-                                                                    </div>
-                                                                    <div>
-                                                                        <div className="fs-12 mb-1">Expiry Date</div>
-                                                                        <div className="fs-14 fw-semibold">10/28</div>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="icon">
-                                                                    <Image
-                                                                        src="/assets/img/icons/visa-icon.svg"
-                                                                        width={28}
-                                                                        height={9}
-                                                                        alt="Icon"
-                                                                        loading="lazy"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    {cardsLoading && <p>Loading cards...</p>}
 
-                                                    <div className="col-xl-6">
-                                                        <div className="credit-card mb-2 position-relative">
-                                                            <div className="checkbox-wrapper">
-                                                                <input type="checkbox" id="checkbox2" className="checkbox checkbox1" />
-                                                            </div>
-                                                            <div className="numbers fs-4 fw-semibold mb-4">
-                                                                ***************8547
-                                                            </div>
-                                                            <div className="content-wrapper d-flex align-items-center gap-2 flex-wrap justify-content-between">
-                                                                <div className="left d-flex align-items-center gap-4 flex-wrap">
-                                                                    <div>
-                                                                        <div className="fs-12 mb-1">Card Holder Name</div>
-                                                                        <div className="fs-14 fw-semibold">John Smith</div>
-                                                                    </div>
-                                                                    <div>
-                                                                        <div className="fs-12 mb-1">Expiry Date</div>
-                                                                        <div className="fs-14 fw-semibold">11/26</div>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="icon">
-                                                                    <Image
-                                                                        src="/assets/img/icons/visa-icon.svg"
-                                                                        width={28}
-                                                                        height={9}
-                                                                        alt="Icon"
-                                                                        loading="lazy"
+                                                    {!cardsLoading && cards.length === 0 && (
+                                                        <p>No saved cards found</p>
+                                                    )}
+
+                                                    {cards.map((card) => (
+                                                        <div key={card.id} className="col-xl-6">
+                                                            <div className="credit-card mb-2 position-relative">
+                                                                <div key={card.id} className="checkbox-wrapper">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className="checkbox checkbox1"
+                                                                        checked={card.is_default === true}
+                                                                        onChange={() => handleSetDefaultCard(card.id)}
                                                                     />
+                                                                </div>
+
+                                                                <div className="numbers fs-4 fw-semibold mb-4">
+                                                                    **** **** **** {card.card.last4}
+                                                                </div>
+
+                                                                <div className="content-wrapper d-flex align-items-center gap-2 flex-wrap justify-content-between">
+                                                                    <div className="left d-flex align-items-center gap-4 flex-wrap">
+                                                                        <div>
+                                                                            <div className="fs-12 mb-1">Card Holder Name</div>
+                                                                            <div className="fs-14 fw-semibold">{card.billing_details.name}</div>
+                                                                        </div>
+
+                                                                        <div>
+                                                                            <div className="fs-12 mb-1">Expiry Date</div>
+                                                                            <div className="fs-14 fw-semibold">
+                                                                                {card.card.exp_month}/{card.card.exp_year}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    ))}
                                                 </div>
                                             </div>
                                         </div>
@@ -184,20 +729,64 @@ export default function PostAnAd() {
                                     {activeTab === 'add-card' && (
                                         <div className="tab-pane fade show active">
                                             <div className="form">
-                                                {[['Full Name','text','Jason Doe'], ['Email Address','email','hello@example.com'], ['Card Holder Name','text','Enter card holder name'], ['Card Number','text','4242 4242 4242 4242'], ['CVV','number','Enter CVV'], ['Expiry Date','text','12/25'], ['Zip Code','text','Enter zip code'], ['Promo Code','text','Enter promo code']].map(([label,type,placeholder],i)=>(
-                                                    <div key={i} className="input-wrapper">
-                                                        <label className="mb-1 fw-semibold">{label}{i<7 && <span className="required">*</span>}</label>
-                                                        <input type={type} placeholder={placeholder}/>
-                                                    </div>
-                                                ))}
+                                                <div className="input-wrapper">
+                                                    <label className="mb-1 fw-semibold">Full Name *</label>
+                                                    <input type="text" placeholder="Jason Doe"
+                                                        value={name}
+                                                        onChange={(e) => setName(e.target.value)}
+                                                        disabled
+                                                    />
+                                                </div>
+                                                <div className="input-wrapper">
+                                                    <label className="mb-1 fw-semibold">Email Address *</label>
+                                                    <input type="email" placeholder="hello@example.com"
+                                                        value={email}
+                                                        onChange={(e) => setEmail(e.target.value)}
+                                                        disabled
+                                                    />
+                                                </div>
+                                                {/* STRIPE CARD FORM */}
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label className="mb-1 fw-semibold">Card Details *</label>
 
-                                                <div className="radio-wrapper d-flex align-items-center gap-2">
-                                                    <input style={{width:'24px',height:'24px'}} type="radio" id="saveCard" className="radio"/>
-                                                    <label htmlFor="saveCard" className="fs-14 fw-medium">
-                                                        Save card for future transactions
-                                                    </label>
+                                                    <div
+                                                        style={{
+                                                            border: '1px solid #ddd',
+                                                            borderRadius: '8px',
+                                                            padding: '12px',
+                                                            background: '#fff',
+                                                        }}
+                                                    >
+                                                        <CardElement
+                                                            options={{
+                                                                style: {
+                                                                    base: {
+                                                                        fontSize: '16px',
+                                                                        color: '#000',
+                                                                        '::placeholder': { color: '#999' },
+                                                                    },
+                                                                },
+                                                            }}
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <button
+                                                style={{ marginTop: '20px' }}
+                                                className="btn btn-primary w-100 rounded-3 d-flex align-items-center justify-content-center gap-2"
+                                                onClick={handleAddCard}
+                                                disabled={loading}
+                                            >
+                                                {loading && (
+                                                    <span
+                                                        className="spinner-border spinner-border-sm"
+                                                        role="status"
+                                                        aria-hidden="true"
+                                                    ></span>
+                                                )}
+
+                                                {loading ? 'Adding Card...' : 'Add Card'}
+                                            </button>
                                         </div>
                                     )}
                                 </div>
@@ -205,9 +794,9 @@ export default function PostAnAd() {
 
                             {/* Note + Summary */}
                             <div className="note-card d-flex align-items-start gap-1 mb-4">
-                                <Image src="/assets/img/icons/note.webp" width={24} height={24} alt="Note" loading="lazy" className="d-block"/>
+                                <Image src="/assets/img/icons/note.webp" width={24} height={24} alt="Note" loading="lazy" className="d-block" />
                                 <div className="content">
-                                    <span className="d-block fw-semibold mb-1" style={{fontSize:'14px'}}>Note</span>
+                                    <span className="d-block fw-semibold mb-1" style={{ fontSize: '14px' }}>Note</span>
                                     <ul className="m-0 p-0">
                                         <li className="fs-12">You can only post one ad at a time</li>
                                         <li className="fs-12">You can only post one ad at a time</li>
@@ -218,58 +807,103 @@ export default function PostAnAd() {
 
                             <div className="summary-box mb-4">
                                 <div className="icon-box d-flex gap-2">
-                                    <Image src="/assets/img/summary.svg" width={24} height={24} alt="Icon" loading="lazy"/>
+                                    <Image src="/assets/img/summary.svg" width={24} height={24} alt="Icon" loading="lazy" />
                                     <div className="content w-100">
                                         <div className="fs-14 fw-semibold mb-2">Summary</div>
+
                                         <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap w-100 mb-1">
                                             <div className="fs-14 text-gray-light fw-medium">Orientation</div>
-                                            <div className="fs-14 fw-semibold">Horizontal</div>
+                                            <div className="fs-14 fw-semibold">{selectedAd?.name || '-'}</div>
                                         </div>
+
                                         <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap w-100 mb-1">
-                                            <div className="fs-14 text-gray-light fw-medium">Duration (7 Weeks X $50)</div>
-                                            <div className="fs-14 fw-semibold">$350.00</div>
+                                            <div className="fs-14 text-gray-light fw-medium">
+                                                Duration ({durationWeeks} Weeks X ${selectedAd?.price || '0'})
+                                            </div>
+                                            <div className="fs-14 fw-semibold">
+                                                ${selectedAd ? (Number(selectedAd.price) * durationWeeks).toFixed(2) : '0.00'}
+                                            </div>
                                         </div>
-                                        <hr className="mb-2 mt-2"/>
+
+                                        <hr className="mb-2 mt-2" />
+
                                         <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap w-100">
                                             <div className="fs-14 text-gray-light fw-medium">Total</div>
-                                            <div className="fs-14 fw-semibold">$350.00</div>
+                                            <div className="fs-14 fw-semibold">
+                                                ${selectedAd ? (Number(selectedAd.price) * durationWeeks).toFixed(2) : '0.00'}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <button className="btn btn-primary w-100 rounded-3 justify-content-center" onClick={handlePostAd}>
-                                Post an Ad
+                            <button
+                                className="btn btn-primary w-100 rounded-3 d-flex align-items-center justify-content-center gap-2"
+                                onClick={isEditMode ? handleUpdateAd : handlePostAd}
+                                disabled={loading}
+                            >
+                                {loading && <span className="spinner-border spinner-border-sm" />}
+                                {loading
+                                    ? isEditMode ? 'Updating...' : 'Posting...'
+                                    : isEditMode ? 'Update Ad' : 'Post an Ad'}
                             </button>
                         </div>
 
                         {/* Right Side Upload Boxes */}
                         <div className="right-side align-lg-end">
-                            <div className="image-box" onClick={()=>mainFileRef.current?.click()} style={{cursor:'pointer'}}>
-                                {mainImage ? <Image src={mainImage} alt="Upload" width={760} height={246}/> : (
-                                    <>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-                                        </svg>
-                                        <p>Drag and drop image here<br/>or click to upload</p>
-                                        <small>Resolution: 760x246 | 200 MB Max</small>
-                                    </>
-                                )}
-                                <input type="file" accept="image/*,application/pdf" ref={mainFileRef} style={{display:'none'}} onChange={(e)=>handleFileChange(e,setMainImage)}/>
-                            </div>
+                            {(orientation === 'Horizontal' || orientation === 'Both') && (
+                                <div
+                                    className="image-box"
+                                    onClick={() => mainFileRef.current?.click()}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {mainImage ? (
+                                        <Image src={mainImage} alt="Upload" width={760} height={246} />
+                                    ) : (
+                                        <>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                                            </svg>
+                                            <p>Drag and drop image here<br />or click to upload</p>
+                                            <small>Resolution: 760x246 | 200 MB Max</small>
+                                        </>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*,application/pdf"
+                                        ref={mainFileRef}
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => handleFileChange(e, setMainImage)}
+                                    />
+                                </div>
+                            )}
 
-                            <div className="image-box small margin-right" style={{maxWidth:'371px',cursor:'pointer'}} onClick={()=>smallFileRef.current?.click()}>
-                                {smallImage ? <Image src={smallImage} alt="Upload" width={371} height={426}/> : (
-                                    <>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-                                        </svg>
-                                        <p>Drag and drop image here<br/>or click to upload</p>
-                                        <small>Resolution: 571x426 | 200 MB Max</small>
-                                    </>
-                                )}
-                                <input type="file" accept="image/*,application/pdf" ref={smallFileRef} style={{display:'none'}} onChange={(e)=>handleFileChange(e,setSmallImage)}/>
-                            </div>
+                            {(orientation === 'Vertical' || orientation === 'Both') && (
+                                <div
+                                    className="image-box small margin-right"
+                                    style={{ maxWidth: '371px', cursor: 'pointer' }}
+                                    onClick={() => smallFileRef.current?.click()}
+                                >
+                                    {smallImage ? (
+                                        <Image src={smallImage} alt="Upload" width={371} height={426} />
+                                    ) : (
+                                        <>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                                            </svg>
+                                            <p>Drag and drop image here<br />or click to upload</p>
+                                            <small>Resolution: 571x426 | 200 MB Max</small>
+                                        </>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*,application/pdf"
+                                        ref={smallFileRef}
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => handleFileChange(e, setSmallImage)}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -1,10 +1,10 @@
 // components/Header.tsx
 'use client';
 
-import {useState, useEffect, useRef, useCallback} from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import {usePathname} from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import '../../styles/header.css';
 
@@ -91,13 +91,13 @@ export default function Header() {
                     <div className={'d-flex gap-1'}>
                         {!userRole && (
                             <Link href="/auth/login" className="btn btn-outline-dark px-3 rounded-3 border-0 d-lg-none">
-                                <Image src="/assets/img/user.svg" width={20} height={20} alt="Login"/>
+                                <Image src="/assets/img/user.svg" width={20} height={20} alt="Login" />
                             </Link>
                         )}
 
                         <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                                aria-expanded="false" aria-label="Toggle navigation">
+                            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
                             <span className="navbar-toggler-icon"></span>
                         </button>
                     </div>
@@ -110,14 +110,14 @@ export default function Header() {
                             <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
                                 <li className="nav-item">
                                     <Link className="nav-link" aria-current="page"
-                                          href={'/general-contractor/dashboard'}>Dashboard</Link>
+                                        href={'/general-contractor/dashboard'}>Dashboard</Link>
                                 </li>
                                 <li className="nav-item">
                                     <Link className="nav-link" aria-current="page" href={'/messages'}>Messages</Link>
                                 </li>
                                 <li className="nav-item">
                                     <Link className="nav-link" aria-current="page"
-                                          href={'/general-contractor/my-projects'}>My Projects</Link>
+                                        href={'/general-contractor/my-projects'}>My Projects</Link>
                                 </li>
                             </ul>
                         }
@@ -126,19 +126,21 @@ export default function Header() {
                         {
                             (
                                 pathname.startsWith('/subcontractor') ||
-                                (pathname === '/messages' && userRole === 'subcontractor')
+                                (pathname === '/messages' && userRole === 'subcontractor') || (
+                                    pathname === '/subscription-list' && userRole === 'subcontractor'
+                                )
                             ) &&
                             <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
                                 <li className="nav-item">
                                     <Link className="nav-link" aria-current="page"
-                                          href={'/subcontractor/dashboard'}>Dashboard</Link>
+                                        href={'/subcontractor/dashboard'}>Dashboard</Link>
                                 </li>
                                 <li className="nav-item">
                                     <Link className="nav-link" aria-current="page" href={'/messages'}>Messages</Link>
                                 </li>
                                 <li className="nav-item">
                                     <Link className="nav-link" aria-current="page"
-                                          href={'/subcontractor/rating'}>Ratings</Link>
+                                        href={'/subcontractor/rating'}>Ratings</Link>
                                 </li>
                             </ul>
                         }
@@ -241,9 +243,8 @@ export default function Header() {
                                     <ul className="dropdown-menu">
                                         <li>
                                             <button
-                                                className={`dropdown-item d-flex align-items-center ${
-                                                    userRole === 'general_contractor' ? 'fw-bold' : ''
-                                                }`}
+                                                className={`dropdown-item d-flex align-items-center ${userRole === 'general_contractor' ? 'fw-bold' : ''
+                                                    }`}
                                                 type="button"
                                                 onClick={(e) => {
                                                     e.preventDefault();
@@ -260,9 +261,8 @@ export default function Header() {
                                         </li>
                                         <li>
                                             <button
-                                                className={`dropdown-item d-flex align-items-center ${
-                                                    userRole === 'subcontractor' ? 'fw-bold' : ''
-                                                }`}
+                                                className={`dropdown-item d-flex align-items-center ${userRole === 'subcontractor' ? 'fw-bold' : ''
+                                                    }`}
                                                 type="button"
                                                 onClick={(e) => {
                                                     e.preventDefault();
@@ -279,9 +279,8 @@ export default function Header() {
                                         </li>
                                         <li>
                                             <button
-                                                className={`dropdown-item d-flex align-items-center ${
-                                                    userRole === 'affiliate' ? 'fw-bold' : ''
-                                                }`}
+                                                className={`dropdown-item d-flex align-items-center ${userRole === 'affiliate' ? 'fw-bold' : ''
+                                                    }`}
                                                 type="button"
                                                 onClick={(e) => {
                                                     e.preventDefault();
@@ -304,15 +303,15 @@ export default function Header() {
 
 
                     {!login ? (
-                            <div className="gap-3 d-none d-lg-flex">
-                                <Link href="/auth/login" className="btn btn-outline-dark rounded-3">
-                                    Login
-                                </Link>
-                                <Link href="/auth/register" className="btn btn-primary rounded-3">
-                                    Signup
-                                </Link>
-                            </div>
-                        ) :
+                        <div className="gap-3 d-none d-lg-flex">
+                            <Link href="/auth/login" className="btn btn-outline-dark rounded-3">
+                                Login
+                            </Link>
+                            <Link href="/auth/register" className="btn btn-primary rounded-3">
+                                Signup
+                            </Link>
+                        </div>
+                    ) :
                         (
                             <div className="icon-buttons d-flex align-items-center gap-2">
                                 <div className={'dropdown hide-arrow'}>
@@ -321,30 +320,30 @@ export default function Header() {
                                         className="nav-link icon dropdown-toggle" type="button"
                                         data-bs-toggle="dropdown" aria-expanded="false">
                                         <Image src="/assets/img/icons/notification-dark.svg" width={24} height={24}
-                                               alt="Notifications"/>
+                                            alt="Notifications" />
                                     </Link>
-                                    <ul className="dropdown-menu dropdown-menu-end" style={{minWidth: '300px'}}>
+                                    <ul className="dropdown-menu dropdown-menu-end" style={{ minWidth: '300px' }}>
                                         <li>
                                             <span
                                                 className={"fw-bold px-3 border-bottom d-block py-2"}>Notifications</span>
                                         </li>
                                         <li>
                                             <a className="dropdown-item py-2" href="#">
-                                                     <span
-                                                         className={'d-flex align-items-center justify-content-between w-100'}>
-                                                         <span className={'d-block fw-medium'}>Success</span>
-                                                        <span className={'fs-12'}>1 hr ago</span>
-                                                     </span>
+                                                <span
+                                                    className={'d-flex align-items-center justify-content-between w-100'}>
+                                                    <span className={'d-block fw-medium'}>Success</span>
+                                                    <span className={'fs-12'}>1 hr ago</span>
+                                                </span>
                                                 <span className={'fs-12 opacity-50'}>You have accessed the app at 07:00 AM</span>
                                             </a>
                                         </li>
                                         <li>
                                             <a className="dropdown-item py-2" href="#">
-                                                     <span
-                                                         className={'d-flex align-items-center justify-content-between w-100'}>
-                                                         <span className={'d-block fw-medium'}>Success</span>
-                                                        <span className={'fs-12'}>1 hr ago</span>
-                                                     </span>
+                                                <span
+                                                    className={'d-flex align-items-center justify-content-between w-100'}>
+                                                    <span className={'d-block fw-medium'}>Success</span>
+                                                    <span className={'fs-12'}>1 hr ago</span>
+                                                </span>
                                                 <span className={'fs-12 opacity-50'}>You have accessed the app at 07:00 AM</span>
                                             </a>
                                         </li>
@@ -353,17 +352,17 @@ export default function Header() {
                                 {
                                     userRole === 'subcontractor' &&
                                     <Link href="/subcontractor/profile" className="nav-link icon"
-                                          aria-label="Profile">
+                                        aria-label="Profile">
                                         <Image src="/assets/img/icons/user-dark.svg" width={24} height={24}
-                                               alt="Profile"/>
+                                            alt="Profile" />
                                     </Link>
                                 }
                                 {
                                     userRole === 'general_contractor' &&
                                     <Link href="/general-contractor/profile" className="nav-link icon"
-                                          aria-label="Profile">
+                                        aria-label="Profile">
                                         <Image src="/assets/img/icons/user-dark.svg" width={24} height={24}
-                                               alt="Profile"/>
+                                            alt="Profile" />
                                     </Link>
                                 }
                             </div>
