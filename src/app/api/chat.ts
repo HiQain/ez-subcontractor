@@ -6,6 +6,7 @@ export interface ChatMessage {
     message: string;
     attachment: any[];
     created_at: string;
+    sending?: boolean;
 }
 
 export interface Contractor {

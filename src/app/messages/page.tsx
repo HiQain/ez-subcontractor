@@ -8,9 +8,11 @@ import '../../styles/chat-2.css';
 import { useEffect, useRef, useState } from 'react';
 import { capitalizeEachWord, ChatMessage, clearChatAPI, Contractor, getContractors, getInitials, getMessages, sendMessageAPI } from '../api/chat';
 import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 export default function ChatPage() {
+  const router = useRouter();
+  const chatNowHandledRef = useRef(false);
   const searchParams = useSearchParams();
   const chatUserId = searchParams.get('userId');
   const chatUserName = searchParams.get('name');
@@ -76,7 +78,16 @@ export default function ChatPage() {
     setLoadingMessages(true);
     try {
       const msgs = await getMessages(chatId);
-      setMessages(msgs);
+
+      setMessages(prev => {
+        const tempMsgs = prev.filter(
+          m => m.sending && m.receiver_id === chatId
+        );
+
+        // ✅ API messages first, temp messages last
+        return [...msgs, ...tempMsgs];
+      });
+
     } catch (err) {
       console.error(err);
       setMessages([]);
@@ -118,11 +129,13 @@ export default function ChatPage() {
   }, [messages]);
 
   const sendMessage = async () => {
+    if (!selectedChatId || loadingMessages) return;
+    if (!selectedChatId) return;
     if ((!messageText || messageText.trim() === "") && files.length === 0) return;
 
     const tempId = Date.now();
 
-    const tempMessage = {
+    const tempMessage: ChatMessage = {
       id: tempId,
       sender_id: 0,
       receiver_id: selectedChatId,
@@ -132,29 +145,34 @@ export default function ChatPage() {
       sending: true,
     };
 
+    // Append temp message
     setMessages(prev => [...prev, tempMessage]);
 
+    // Update last message in sidebar
     setResults(prev =>
-      Array.isArray(prev)
-        ? prev.map(user =>
-          user.id === selectedChatId
-            ? {
-              ...user,
-              last_message: messageText || (files.length > 0 ? "📎 Attachment" : ""),
-              last_message_time: new Date().toISOString(),
-            }
-            : user
-        )
-        : prev
+      prev.map(user =>
+        user.id === selectedChatId
+          ? {
+            ...user,
+            last_message: messageText || (files.length > 0 ? "📎 Attachment" : ""),
+            last_message_time: new Date().toISOString(),
+          }
+          : user
+      )
     );
 
     setMessageText("");
     setFiles([]);
 
     try {
-      await sendMessageAPI(selectedChatId, messageText, files);
+      const sentMsg = await sendMessageAPI(selectedChatId, messageText, files);
+      // Replace temp message with real message if API returns it
+      setMessages(prev =>
+        prev.map(msg => (msg.id === tempId ? { ...sentMsg, sending: false } : msg))
+      );
     } catch (error) {
       console.error("Send message error:", error);
+      // Remove temp message if failed
       setMessages(prev => prev.filter(msg => msg.id !== tempId));
     }
   };
@@ -212,17 +230,23 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!chatUserId || results.length === 0) return;
+    if (chatNowHandledRef.current) return; // ✅ sirf 1 baar
 
     const userId = Number(chatUserId);
     const user = results.find(u => u.id === userId);
 
     if (!user) return;
 
+    chatNowHandledRef.current = true;
+
     setSelectedChatId(userId);
     setSelectedUser(user);
     loadMessages(userId);
 
-  }, [chatUserId, results]);
+    // ✅ URL clean — taake dobara effect trigger na ho
+    router.replace('/messages');
+
+  }, [chatUserId, results, router]);
 
   return (
     <div className="sections overflow-hidden">
@@ -268,7 +292,8 @@ export default function ChatPage() {
                       className={`chat-item ${selectedChatId === item.id ? 'selected' : ''}`}
                       onClick={() => {
                         if (selectedChatId === item.id) return;
-
+                        setMessages([]);
+                        setLoadingMessages(false);
                         setSelectedChatId(item.id);
                         setSelectedUser(item);
                         loadMessages(item.id);
@@ -413,7 +438,7 @@ export default function ChatPage() {
               {/* Chat Messages */}
               <div className="chat-messages" ref={chatMessagesRef}>
                 {selectedUser ? (
-                  loadingMessages ? (
+                  loadingMessages && messages.length === 0 ? (
                     <div className="text-center p-4">Loading messages...</div>
                   ) : filteredMessages.length === 0 ? (
                     <div className="text-center p-4">No messages found</div>
