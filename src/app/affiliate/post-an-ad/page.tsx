@@ -186,50 +186,26 @@ export default function PostAnAd() {
             return;
         }
 
-        // 🔹 URL validation (UPDATED)
-        let finalHorizontalUrl = '';
-        let finalVerticalUrl = '';
-
-        if (orientation === 'Horizontal' || orientation === 'Both') {
-            if (!horizontalUrl.trim()) {
-                showToast('Please enter Horizontal URL', 'error');
-                return;
-            }
-
-            finalHorizontalUrl = normalizeUrl(horizontalUrl);
-
-            if (!isValidUrl(finalHorizontalUrl)) {
-                showToast('Please enter a valid Horizontal URL', 'error');
-                return;
-            }
+        // 🔹 URL validation
+        if ((orientation === 'Horizontal' || orientation === 'Both') && !horizontalUrl.trim()) {
+            showToast('Please enter Horizontal URL', 'error');
+            return;
         }
 
-        if (orientation === 'Vertical' || orientation === 'Both') {
-            if (!verticalUrl.trim()) {
-                showToast('Please enter Vertical URL', 'error');
-                return;
-            }
-
-            finalVerticalUrl = normalizeUrl(verticalUrl);
-
-            if (!isValidUrl(finalVerticalUrl)) {
-                showToast('Please enter a valid Vertical URL', 'error');
-                return;
-            }
+        if ((orientation === 'Vertical' || orientation === 'Both') && !verticalUrl.trim()) {
+            showToast('Please enter Vertical URL', 'error');
+            return;
         }
 
-        // 🔹 Validate images
-        if (
-            (orientation === 'Horizontal' && !mainFileRef.current?.files?.[0]) ||
+        // 🔹 Image validation
+        if ((orientation === 'Horizontal' && !mainFileRef.current?.files?.[0]) ||
             (orientation === 'Vertical' && !smallFileRef.current?.files?.[0]) ||
-            (orientation === 'Both' &&
-                (!mainFileRef.current?.files?.[0] || !smallFileRef.current?.files?.[0]))
-        ) {
+            (orientation === 'Both' && (!mainFileRef.current?.files?.[0] || !smallFileRef.current?.files?.[0]))) {
             showToast('Please upload the required image(s)', 'error');
             return;
         }
 
-        // 🔹 Validate card
+        // 🔹 Default card check
         const defaultCardId = cards.find(c => c.is_default)?.id;
         if (!defaultCardId) {
             showToast('Please select a default card', 'error');
@@ -249,31 +225,25 @@ export default function PostAnAd() {
             const today = new Date();
             const endDate = new Date();
             endDate.setDate(today.getDate() + 7 * 7);
-
             formData.append('start_date', today.toISOString().split('T')[0]);
             formData.append('end_date', endDate.toISOString().split('T')[0]);
 
-            // 🔹 Images + NORMALIZED URLs
+            // 🔹 Images + URLs based on orientation
             if (orientation === 'Horizontal' || orientation === 'Both') {
                 formData.append('horizontal_image', mainFileRef.current!.files![0]);
-                formData.append('horizontal_url', finalHorizontalUrl);
+                formData.append('horizontal_url', normalizeUrl(horizontalUrl));
             }
 
             if (orientation === 'Vertical' || orientation === 'Both') {
                 formData.append('vertical_image', smallFileRef.current!.files![0]);
-                formData.append('vertical_url', finalVerticalUrl);
+                formData.append('vertical_url', normalizeUrl(verticalUrl));
             }
 
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/create`,
-                {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: formData,
-                }
-            );
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/create`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
 
             const data = await res.json();
 
@@ -281,22 +251,13 @@ export default function PostAnAd() {
                 showToast('Ad posted successfully!', 'success');
                 router.push('/affiliate/ad-posted');
             } else {
-                let serverMessage = '';
-                if (Array.isArray(data.message)) {
-                    serverMessage = data.message
-                        .map((msg: any) =>
-                            typeof msg === 'object'
-                                ? Object.values(msg).join(', ')
-                                : msg
-                        )
-                        .join(', ');
-                } else {
-                    serverMessage = data.message || 'Failed to post ad';
-                }
+                const serverMessage = Array.isArray(data.message)
+                    ? data.message.join(', ')
+                    : data.message || 'Failed to post ad';
                 showToast(serverMessage, 'error');
             }
         } catch (err: any) {
-            console.error('Error posting ad:', err);
+            console.error(err);
             showToast(err.message || 'Something went wrong', 'error');
         } finally {
             setLoading(false);
@@ -516,55 +477,33 @@ export default function PostAnAd() {
             }
 
             const formData = new FormData();
-
             formData.append('ad_placement_id', selectedAd.id);
             formData.append('orientation', orientation.toLowerCase());
             formData.append('can_pause', '0');
 
-            // 🔹 URLs (UPDATED: normalize + validate)
-            if (horizontalUrl?.trim()) {
-                const finalHorizontalUrl = normalizeUrl(horizontalUrl);
-
-                if (!isValidUrl(finalHorizontalUrl)) {
-                    showToast('Please enter a valid Horizontal URL', 'error');
-                    setLoading(false);
-                    return;
-                }
-
-                formData.append('horizontal_url', finalHorizontalUrl);
+            // 🔹 Images + URLs only for selected orientation
+            if (orientation === 'Horizontal') {
+                if (mainFileRef.current?.files?.[0]) formData.append('horizontal_image', mainFileRef.current.files[0]);
+                if (horizontalUrl?.trim()) formData.append('horizontal_url', normalizeUrl(horizontalUrl));
             }
 
-            if (verticalUrl?.trim()) {
-                const finalVerticalUrl = normalizeUrl(verticalUrl);
-
-                if (!isValidUrl(finalVerticalUrl)) {
-                    showToast('Please enter a valid Vertical URL', 'error');
-                    setLoading(false);
-                    return;
-                }
-
-                formData.append('vertical_url', finalVerticalUrl);
+            if (orientation === 'Vertical') {
+                if (smallFileRef.current?.files?.[0]) formData.append('vertical_image', smallFileRef.current.files[0]);
+                if (verticalUrl?.trim()) formData.append('vertical_url', normalizeUrl(verticalUrl));
             }
 
-            // 🔹 Images (ONLY if user selected new)
-            if (mainFileRef.current?.files?.[0]) {
-                formData.append('horizontal_image', mainFileRef.current.files[0]);
+            if (orientation === 'Both') {
+                if (mainFileRef.current?.files?.[0]) formData.append('horizontal_image', mainFileRef.current.files[0]);
+                if (horizontalUrl?.trim()) formData.append('horizontal_url', normalizeUrl(horizontalUrl));
+                if (smallFileRef.current?.files?.[0]) formData.append('vertical_image', smallFileRef.current.files[0]);
+                if (verticalUrl?.trim()) formData.append('vertical_url', normalizeUrl(verticalUrl));
             }
 
-            if (smallFileRef.current?.files?.[0]) {
-                formData.append('vertical_image', smallFileRef.current.files[0]);
-            }
-
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/${adId}/update`,
-                {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: formData,
-                }
-            );
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/${adId}/update`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
 
             const data = await res.json();
 
@@ -573,9 +512,7 @@ export default function PostAnAd() {
                 router.back();
             } else {
                 showToast(
-                    Array.isArray(data.message)
-                        ? data.message.join(', ')
-                        : data.message || 'Update failed',
+                    Array.isArray(data.message) ? data.message.join(', ') : data.message || 'Update failed',
                     'error'
                 );
             }
