@@ -154,13 +154,18 @@ export default function MyAds() {
                                         className={isHorizontal ? 'col-xl-6' : 'col-xl-3'}
                                     >
                                         <div className="image-wrapper position-relative">
-                                            <Image
-                                                src={imagePath}
-                                                width={isHorizontal ? 769 : 370}
-                                                height={isHorizontal ? 300 : 200}
-                                                className="img-fluid w-100 h-100 post-img"
-                                                alt="Ad"
-                                            />
+                                            <div style={{
+                                                maxWidth: isHorizontal ? '650px' : '371px',
+                                                height: '426px',
+                                            }}>
+                                                <Image
+                                                    src={imagePath}
+                                                    alt="Ad"
+                                                    className="img-fluid w-100 h-100 post-img"
+                                                    fill
+                                                    style={{ objectFit: 'cover' }}
+                                                />
+                                            </div>
 
                                             <div className="icon-wrapper d-flex gap-2 position-absolute top-0 end-0 p-2">
                                                 <button

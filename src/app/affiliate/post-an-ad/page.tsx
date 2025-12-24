@@ -792,10 +792,21 @@ export default function PostAnAd() {
                                 <div
                                     className="image-box"
                                     onClick={() => mainFileRef.current?.click()}
-                                    style={{ cursor: 'pointer' }}
+                                    style={{
+                                        cursor: 'pointer',
+                                        width: '650px',
+                                        height: '426px',
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                        borderRadius: '8px',
+                                        border: '1px dashed #ccc',
+                                    }}
                                 >
                                     {mainImage ? (
-                                        <Image src={mainImage} alt="Upload" width={760} height={246} />
+                                        <Image src={mainImage} alt="Upload"
+                                            fill
+                                            style={{ objectFit: 'cover' }}
+                                        />
                                     ) : (
                                         <>
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -818,11 +829,23 @@ export default function PostAnAd() {
                             {(orientation === 'Vertical' || orientation === 'Both') && (
                                 <div
                                     className="image-box small margin-right"
-                                    style={{ maxWidth: '371px', cursor: 'pointer' }}
+                                    style={{
+                                        maxWidth: '371px',
+                                        height: '426px',
+                                        cursor: 'pointer',
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                        borderRadius: '8px',
+                                        border: '1px dashed #ccc',
+                                    }}
                                     onClick={() => smallFileRef.current?.click()}
                                 >
                                     {smallImage ? (
-                                        <Image src={smallImage} alt="Upload" width={371} height={426} />
+                                        <Image src={smallImage}
+                                            alt="Upload"
+                                            fill
+                                            style={{ objectFit: 'cover' }}
+                                        />
                                     ) : (
                                         <>
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
