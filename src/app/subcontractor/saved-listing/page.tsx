@@ -19,6 +19,15 @@ interface Project {
     category: {
         name: string;
     };
+    user: {
+        id: number;
+        name: string;
+        email: string;
+        phone: string;
+        company_name: string;
+        profile_image_url: string;
+        zip: string;
+    };
 }
 
 export default function SavedListingPage() {
@@ -33,6 +42,8 @@ export default function SavedListingPage() {
     const [searchQuery, setSearchQuery] = useState(''); // ✅ NEW
     const [logoutLoading, setLogoutLoading] = useState(false);
 
+    const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
+
     const descriptionRefs = useRef<(HTMLParagraphElement | null)[]>([]);
 
     // 🔹 Toast
@@ -44,7 +55,7 @@ export default function SavedListingPage() {
         const icon = type === 'success' ? '✅' : '❌';
 
         toast.innerHTML = `
-            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+            <div className="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
                 position: fixed;
                 top: 20px;
                 right: 20px;
@@ -62,7 +73,7 @@ export default function SavedListingPage() {
                 font-weight: 500;
             ">
                 <span>${icon} ${message}</span>
-                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+                <button type="button" className="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
             </div>
         `;
         document.body.appendChild(toast);
@@ -77,6 +88,44 @@ export default function SavedListingPage() {
             if (toast.parentNode) toast.parentNode.removeChild(toast);
         });
     };
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+
+        // 🚫 Don't await directly in useEffect — define inner async function
+        const fetchProfile = async () => {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/get-profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch profile');
+                }
+
+                const data = await response.json();
+                const subscriptionId = data?.data?.subscription_id;
+
+                if (subscriptionId) {
+                    localStorage.setItem('subscription', subscriptionId);
+                    // ✅ Now update state or do whatever you need
+                    setSubscriptionId(subscriptionId); // assuming you have useState
+                }
+
+            } catch (error) {
+                console.error('Profile fetch error:', error);
+                // handle error (e.g., redirect to login, clear storage)
+            }
+        };
+
+        if (token) {
+            fetchProfile(); // ✅ Call the async function
+        }
+    }, []); // empty dep array = runs once on mount
 
     // 🔁 Fetch saved projects
     useEffect(() => {
@@ -302,6 +351,7 @@ export default function SavedListingPage() {
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userEmail');
                 localStorage.removeItem('token');
+                localStorage.removeItem('subscription');
                 router.push('/auth/login');
             } else {
                 alert(data?.message || 'Logout failed');
@@ -395,20 +445,32 @@ export default function SavedListingPage() {
                                                 )}
                                             </div>
                                         ) : (
-                                            filteredProjects.map((job, index) => (
-                                                <div key={job.id} className="posted-card posted-card-1 custom-card mb-3">
+                                            filteredProjects.map((project, index) => (
+                                                <div key={project.id} className="posted-card posted-card-1 custom-card mb-3">
                                                     <div className="topbar mb-2">
-                                                        <div className="title">{job.city}, {job.state}</div>
-                                                        <div className="d-flex align-items-center gap-2">
-                                                            <div className="date">{timeAgo(job.created_at)}</div>
+                                                        {subscriptionId ? (
                                                             <button
-                                                                className={`icon bg-white ${savedproject.has(job.id) ? 'Saved bg-primary' : 'Save'}`}
-                                                                onClick={() => toggleSaveproject(job.id)}
-                                                                aria-label={savedproject.has(job.id) ? 'Remove from saved' : 'Save project'}
+                                                                className="title p-0 border-0 bg-transparent text-start text-capitalize"
+                                                                onClick={() => {
+                                                                    localStorage.setItem('project-id', String(project.id));
+                                                                    router.push('/subcontractor/project-details');
+                                                                }}
+                                                            >
+                                                                {project.city}, {project.state}
+                                                            </button>
+                                                        ) : (
+                                                            <div className="title text-capitalize">{project.city}, {project.state}</div>
+                                                        ) }
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <div className="date">{timeAgo(project.created_at)}</div>
+                                                            <button
+                                                                className={`icon bg-white ${savedproject.has(project.id) ? 'Saved bg-primary' : 'Save'}`}
+                                                                onClick={() => toggleSaveproject(project.id)}
+                                                                aria-label={savedproject.has(project.id) ? 'Remove from saved' : 'Save project'}
                                                             >
                                                                 <Image
                                                                     src={
-                                                                        savedproject.has(job.id)
+                                                                        savedproject.has(project.id)
                                                                             ? '/assets/img/bookmark-filled.svg'
                                                                             : '/assets/img/bookmark-outline.svg'
                                                                     }
@@ -435,7 +497,7 @@ export default function SavedListingPage() {
                                                                 transition: 'max-height 0.2s ease',
                                                             }}
                                                             dangerouslySetInnerHTML={{
-                                                                __html: job.description.replace(/<[^>]*>/g, '').trim() || 'No description provided.'
+                                                                __html: project.description.replace(/<[^>]*>/g, '').trim() || 'No description provided.'
                                                             }}
                                                         />
                                                     </div>
@@ -449,33 +511,90 @@ export default function SavedListingPage() {
                                                         </button>
                                                     )}
 
-                                                    <div className="bottom-bar">
-                                                        <div className="left">
-                                                            <Image
-                                                                src="/assets/img/icons/p-icon.svg"
-                                                                width={50}
-                                                                height={50}
-                                                                alt="P Icon"
-                                                                loading="lazy"
-                                                            />
-                                                            <p className="mb-0 fs-5 fw-semibold">ProBuilds Express</p>
+                                                    {subscriptionId &&
+                                                    (
+                                                        <div className="bottom-bar">
+                                                            <div className="left">
+                                                                {project.user?.profile_image_url ? (
+                                                                    <Image
+                                                                        src={project.user?.profile_image_url}
+                                                                        width={40}
+                                                                        height={40}
+                                                                        alt="P Icon"
+                                                                        loading="lazy"
+                                                                        className="rounded-circle"
+                                                                    />
+                                                                ) : (
+                                                                    <Image
+                                                                        src="/assets/img/placeholder-round.png"
+                                                                        width={40}
+                                                                        height={40}
+                                                                        alt="P Icon"
+                                                                        loading="lazy"
+                                                                        className="rounded-circle"
+                                                                    />
+                                                                )}
+                                                                <p className="mb-0 fw-semibold">{project.user?.company_name || ''}</p>
+                                                            </div>
+                                                            <div className="d-flex gap-2">
+                                                                <button onClick={() => {
+                                                                    localStorage.setItem('project-id', String(project.id));
+                                                                    router.push('/subcontractor/project-details');
+                                                                }} className="btn btn-primary me-2 btn-sm py-1 px-4">
+                                                                    View More
+                                                                </button>
+                                                                {
+                                                                    project.user && (
+                                                                        <div className="social-icons">
+                                                                            {project.user?.email && (
+                                                                                <Link href={'mailto:'+ project.user?.email} className="icon">
+                                                                                    <Image
+                                                                                        src={`/assets/img/icons/message-white.svg`}
+                                                                                        width={20}
+                                                                                        height={20}
+                                                                                        alt="Social Icon"
+                                                                                        loading="lazy"
+                                                                                    />
+                                                                                </Link>
+                                                                            )}
+
+                                                                            <Link href={{
+                                                                                pathname: '/messages',
+                                                                                query: {
+                                                                                    userId: project.user.id,
+                                                                                    name: project.user.name,
+                                                                                    email: project.user.email,
+                                                                                    phone: project.user.phone,
+                                                                                    companyName: project.user.company_name,
+                                                                                },
+                                                                            }} className="icon">
+                                                                                <Image
+                                                                                    src={`/assets/img/icons/chat.svg`}
+                                                                                    width={20}
+                                                                                    height={20}
+                                                                                    alt="Social Icon"
+                                                                                    loading="lazy"
+                                                                                />
+                                                                            </Link>
+
+                                                                            {project.user?.phone && (
+                                                                                <Link href={'mailto:'+ project.user?.phone} className="icon">
+                                                                                    <Image
+                                                                                        src={`/assets/img/icons/call-white.svg`}
+                                                                                        width={20}
+                                                                                        height={20}
+                                                                                        alt="Social Icon"
+                                                                                        loading="lazy"
+                                                                                    />
+                                                                                </Link>
+                                                                            )}
+                                                                        </div>
+                                                                    )
+                                                                }
+                                                            </div>
                                                         </div>
-                                                        <div className="social-icons">
-                                                            {['message-white.svg', 'chat.svg', 'call-white.svg'].map(
-                                                                (icon, i) => (
-                                                                    <Link href="#" key={i} className="icon">
-                                                                        <Image
-                                                                            src={`/assets/img/icons/${icon}`}
-                                                                            width={20}
-                                                                            height={20}
-                                                                            alt="Social Icon"
-                                                                            loading="lazy"
-                                                                        />
-                                                                    </Link>
-                                                                )
-                                                            )}
-                                                        </div>
-                                                    </div>
+                                                    )
+                                                    }
                                                 </div>
                                             ))
                                         )}

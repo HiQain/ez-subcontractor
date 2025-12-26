@@ -13,12 +13,19 @@ import { useSearchParams, useRouter } from 'next/navigation';
 export default function ChatPage() {
   const router = useRouter();
   const chatNowHandledRef = useRef(false);
-  const searchParams = useSearchParams();
-  const chatUserId = searchParams.get('userId');
-  const chatUserName = searchParams.get('name');
-  const chatUserEmail = searchParams.get('email');
-  const chatUserPhone = searchParams.get('phone');
-  const chatUserCompanyName = searchParams.get('companyName');
+  // const searchParams = useSearchParams();
+
+  // const chatUserId = searchParams.get('userId');
+  // const chatUserName = searchParams.get('name');
+  // const chatUserEmail = searchParams.get('email');
+  // const chatUserPhone = searchParams.get('phone');
+  // const chatUserCompanyName = searchParams.get('companyName');
+
+  const chatUserId = '';
+  const chatUserName = '';
+  const chatUserEmail = '';
+  const chatUserPhone = '';
+  const chatUserCompanyName = '';
 
   const [results, setResults] = useState<Contractor[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);

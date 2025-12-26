@@ -15,7 +15,7 @@ interface Category {
 export default function RegisterPage() {
     const router = useRouter();
     const params = useParams();
-    const accountType = (params.type as string) || 'sub-contractor';
+    const accountType = (params.type as string) || 'subcontractor';
 
     // 🔑 Form state
     const [formData, setFormData] = useState({

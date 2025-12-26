@@ -407,6 +407,7 @@ export default function EditProfile() {
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userEmail');
                 localStorage.removeItem('token');
+                localStorage.removeItem('subscription');
                 router.push('/auth/login');
             } else {
                 alert(data?.message || 'Logout failed');
@@ -478,7 +479,7 @@ export default function EditProfile() {
                                                 width={234}
                                                 height={234}
                                                 alt="Worker Image"
-                                                className="d-block mb-4 img-fluid rounded-circle"
+                                                className="d-block mb-4 img-fluid rounded-circle object-fit-cover"
                                                 style={{ width: '234px', height: '234px' }}
                                             />
                                             <button

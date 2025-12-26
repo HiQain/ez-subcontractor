@@ -65,9 +65,6 @@ h2 {
   transition: all 0.3s ease;
   text-decoration: none;
   color: $dark;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   // Primary Button
   &.btn-primary {
     background-color: $primary;
@@ -465,6 +462,49 @@ body {
   }
   .slick-arrow.slick-next {
     left: 50px
+  }
+}
+.slider-arrow-right-bottom {
+  .slick-slider {
+    .slick-arrow {
+      z-index: 2;
+      top: auto;
+      bottom: 20px;
+      transform: translate(0, 0);
+      background-color: transparent !important;
+      box-shadow: none !important;
+      &:before {
+        display: none;
+      }
+    }
+    .slick-arrow.slick-prev {
+      right: 60px;
+      left: auto;
+      background-image: url("/assets/img/icons/slider-arrow1.webp") !important;
+    }
+    .slick-arrow.slick-next {
+      right: 20px;
+      left: auto;
+      background-image: url("/assets/img/icons/slider-arrow2.webp") !important;
+    }
+  }
+}
+.slider-bottom-fade {
+  overflow: hidden;
+  .slick-slider {
+    &:before {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      z-index: 2;
+      height: 50%;
+      width: 100%;
+      background: $dark;
+      background: linear-gradient(0deg, rgba($dark, 1) 0%, rgba($dark, 0) 100%);
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
+    }
   }
 }
 .toast {

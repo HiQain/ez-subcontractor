@@ -4,13 +4,17 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import Header from "../components/Header";
+import {useEffect, useState} from "react";
 
 export default function SuccessPage() {
-    const userRole = localStorage.getItem('role');
-    const dashboardLink =
-        userRole === 'affiliate'
-            ? '/affiliate/dashboard'
-            : '/subcontractor/dashboard';
+    const [userRole, setUserRole] = useState<string | null>(null);
+
+    useEffect(() => {
+        const userRole = localStorage.getItem('role');
+        setUserRole(userRole)
+    }, []);
+
+
 
     return (
         <div className="sections overflow-hidden">
@@ -42,7 +46,9 @@ export default function SuccessPage() {
                                 Your subscription is now active. You have full access to all premium features.
                             </p>
                             <Link
-                                href={dashboardLink}
+                                href={
+                                    userRole === 'subcontractor' ? '/subcontractor/dashboard' : '/affiliate/dashboard'
+                                }
                                 className="btn btn-primary rounded-3 w-100 justify-content-center"
                             >
                                 Go to Dashboard

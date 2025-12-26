@@ -7,6 +7,7 @@ import "../styles/style.css";
 // import 'select2/dist/css/select2.min.css';
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import Image from 'next/image';
 import Loader from "./components/Loader";
 
 export default function RootLayout({ children }) {
@@ -33,7 +34,9 @@ export default function RootLayout({ children }) {
 
     return (
         <html lang="en">
-        <head></head>
+        <head>
+            <link rel="icon" type="image/png" href="/assets/img/icons/fav.png"/>
+        </head>
         <body>
         {/*{loading && <Loader fadeOut={fadeOut} />}*/}
         {/*{!loading && children}*/}

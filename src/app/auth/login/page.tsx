@@ -131,6 +131,7 @@ export default function LoginPage() {
 
             const data = await response.json();
 
+
             if (response.ok) {
                 const token = data.data?.token;
                 const user = data.data?.user;
@@ -146,6 +147,7 @@ export default function LoginPage() {
                 localStorage.setItem('role', user.role);
                 localStorage.setItem('userName', user.name || '');
                 localStorage.setItem('userEmail', trimmedEmail);
+
 
                 // Optional: persist email if "Remember me"
                 if (rememberMe) {

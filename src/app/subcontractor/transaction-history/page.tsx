@@ -113,6 +113,7 @@ export default function TransactionsPage() {
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userEmail');
                 localStorage.removeItem('token');
+                localStorage.removeItem('subscription');
                 router.push('/auth/login');
             } else {
                 alert(data?.message || 'Logout failed');

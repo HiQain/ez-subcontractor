@@ -12,7 +12,7 @@ interface ProfileData {
     fullName: string;
     email: string;
     phone: string;
-    profile_image: string,
+    profile_image: string;
     companyName: string;
     role: string;
     city: string;
@@ -31,12 +31,58 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // ✅ Delete Loading State
+    const [deleteLoading, setDeleteLoading] = useState(false);
+
     const links = [
         { href: '/general-contractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/user.svg' },
         { href: '/general-contractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
     ];
 
-    // 🔁 Fetch profile after confirming token on client
+    // 🔹 Toast — identical to Login & Subcontractor Profile
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
+
+    // 🔁 Fetch profile
     useEffect(() => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -57,7 +103,6 @@ export default function ProfilePage() {
                 });
 
                 const data = await response.json();
-                console.log(data);
 
                 if (response.ok) {
                     setProfile({
@@ -75,11 +120,15 @@ export default function ProfilePage() {
                         categories: data.data.categories || [],
                     });
                 } else {
-                    setError(data.message || 'Failed to load profile');
+                    const msg = data.message || 'Failed to load profile';
+                    setError(msg);
+                    showToast(msg, 'error');
                 }
             } catch (err) {
                 console.error('Profile fetch error:', err);
-                setError('Network error. Please try again.');
+                const msg = 'Network error. Please try again.';
+                setError(msg);
+                showToast(msg, 'error');
             } finally {
                 setLoading(false);
             }
@@ -88,12 +137,11 @@ export default function ProfilePage() {
         fetchProfile();
     }, [router]);
 
+    // 🔹 Handle Logout
     const handleLogout = async () => {
         setLogoutLoading(true);
-
         try {
             const token = localStorage.getItem('token');
-
             if (!token) {
                 router.push('/auth/login');
                 return;
@@ -122,15 +170,64 @@ export default function ProfilePage() {
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userEmail');
                 localStorage.removeItem('token');
+                localStorage.removeItem('subscription');
+                showToast('Logged out successfully!', 'success');
                 router.push('/auth/login');
             } else {
-                alert(data?.message || 'Logout failed');
+                const errorMsg = data?.message || 'Logout failed';
+                showToast(errorMsg, 'error');
             }
         } catch (err) {
             console.error('Logout Error:', err);
-            alert('Network error. Please try again.');
+            showToast('Network error. Please try again.', 'error');
         } finally {
             setLogoutLoading(false);
+        }
+    };
+
+    // ✅ Handle Delete Profile
+    const handleDeleteProfile = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showToast('Authentication required.', 'error');
+            router.push('/auth/login');
+            return;
+        }
+
+        setDeleteLoading(true);
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/delete-profile`, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showToast('Profile deleted successfully!', 'success');
+
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('token');
+                localStorage.removeItem('subscription');
+
+                setTimeout(() => {
+                    router.push('/auth/login');
+                }, 1000);
+            } else {
+                throw new Error(data.message || 'Failed to delete profile');
+            }
+        } catch (err: any) {
+            console.error('Delete profile error:', err);
+            showToast(err.message || 'An error occurred while deleting your profile.', 'error');
+        } finally {
+            setDeleteLoading(false);
+            // Close modal
+            const modalEl = document.getElementById('deleteAccountModal');
         }
     };
 
@@ -193,12 +290,10 @@ export default function ProfilePage() {
                 <section className="banner-sec profile position-static">
                     <div className="container">
                         <div className="row g-4">
-                            {/* SidebarSubcontractor */}
+                            {/* Sidebar */}
                             <div className="col-xl-3">
                                 <div className="sidebar">
                                     <div className="main-wrapper bg-dark p-0">
-
-                                        {/* SidebarSubcontractor Links */}
                                         <div className="buttons-wrapper">
                                             {links.map((link) => (
                                                 <Link
@@ -227,7 +322,6 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
 
-                                    {/* Logout Button */}
                                     <div className="bottom-bar">
                                         <div className="buttons-wrapper">
                                             <button
@@ -276,17 +370,25 @@ export default function ProfilePage() {
                                                     alt="Edit Icon"
                                                 />
                                             </Link>
-                                            <Link
-                                                href="#"
-                                                className="icon delete"
+                                            {/* ✅ Delete Button — triggers modal */}
+                                            <button
+                                                type="button"
+                                                className="icon delete border-0"
+                                                onClick={() => {
+                                                    const modalEl = document.getElementById('deleteAccountModal');
+                                                    // if (modalEl) {
+                                                    //     const modal = new window.bootstrap.Modal(modalEl);
+                                                    //     modal.show();
+                                                    // }
+                                                }}
                                             >
                                                 <Image
                                                     src="/assets/img/icons/delete.svg"
                                                     width={24}
                                                     height={24}
-                                                    alt="Delete Icon"
+                                                    alt="Delete Profile"
                                                 />
-                                            </Link>
+                                            </button>
                                         </div>
                                     </div>
 
@@ -294,14 +396,16 @@ export default function ProfilePage() {
                                         <div className="image-box d-flex align-items-center gap-4">
                                             <Image
                                                 src={profile.profile_image}
-                                                className="worker-img rounded-circle"
+                                                className="worker-img rounded-circle object-fit-cover"
                                                 width={180}
                                                 height={180}
                                                 alt="Worker Image"
                                             />
                                             <div className="content">
                                                 <div className="title fw-semibold fs-4 mb-0">{profile.fullName}</div>
-                                                <p className="mb-1 text-gray-light text-capitalize">{profile.role.replace(/[^a-zA-Z0-9]/g, ' ')}</p>
+                                                <p className="mb-1 text-gray-light text-capitalize">
+                                                    {profile.role.replace(/[^a-zA-Z0-9]/g, ' ')}
+                                                </p>
                                                 {(profile.city || profile.state || profile.zipCode) && (
                                                     <p className="mb-1 text-gray-light">
                                                         {profile.city}, {profile.state} {profile.zipCode}
@@ -316,22 +420,18 @@ export default function ProfilePage() {
                                             <div className="col-xl-3 col-sm-6">
                                                 <div className="content">
                                                     <div className="text-gray-light fw-medium mb-2">Full Name</div>
-                                                    <div className="fw-semibold fs-18  text-truncate">{profile.fullName}</div>
+                                                    <div className="fw-semibold fs-18 text-truncate">{profile.fullName}</div>
                                                 </div>
                                             </div>
                                             <div className="col-xl-3 col-sm-6">
                                                 <div className="content">
-                                                    <div className="text-gray-light fw-medium mb-2">
-                                                        Company Name
-                                                    </div>
+                                                    <div className="text-gray-light fw-medium mb-2">Company Name</div>
                                                     <div className="fw-semibold fs-18 text-truncate">{profile.companyName}</div>
                                                 </div>
                                             </div>
                                             <div className="col-xl-3 col-sm-6">
                                                 <div className="content">
-                                                    <div className="text-gray-light fw-medium mb-2">
-                                                        Phone Number
-                                                    </div>
+                                                    <div className="text-gray-light fw-medium mb-2">Phone Number</div>
                                                     <Link
                                                         href={`tel:${profile.phone}`}
                                                         className="fw-semibold fs-18 text-dark text-truncate"
@@ -342,12 +442,10 @@ export default function ProfilePage() {
                                             </div>
                                             <div className="col-xl-3 col-sm-6 overflow-hidden">
                                                 <div className="content">
-                                                    <div className="text-gray-light fw-medium mb-2">
-                                                        Email Address
-                                                    </div>
+                                                    <div className="text-gray-light fw-medium mb-2">Email Address</div>
                                                     <Link
                                                         href={`mailto:${profile.email}`}
-                                                        className="fw-semibold fs-18 text-dark  text-truncate"
+                                                        className="fw-semibold fs-18 text-dark text-truncate"
                                                     >
                                                         {profile.email}
                                                     </Link>
@@ -355,12 +453,8 @@ export default function ProfilePage() {
                                             </div>
                                             <div className="col-xl-3 col-sm-6">
                                                 <div className="content">
-                                                    <div className="text-gray-light fw-medium mb-2">
-                                                        License Number
-                                                    </div>
-                                                    <div
-                                                        className="fw-semibold fs-18 text-dark text-truncate"
-                                                    >
+                                                    <div className="text-gray-light fw-medium mb-2">License Number</div>
+                                                    <div className="fw-semibold fs-18 text-dark text-truncate">
                                                         {profile.license_number}
                                                     </div>
                                                 </div>
@@ -373,6 +467,63 @@ export default function ProfilePage() {
                     </div>
                 </section>
             </div>
+
+            {/* ✅ DELETE ACCOUNT MODAL — identical to subcontractor */}
+            <div
+                className="modal fade"
+                id="deleteAccountModal"
+                tabIndex={-1}
+                aria-labelledby="deleteAccountModalLabel"
+                aria-hidden="true"
+            >
+                <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '380px' }}>
+                    <div className="modal-content">
+                        <div className="modal-body">
+                            <button
+                                type="button"
+                                className="btn-close position-absolute"
+                                style={{ top: 15, right: 15 }}
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                            ></button>
+                            <Image
+                                src="/assets/img/icons/delete-icon.svg"
+                                width={60}
+                                height={60}
+                                alt="Delete Icon"
+                                className="text-danger mb-2"
+                            />
+                            <h5 className="modal-title fw-bold mb-1" id="deleteAccountModalLabel">Delete Account</h5>
+                            <p>Are you sure you want to delete account?</p>
+                        </div>
+                        <div className="modal-footer border-0 gap-2 pt-0">
+                            <button
+                                type="button"
+                                className="btn btn-outline-dark flex-grow-1 rounded-3"
+                                data-bs-dismiss="modal"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className={`btn btn-danger bg-danger text-white rounded-3 flex-grow-1 ${deleteLoading ? 'disabled' : ''}`}
+                                onClick={handleDeleteProfile}
+                                disabled={deleteLoading}
+                            >
+                                {deleteLoading ? (
+                                    <>
+                                        <span className="spinner-border spinner-border-sm me-2"></span>
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    'Delete'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <Footer />
         </>
     );

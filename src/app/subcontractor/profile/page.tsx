@@ -7,22 +7,22 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/profile.css';
 import { useState, useEffect } from 'react';
-import SidebarSubcontractor from "../../components/SidebarSubcontractor";
+import SidebarSubcontractor from '../../components/SidebarSubcontractor';
 
 interface ProfileData {
     fullName: string;
     email: string;
     phone: string;
-    profile_image: string,
+    profile_image: string;
     companyName: string;
     role: string;
     city: string;
     state: string;
     zipCode: string;
     workRadius: number;
-    category: number | null; // ← Now stores ID (e.g., 17), not name
-    average_rating: string; // e.g., "4.67"
-    total_ratings: number;  // e.g., 3
+    category: number | null;
+    average_rating: string;
+    total_ratings: number;
 }
 
 interface Category {
@@ -38,9 +38,52 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // ✅ Categories state
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+
+    // 🔹 Toast — identical to LoginPage
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
 
     // 🔁 Fetch categories
     useEffect(() => {
@@ -54,7 +97,7 @@ export default function ProfilePage() {
                 let fetchedCategories: Category[] = [];
 
                 if (Array.isArray(data)) {
-                    fetchedCategories = data.map(item => ({ id: String(item.id), name: item.name }));
+                    fetchedCategories = data.map((item: any) => ({ id: String(item.id), name: item.name }));
                 } else if (data?.data?.specializations && Array.isArray(data.data.specializations)) {
                     fetchedCategories = data.data.specializations.map((item: any) => ({
                         id: String(item.id),
@@ -110,6 +153,7 @@ export default function ProfilePage() {
                 });
 
                 const data = await response.json();
+
                 if (response.ok) {
                     setProfile({
                         fullName: data.data.name || '',
@@ -128,10 +172,13 @@ export default function ProfilePage() {
                     });
                 } else {
                     setError(data.message || 'Failed to load profile');
+                    showToast(data.message || 'Failed to load profile', 'error');
                 }
             } catch (err) {
                 console.error('Profile fetch error:', err);
-                setError('Network error. Please try again.');
+                const msg = 'Network error. Please try again.';
+                setError(msg);
+                showToast(msg, 'error');
             } finally {
                 setLoading(false);
             }
@@ -140,12 +187,11 @@ export default function ProfilePage() {
         fetchProfile();
     }, [router]);
 
+    // 🔹 Handle Logout
     const handleLogout = async () => {
         setLogoutLoading(true);
-
         try {
             const token = localStorage.getItem('token');
-
             if (!token) {
                 router.push('/auth/login');
                 return;
@@ -174,15 +220,66 @@ export default function ProfilePage() {
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userEmail');
                 localStorage.removeItem('token');
+                localStorage.removeItem('subscription');
+                showToast('Logged out successfully!', 'success');
                 router.push('/auth/login');
             } else {
-                alert(data?.message || 'Logout failed');
+                const errorMsg = data?.message || 'Logout failed';
+                showToast(errorMsg, 'error');
             }
         } catch (err) {
             console.error('Logout Error:', err);
-            alert('Network error. Please try again.');
+            showToast('Network error. Please try again.', 'error');
         } finally {
             setLogoutLoading(false);
+        }
+    };
+
+    // ✅ Handle Delete Profile (with toast)
+    const handleDeleteProfile = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showToast('Authentication required.', 'error');
+            router.push('/auth/login');
+            return;
+        }
+
+        setDeleteLoading(true);
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/delete-profile`, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showToast('Profile deleted successfully!', 'success');
+
+                // Clear storage
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('token');
+                localStorage.removeItem('subscription');
+
+                // Redirect after short delay for UX
+                setTimeout(() => {
+                    router.push('/auth/login');
+                }, 1000);
+            } else {
+                throw new Error(data.message || 'Failed to delete profile');
+            }
+        } catch (err: any) {
+            console.error('Delete profile error:', err);
+            showToast(err.message || 'An error occurred while deleting your profile.', 'error');
+        } finally {
+            setDeleteLoading(false);
+            // Close modal
+            const modalEl = document.getElementById('deleteAccountModal');
         }
     };
 
@@ -193,7 +290,7 @@ export default function ProfilePage() {
         return cat ? cat.name : 'Unknown';
     };
 
-    // ✅ Render stars based on average_rating
+    // ✅ Render stars
     const renderStars = (rating: string) => {
         const avg = parseFloat(rating) || 0;
         return [1, 2, 3, 4, 5].map((_, i) => {
@@ -230,12 +327,10 @@ export default function ProfilePage() {
                 <section className="banner-sec profile position-static">
                     <div className="container">
                         <div className="row g-4">
-                            {/* ✅ Sidebar always visible */}
                             <div className="col-xl-3">
                                 <SidebarSubcontractor onLogout={handleLogout} />
                             </div>
 
-                            {/* ✅ Right Side — loading or content */}
                             <div className="col-xl-9">
                                 {loading || (categoriesLoading && !profile) ? (
                                     <div className="right-bar d-flex align-items-center justify-content-center" style={{ height: '500px' }}>
@@ -274,18 +369,24 @@ export default function ProfilePage() {
                                                         alt="Edit Icon"
                                                     />
                                                 </Link>
-                                                <Link
-                                                    href="#"
-                                                    className="icon delete"
-                                                    style={{ backgroundColor: '#DC2626 !important' }}
+                                                <button
+                                                    type="button"
+                                                    className="icon delete border-0"
+                                                    onClick={() => {
+                                                        const modalEl = document.getElementById('deleteAccountModal');
+                                                        // if (modalEl) {
+                                                        //     const modal = new window.bootstrap.Modal(modalEl);
+                                                        //     modal.show();
+                                                        // }
+                                                    }}
                                                 >
                                                     <Image
                                                         src="/assets/img/icons/delete.svg"
                                                         width={24}
                                                         height={24}
-                                                        alt="Delete Icon"
+                                                        alt="Delete Profile"
                                                     />
-                                                </Link>
+                                                </button>
                                             </div>
                                         </div>
 
@@ -293,10 +394,11 @@ export default function ProfilePage() {
                                             <div className="image-box d-flex align-items-center gap-4">
                                                 <Image
                                                     src={profile.profile_image}
-                                                    className="worker-img rounded-circle"
+                                                    className="worker-img rounded-circle object-fit-cover"
                                                     width={180}
                                                     height={180}
                                                     alt="Worker Image"
+                                                    style={{ objectFit: 'cover' }}
                                                 />
                                                 <div className="content">
                                                     <div className="title fw-semibold fs-4 mb-2">{profile.fullName}</div>
@@ -405,6 +507,63 @@ export default function ProfilePage() {
                     </div>
                 </section>
             </div>
+
+            {/* ✅ DELETE ACCOUNT MODAL */}
+            <div
+                className="modal fade"
+                id="deleteAccountModal"
+                tabIndex={-1}
+                aria-labelledby="deleteAccountModalLabel"
+                aria-hidden="true"
+            >
+                <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '380px' }}>
+                    <div className="modal-content">
+                        <div className="modal-body">
+                            <button
+                                type="button"
+                                className="btn-close position-absolute"
+                                style={{ top: 15, right: 15 }}
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                            ></button>
+                            <Image
+                                src="/assets/img/icons/delete-icon.svg"
+                                width={60}
+                                height={60}
+                                alt="Delete Icon"
+                                className="text-danger mb-2"
+                            />
+                            <h5 className="modal-title fw-bold mb-1" id="deleteAccountModalLabel">Delete Account</h5>
+                            <p>Are you sure you want to delete account?</p>
+                        </div>
+                        <div className="modal-footer border-0 gap-2 pt-0">
+                            <button
+                                type="button"
+                                className="btn btn-outline-dark flex-grow-1 rounded-3"
+                                data-bs-dismiss="modal"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className={`btn btn-danger bg-danger text-white rounded-3 flex-grow-1 ${deleteLoading ? 'disabled' : ''}`}
+                                onClick={handleDeleteProfile}
+                                disabled={deleteLoading}
+                            >
+                                {deleteLoading ? (
+                                    <>
+                                        <span className="spinner-border spinner-border-sm me-2"></span>
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    'Delete'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <Footer />
         </>
     );

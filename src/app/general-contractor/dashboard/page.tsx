@@ -32,6 +32,7 @@ interface Contractor {
     id: number;
     name: string;
     company_name: string;
+    profile_image_url: string;
     city: string | null;
     state: string | null;
     average_rating: string;
@@ -65,23 +66,37 @@ export default function DashboardPage() {
     const [currentContractor, setCurrentContractor] = useState<Contractor | null>(null); // Track which contractor is being rated
     const [contractors, setContractors] = useState<Contractor[]>([]);
 
-    // 🔹 NEW: Banner images state (API-ready)
+// 🔹 NEW: Banner images state (API-ready)
     const [bannerImages, setBannerImages] = useState<BannerImage[]>([]);
+    const [bannerImageRight, setBannerImageRight] = useState<BannerImage[]>([]);
     const [bannerImagesSidebar, setBannerImagesSidebar] = useState<BannerImage[]>([]);
     const [bannerImagesLoading, setBannerImagesLoading] = useState(true);
+    const [bannerImagesRightLoading, setBannerImagesRightLoading] = useState(true);
     const [bannerImagesError, setBannerImagesError] = useState<string | null>(null);
+    const [bannerImagesRightError, setBannerRightImagesError] = useState<string | null>(null);
 
     const sliderRef = useRef<Slider | null>(null);
     const leftSliderRef = useRef<Slider | null>(null);
 
     // 🔹 Slider settings
     const sliderSettings = {
-        dots: false,
+        dots: true,
         infinite: true,
         speed: 600,
         slidesToShow: 1,
         slidesToScroll: 1,
         arrows: false,
+        autoplay: true,
+        autoplaySpeed: 4000,
+        pauseOnHover: true,
+    };
+    const sliderSettingsRight = {
+        dots: false,
+        infinite: true,
+        speed: 600,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        arrows: true,
         autoplay: true,
         autoplaySpeed: 4000,
         pauseOnHover: true,
@@ -216,6 +231,72 @@ export default function DashboardPage() {
         return num.toFixed(1).replace(/\.0$/, '');
     };
 
+    // 🔹 NEW: Fetch banner images (replace with your API)
+    const fetchBannerImages = async () => {
+        setBannerImagesLoading(true);
+        setBannerImagesError(null);
+
+        try {
+            // ✅ Replace this block with real API call later
+            // Example:
+            // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}banner-images`);
+            // const data = await res.json();
+
+            // 🔹 For now: static fallback (you can remove this when API ready)
+            const staticImages: BannerImage[] = [
+                { id: 1, src: '/assets/img/add1.jpg', alt: 'Construction Project 1' },
+                { id: 2, src: '/assets/img/add1.jpg', alt: 'Construction Project 2' },
+                { id: 3, src: '/assets/img/add1.jpg', alt: 'Construction Project 3' },
+            ];
+
+            // Simulate API delay (remove in production)
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            setBannerImages(staticImages);
+        } catch (err) {
+            console.error('Failed to load banner images:', err);
+            setBannerImagesError('Failed to load banner images');
+            // Fallback to default images
+            setBannerImages([
+                { id: 1, src: '/assets/img/add1.jpg', alt: 'Default Banner' },
+            ]);
+        } finally {
+            setBannerImagesLoading(false);
+        }
+    };
+    const fetchBannerImages_right = async () => {
+        setBannerImagesRightLoading(true);
+        setBannerRightImagesError(null);
+
+        try {
+            // ✅ Replace this block with real API call later
+            // Example:
+            // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}banner-images`);
+            // const data = await res.json();
+
+            // 🔹 For now: static fallback (you can remove this when API ready)
+            const staticImages: BannerImage[] = [
+                { id: 1, src: '/assets/img/add2.jpg', alt: 'Construction Project 1' },
+                { id: 2, src: '/assets/img/add2.jpg', alt: 'Construction Project 2' },
+                { id: 3, src: '/assets/img/add2.jpg', alt: 'Construction Project 3' },
+            ];
+
+            // Simulate API delay (remove in production)
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            setBannerImageRight(staticImages);
+        } catch (err) {
+            console.error('Failed to load banner images:', err);
+            setBannerRightImagesError('Failed to load banner images');
+            // Fallback to default images
+            setBannerImageRight([
+                { id: 1, src: '/assets/img/add2.webp', alt: 'Default Banner' },
+            ]);
+        } finally {
+            setBannerImagesRightLoading(false);
+        }
+    };
+
     // 🔹 Fetch 4 most recent projects
     useEffect(() => {
         fetchBannerImages();
@@ -325,6 +406,11 @@ export default function DashboardPage() {
         fetchContractors();
     }, []);
 
+    useEffect(() => {
+        fetchBannerImages();
+        fetchBannerImages_right();
+    }, []);
+
     // 🔍 Debounced search fetch
     const debouncedFetch = useCallback(
         debounce(async (searchTerm: string) => {
@@ -350,6 +436,7 @@ export default function DashboardPage() {
                 const data = await res.json();
                 // ✅ Extract contractors from nested data.data
                 const contractors = data?.data?.data || [];
+                console.log(contractors);
                 setResults(contractors);
                 setShowList(true);
             } catch (error) {
@@ -445,42 +532,6 @@ export default function DashboardPage() {
         }
     };
 
-    const fetchBannerImages = async () => {
-        setBannerImagesLoading(true);
-        setBannerImagesError(null);
-
-        try {
-            // ✅ Replace this block with real API call later
-            // Example:
-            // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}banner-images`);
-            // const data = await res.json();
-
-            // 🔹 For now: static fallback (you can remove this when API ready)
-            const staticImages: BannerImage[] = [
-                { id: 1, src: '/assets/img/ad-posting1.webp', alt: 'Construction Project 1' },
-                { id: 2, src: '/assets/img/ad-posting1.webp', alt: 'Construction Project 2' },
-                { id: 3, src: '/assets/img/ad-posting1.webp', alt: 'Construction Project 3' },
-            ];
-
-            // Simulate API delay (remove in production)
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            console.log(setBannerImages);
-
-            setBannerImages(staticImages);
-        } catch (err) {
-            console.error('Failed to load banner images:', err);
-            setBannerImagesError('Failed to load banner images');
-            // Fallback to default images
-            setBannerImages([
-                { id: 1, src: '/assets/img/ad-posting1.webp', alt: 'Default Banner' },
-            ]);
-        } finally {
-            setBannerImagesLoading(false);
-        }
-    };
-
-
 
     const settings = {
         dots: false,
@@ -494,31 +545,29 @@ export default function DashboardPage() {
     return (
         <div className="sections overflow-hidden">
             <Header />
-            {/* Banner Section */}
             <section className="banner-sec trial position-static">
                 <div className="container">
                     <div className="row g-4">
-                        {/* 🔹 Left: Dynamic Image Slider */}
                         <div className="col-lg-6 position-relative">
                             {bannerImagesLoading ? (
-                                <div className="d-flex align-items-center justify-content-center bg-light rounded-4" style={{ height: '250px' }}>
+                                <div className="d-flex align-items-center justify-content-center bg-light rounded-4" style={{ height: '352px' }}>
                                     <div className="spinner-border text-primary" role="status">
                                         <span className="visually-hidden">Loading banner...</span>
                                     </div>
                                 </div>
                             ) : bannerImagesError ? (
-                                <div className="alert alert-warning d-flex align-items-center" style={{ height: '250px' }}>
+                                <div className="alert alert-warning d-flex align-items-center" style={{ height: '352px' }}>
                                     {bannerImagesError}
                                 </div>
                             ) : (
                                 <div className="slider rounded overflow-hidden">
                                     <Slider ref={leftSliderRef} {...sliderSettings}>
                                         {bannerImages.map((img) => (
-                                            <div key={img.id} className="px-1">
+                                            <div key={img.id}>
                                                 <Image
                                                     src={img.src}
                                                     width={800}
-                                                    height={250}
+                                                    height={230}
                                                     alt={img.alt}
                                                     className="img-fluid w-100 h-100 rounded-4 object-fit-cover "
                                                 />
@@ -528,76 +577,42 @@ export default function DashboardPage() {
                                 </div>
                             )}
                         </div>
-
-                        {/* 🔹 Right: Text Slider (unchanged) */}
                         <div className="col-lg-6">
-                            <div
-                                className="banner-wrapper position-relative"
-                                style={{ backgroundImage: "url('/assets/img/free-trial-img2.webp')" }}
-                            >
-                                <div className="main-slider">
-                                    <Slider ref={sliderRef} {...sliderSettings2}>
-                                        {[1, 2].map((_, i) => (
-                                            <div key={i} className="slider-item p-4">
-                                                <div className="d-flex align-items-center gap-2 mb-3">
-                                                    <div className="icon bg-primary">
-                                                        <Image
-                                                            src="/assets/img/icons/camera.svg"
-                                                            width={14}
-                                                            height={10}
-                                                            alt="icon"
-                                                        />
-                                                    </div>
-                                                    <div style={{ fontSize: '14px' }} className="content text-white fw-medium">
-                                                        Online Webinar
-                                                    </div>
-                                                </div>
-                                                <h2 className="main-title text-primary">50% Increase Sales</h2>
-                                                <div className="desc fw-medium text-white mb-3">
-                                                    Present a professional estimate with your logo and company name and
-                                                    colors.
-                                                </div>
-                                            </div>
+                            {bannerImagesRightLoading ? (
+                                <div className="d-flex align-items-center justify-content-center bg-light rounded-4" style={{ height: '352px' }}>
+                                    <div className="spinner-border text-primary" role="status">
+                                        <span className="visually-hidden">Loading banner...</span>
+                                    </div>
+                                </div>
+                            ) : bannerImagesRightError ? (
+                                <div className="alert alert-warning d-flex align-items-center" style={{ height: '352px' }}>
+                                    {bannerImagesRightError}
+                                </div>
+                            ) : (
+                                <div className="slider slider-bottom-fade slider-arrow-right-bottom rounded overflow-hidden position-relative">
+                                    <Slider ref={leftSliderRef} {...sliderSettingsRight}>
+                                        {bannerImageRight.map((img) => (
+                                            <Image
+                                                key={img.id}
+                                                src={img.src}
+                                                width={800}
+                                                height={300}
+                                                alt={img.alt}
+                                                className="img-fluid w-100 h-100 rounded-4 object-fit-cover "
+                                            />
                                         ))}
                                     </Slider>
+                                    <div className="d-flex align-items-center gap-3 position-absolute z-3" style={{bottom: 20, left: 20}}>
+                                        <div className="bg-white rounded-circle p-2 shadow">
+                                            <Image className="img-fluide" src={'/assets/img/icons/fav.png'} width={50} height={50} alt={"icon"}/>
+                                        </div>
+                                        <div>
+                                            <h6 className="fw-bold mb-0 text-white">ABC Corporation</h6>
+                                            <p className="mb-0 text-white">John A</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                {/*<div className="slider-controls d-flex align-items-center justify-content-between px-4">*/}
-                                {/*    <div className="custom-arrows d-flex align-items-center gap-2">*/}
-                                {/*        <button*/}
-                                {/*            className="custom-prev btn btn-sm btn-light rounded-circle px-2 py-1"*/}
-                                {/*            onClick={() => sliderRef.current?.slickPrev()}*/}
-                                {/*            aria-label="Previous content"*/}
-                                {/*        >*/}
-                                {/*            <Image*/}
-                                {/*                src="/assets/img/dashboard-arrow.svg"*/}
-                                {/*                alt="Prev"*/}
-                                {/*                width={8}*/}
-                                {/*                height={16}*/}
-                                {/*            />*/}
-                                {/*        </button>*/}
-                                {/*        <button*/}
-                                {/*            className="custom-next btn btn-sm btn-light rounded-circle"*/}
-                                {/*            onClick={() => sliderRef.current?.slickNext()}*/}
-                                {/*            aria-label="Next content"*/}
-                                {/*        >*/}
-                                {/*            <Image*/}
-                                {/*                src="/assets/img/dashboard-arrow1.svg"*/}
-                                {/*                alt="Next"*/}
-                                {/*                width={8}*/}
-                                {/*                height={16}*/}
-                                {/*            />*/}
-                                {/*        </button>*/}
-                                {/*    </div>*/}
-                                {/*    <div className="icon">*/}
-                                {/*        <Image*/}
-                                {/*            src="/assets/img/icons/search-icon1.svg"*/}
-                                {/*            alt="Search"*/}
-                                {/*            width={14}*/}
-                                {/*            height={14}*/}
-                                {/*        />*/}
-                                {/*    </div>*/}
-                                {/*</div>*/}
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -613,7 +628,7 @@ export default function DashboardPage() {
                                 <div className="fs-3 fw-semibold mb-1 mb-md-3">Rate a Subcontractor</div>
                                 <div className="fs-14 fw-semibold">Recently rated contractors</div>
                             </div>
-                            <div className="search-wrapper position-relative">
+                            <div className="search-wrapper position-relative w-100" style={{maxWidth: '400px'}}>
                                 <div className="form-wrapper mb-0 d-flex align-items-center px-3 py-0 me-0">
                                     <input
                                         ref={inputRef}
@@ -645,25 +660,35 @@ export default function DashboardPage() {
                                     <ul
                                         ref={listRef}
                                         className="list bg-white shadow-sm px-2 py-1 rounded-4 position-absolute w-100 z-1"
-                                        style={{ maxHeight: '300px', overflowY: 'auto', marginTop: '4px' }}
+                                        style={{ maxHeight: '300px', overflowY: 'auto', marginTop: '4px', top: '40px' }}
                                     >
                                         {results.map((item) => (
                                             <li
                                                 key={item.id}
-                                                className="d-flex justify-content-between align-items-center bg-gray p-2 my-1 rounded-3"
+                                                className="d-flex justify-content-between align-items-center bg-gray p-2 my-1 rounded-3 gap-2"
                                             >
-                                                <span className="d-flex align-items-center gap-3">
-                                                    <img
-                                                        className="avatar rounded-circle"
-                                                        src="/assets/img/placeholder-round.png"
-                                                        width={40}
-                                                        height={40}
-                                                        alt="Avatar"
-                                                    />
+                                                <span className="d-flex align-items-center gap-2">
+                                                    {item.profile_image_url ? (
+                                                        <Image
+                                                            className="avatar rounded-circle"
+                                                            src={item.profile_image_url}
+                                                            width={40}
+                                                            height={40}
+                                                            alt="Search Icon"
+                                                        />
+                                                        ) : (
+                                                        <Image
+                                                            className="avatar rounded-circle"
+                                                            src="/assets/img/profile-placeholder.webp"
+                                                            width={40}
+                                                            height={40}
+                                                            alt="Search Icon"
+                                                        />
+                                                    )}
                                                     <span>
-                                                        <span className="name d-block fw-medium">{item.name}</span>
+                                                        <span className="name d-block fw-medium text-truncate">{item.name}</span>
                                                         <span
-                                                            className="company d-block fs-12 fw-bold"
+                                                            className="company d-block fs-12 fw-bold text-truncate"
                                                             style={{ color: '#8F9B1F' }}
                                                         >
                                                             {item.company_name || '—'}
@@ -686,7 +711,7 @@ export default function DashboardPage() {
                                                         setRatingError(null);
                                                     }}
                                                 >
-                                                    Rate Subcontractor
+                                                    Rate
                                                 </button>
                                             </li>
                                         ))}
@@ -725,15 +750,25 @@ export default function DashboardPage() {
                                         contractors.map((contractor) => (
                                             <div className="col-lg-4 col-md-6" key={contractor.id}>
                                                 <div className="review-inner-card">
-                                                    <div className="top d-flex align-items-center gap-2 justify-content-between flex-wrap mb-2">
+                                                    <div className="top d-flex gap-2 justify-content-between flex-wrap mb-2">
                                                         <div className="icon-wrapper d-flex align-items-center gap-2">
-                                                            <Image
-                                                                src="/assets/img/profile-img.webp"
-                                                                width={40}
-                                                                height={40}
-                                                                alt="Card Image"
-                                                                loading="lazy"
-                                                            />
+                                                            {contractor.profile_image_url ? (
+                                                                <Image
+                                                                    className="avatar rounded-circle"
+                                                                    src={contractor.profile_image_url}
+                                                                    width={40}
+                                                                    height={40}
+                                                                    alt="Search Icon"
+                                                                />
+                                                            ) : (
+                                                                <Image
+                                                                    className="avatar rounded-circle"
+                                                                    src="/assets/img/profile-placeholder.webp"
+                                                                    width={40}
+                                                                    height={40}
+                                                                    alt="Search Icon"
+                                                                />
+                                                            )}
                                                             <div className="content">
                                                                 <div className="fw-semibold fs-14 mb-1 text-capitalize">{contractor.name}</div>
                                                                 <div style={{ color: '#8F9B1F' }} className="fw-semibold fs-14">
@@ -741,7 +776,7 @@ export default function DashboardPage() {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div className="date fs-12 text-gray-light">
+                                                        <div className="date fs-12 text-gray-light mt-1">
                                                             {formatDate(contractor.created_at)}
                                                         </div>
                                                     </div>

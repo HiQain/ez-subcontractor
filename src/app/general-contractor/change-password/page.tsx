@@ -260,6 +260,7 @@ export default function ChangePassword() {
                                                         localStorage.removeItem('token');
                                                         localStorage.removeItem('isLoggedIn');
                                                         localStorage.removeItem('userEmail');
+                                                        localStorage.removeItem('subscription');
                                                         router.push('/auth/login');
                                                     }}
                                                     className="custom-btn bg-danger w-100 border-0"

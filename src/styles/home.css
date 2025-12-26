@@ -114,6 +114,22 @@
   text-decoration: none;
 }
 
+.home-banner-sec.page-banner {
+  background-color: #272727;
+}
+.home-banner-sec.page-banner video {
+  opacity: 0.5;
+}
+.home-banner-sec.page-banner .slick-slider,
+.home-banner-sec.page-banner .slick-list,
+.home-banner-sec.page-banner .slick-track,
+.home-banner-sec.page-banner .banner-wrapper {
+  height: auto;
+}
+.home-banner-sec.page-banner .banner-wrapper {
+  padding: 50px 0;
+}
+
 .role-cards {
   position: relative;
   z-index: 2;

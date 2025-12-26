@@ -130,31 +130,34 @@ export default function PricingPage() {
                             <span className="title1 text-truncate">{plan.title}</span>
                         )}
 
-                        {plan.saveText && (
-                            <div
-                                style={{ backgroundColor: plan.saveColor, maxWidth: '130px' }}
-                                className="custom-btn text-white py-2 px-3 rounded-pill"
-                            >
-                                {parseFloat(plan.discount)} % OFF
-                            </div>
-                        )}
+
 
                         {plan.showStrike ? (
-                            <div className="d-flex align-items-center gap-1 flex-wrap">
-                                <del className="fs-18 fw-medium text-black">$ {plan.price.toFixed(2)}</del>
-                                <div className="d-flex align-items-center gap-2 justify-content-between">
+                            <div className="d-flex align-items-center justify-content-between gap-1 flex-wrap">
+                                <div className="d-flex align-items-center gap-2">
+                                    <del className="fs-18 fw-medium text-black">$ {Math.trunc(plan.price)}</del>
+                                    <div className="d-flex align-items-center gap-2 justify-content-between">
                                     <span className="price">
                                         $
                                         <span className="fw-bold">
-                                            {plan.discount ? plan.price - plan.price / 100 * plan.discount : plan.price}
+                                            {Math.trunc(plan.discount ? plan.price - plan.price / 100 * plan.discount : plan.price)}
                                         </span>
                                     </span>
+                                    </div>
                                 </div>
+                                {plan.saveText && (
+                                    <div
+                                        style={{ backgroundColor: plan.saveColor, maxWidth: '130px' }}
+                                        className="custom-btn text-white py-2 px-3 rounded-pill"
+                                    >
+                                        {Math.trunc(plan.discount)} % OFF
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <div className="d-flex align-items-center gap-2">
                                 <span className="price">
-                                    $<span className="fw-bold">{plan.price.toFixed(2)}</span>
+                                    $<span className="fw-bold">{Math.trunc(plan.price)}</span>
                                 </span>
                                 {plan.saveText && (
                                     <button
@@ -181,9 +184,9 @@ export default function PricingPage() {
                 <div className="d-flex align-items-center flex-column">
                     {plan.hasNote && renderNoteCard()}
                     <div className="pricing-button w-100 pt-0">
-                        <div className="pricing-button w-100 pt-0">
+                        <div className="pricing-button w-100 p-0 pt-4">
                             <button
-                                className={plan.is_subscribed ? 'active-btn' : 'btn'}
+                                className={plan.is_subscribed ? 'btn btn-primary bg-primary' : 'btn'}
                                 disabled={hasAnyActiveSubscription && !plan.is_subscribed}
                                 onClick={() => {
                                     if (!hasAnyActiveSubscription && !plan.is_subscribed) {

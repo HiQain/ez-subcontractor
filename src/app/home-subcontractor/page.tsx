@@ -4,7 +4,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import Slider from "react-slick";
-import React, { useRef, useState, useEffect } from "react";
+import React, {useRef, useState, useEffect} from "react";
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -17,10 +17,11 @@ import '../../styles/blog.css';
 import '../../styles/about-us.css';
 import '../../styles/testimonial.css';
 import '../../styles/faqs.css';
+import '../../styles/pricing.css';
 
-import { generateToken, messaging } from "../notification/firebase";
-import { onMessage } from "firebase/messaging";
-import { showNotificationToast } from "../notification/toast";
+import {generateToken, messaging} from "../notification/firebase";
+import {onMessage} from "firebase/messaging";
+import {showNotificationToast} from "../notification/toast";
 import {useRouter} from "next/navigation";
 
 export default function HomePage() {
@@ -111,8 +112,8 @@ export default function HomePage() {
                     // (optional UX enhancement)
                 });
             };
-            document.addEventListener('click', attemptPlay, { once: true });
-            document.addEventListener('touchstart', attemptPlay, { once: true });
+            document.addEventListener('click', attemptPlay, {once: true});
+            document.addEventListener('touchstart', attemptPlay, {once: true});
         }
 
         generateToken();
@@ -130,7 +131,7 @@ export default function HomePage() {
     useEffect(() => {
         const loadFaqs = async () => {
             try {
-                const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}data/faqs?type=general_contractor`;
+                const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}data/faqs?type=subcontractor`;
                 const res = await fetch(url);
                 const json = await res.json();
                 console.log(json);
@@ -147,7 +148,7 @@ export default function HomePage() {
         {
             id: 1,
             image: "/assets/img/home-banner-img1.webp",
-            title: "General Contractor",
+            title: "Subcontractor",
             btn1Text: "Post a Project",
             btn1Link: "/auth/login",
             btn2Text: "Search a Project",
@@ -218,7 +219,7 @@ export default function HomePage() {
 
     return (
         <div>
-            <Header />
+            <Header/>
 
             <section className="home-banner-sec page-banner">
                 <Slider ref={sliderRef} {...bannerSettings}>
@@ -281,14 +282,206 @@ export default function HomePage() {
                                 <Link href="#" className="btn btn-outline-dark mb-4">
                                     HOW IT WORKS
                                 </Link>
-                                <h1 className="mb-4">Connect with General contractors and get more Jobs</h1>
+                                <h1 className="mb-4">Connect with Subcontractors and get more Jobs</h1>
                                 <p className="mb-3 fw-medium fs-5">
-                                    We simplify how the construction industry connects, helping subcontractors find reliable projects,
-                                    build long-term relationships with verified general contractors, and grow their businesses with ease.
+                                    We simplify how the construction industry connects, helping subcontractors find
+                                    reliable projects,
+                                    build long-term relationships with verified general contractors, and grow their
+                                    businesses with ease.
                                 </p>
-                                <Link href="/auth/register/general_contractor" className="btn btn-primary rounded-3 mt-3">
-                                    Join as a General Contractor
+                                <Link href="/auth/register/subcontractor" className="btn btn-primary rounded-3 mt-3">
+                                    Join as a Subcontractor
                                 </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="project-sec pb-0">
+                <div className="container">
+                    <div className="content-wrapper mb-4 text-center">
+                        <h2 className="main-title text-capitalize">
+                            Explore real projects <br/>posted by top general contractors
+                        </h2>
+                    </div>
+
+                    {/* Desktop Slider */}
+                    <div className="main-card-slide d-none d-lg-block">
+                        <Slider {...sliderSettingsDesktop}>
+                            {projects.map((project, index) => (
+                                <div key={index} className="px-2">
+                                    <div className="custom-card">
+                                        <div
+                                            className="topbar d-flex align-items-center justify-content-between gap-1 flex-wrap mb-3">
+                                            <Link
+                                                href={`/projects?category=${project.category.toLowerCase()}`}
+                                                className="btn btn-primary"
+                                            >
+                                                {project.category}
+                                            </Link>
+                                            <div className="date text-primary-gray-light">{project.timeAgo}</div>
+                                        </div>
+                                        <div className="title text-black fs-5 fw-semibold mb-3">
+                                            {project.location}
+                                        </div>
+                                        <div className="description">
+                                            {expandedCards.has(index)
+                                                ? project.description.repeat(2)
+                                                : `${project.description.substring(0, 150)}...`}
+                                        </div>
+                                        <button
+                                            onClick={() => toggleExpand(index)}
+                                            className="see-more-btn d-block btn btn-link p-0 text-primary d-none"
+                                        >
+                                            {expandedCards.has(index) ? "See less" : "See more"}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </Slider>
+                    </div>
+
+                    {/* Mobile Slider */}
+                    <div className="main-card-slide d-block d-lg-none">
+                        <Slider {...sliderSettingsMobile}>
+                            {projects.map((project, index) => (
+                                <div key={index} className="px-2">
+                                    <div className="custom-card">
+                                        <div
+                                            className="topbar d-flex align-items-center justify-content-between gap-1 flex-wrap mb-3">
+                                            <Link
+                                                href={`/projects?category=${project.category.toLowerCase()}`}
+                                                className="btn btn-primary"
+                                            >
+                                                {project.category}
+                                            </Link>
+                                            <div className="date text-primary-gray-light">{project.timeAgo}</div>
+                                        </div>
+                                        <div className="title text-black fs-5 fw-semibold mb-3">
+                                            {project.location}
+                                        </div>
+                                        <div className="description">
+                                            {expandedCards.has(index)
+                                                ? project.description.repeat(2)
+                                                : `${project.description.substring(0, 150)}...`}
+                                        </div>
+                                        <button
+                                            onClick={() => toggleExpand(index)}
+                                            className="see-more-btn d-block btn btn-link p-0 text-primary"
+                                        >
+                                            {expandedCards.has(index) ? "See less" : "See more"}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </Slider>
+                    </div>
+                </div>
+            </section>
+
+            <section className="pricing-sec">
+                <div className="container">
+                    <h2 className="main-title text-center fw-bold mb-3">Our Plans</h2>
+                    <p className="text-center mb-5">Choose Your Plan and Start Getting Project Leads Today</p>
+                    <div className="tab-content pricing-wrapper">
+                        <div className="tab-pane fade show active pricing-content">
+                            <div className="row g-3 justify-content-center">
+                                <div className="col-lg-4 col-md-6">
+                                    <div className="price-card  free">
+                                        <div>
+                                            <div className="pricing-header"><span className="title1 text-truncate">Free Registration</span>
+                                                <div className="d-flex align-items-center gap-2"><span className="price">$<span
+                                                    className="fw-bold">0</span></span></div>
+                                            </div>
+                                            <div className="pricing-body mb-3">
+                                                <ul className="m-0 p-0 list-with-icon">
+                                                    <li>See unlimited projects</li>
+                                                    <li>No credit card required</li>
+                                                    <li>Receive project notifications</li>
+                                                    <li>Set radius to receive projects</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div className="d-flex align-items-center flex-column">
+                                            <div className="pricing-button w-100 p-0">
+                                                <div className="pricing-button w-100 pt-0">
+                                                    <Link href={'/auth/register/subcontractor'} className="btn">Buy Now</Link>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="col-lg-4 col-md-6">
+                                    <div className="price-card  free">
+                                        <div>
+                                            <div className="pricing-header"><span
+                                                className="title1 text-truncate">Monthly Plan</span>
+                                                <div className="d-flex align-items-center gap-2"><span className="price">$<span
+                                                    className="fw-bold">50</span></span></div>
+                                            </div>
+                                            <div className="pricing-body mb-3">
+                                                <ul className="m-0 p-0 list-with-icon">
+                                                    <li>Full access to all job postings</li>
+                                                    <li>Live chat + file exchange</li>
+                                                    <li>View contractor contact info</li>
+                                                    <li>Project timelines, budgets, requirements</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div className="d-flex align-items-center flex-column">
+                                            <div className="pricing-button w-100 p-0">
+                                                <div className="pricing-button w-100 pt-0">
+                                                    <Link href={'/auth/register/subcontractor'} className="btn">Buy Now</Link>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="col-lg-4 col-md-6">
+                                    <div className="price-card popular free">
+                                        <div>
+                                            <div className="pricing-header">
+                                                <div className="d-flex align-items-center justify-content-between mb-3">
+                                                    <span className="title1 mb-0 text-truncate">Yearly Plan</span>
+                                                    <div className="custom-btn bg-white shadow p-2 rounded-pill"
+                                                         style={{fontSize: '14px'}}>🔥 Popular
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    className="d-flex align-items-center justify-content-between gap-1 flex-wrap">
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        <del className="fs-18 fw-medium text-black">$ 600</del>
+                                                        <div
+                                                            className="d-flex align-items-center gap-2 justify-content-between">
+                                                            <span className="price">$<span className="fw-bold">400</span></span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="custom-btn text-white py-2 px-3 rounded-pill"
+                                                         style={{backgroundColor: 'rgb(220, 38, 38)', maxWidth: '130px'}}>33
+                                                        % OFF
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="pricing-body mb-3">
+                                                <ul className="m-0 p-0 list-with-icon">
+                                                    <li>Full access to all job postings</li>
+                                                    <li>Live chat + file exchange</li>
+                                                    <li>View contractor contact info</li>
+                                                    <li>Full project details</li>
+                                                    <li>Discounted extra category fee</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div className="d-flex align-items-center flex-column">
+                                            <div className="pricing-button w-100 p-0">
+                                                <div className="pricing-button w-100 pt-0">
+                                                    <Link href={'/auth/register/subcontractor'} className="btn">Buy Now</Link>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -298,7 +491,8 @@ export default function HomePage() {
             <section className="blog-sec">
                 <div className="container">
                     <h2 className="main-title text-center fw-bold mb-3">Our Blogs</h2>
-                    <p className="text-center mb-5">Insights, ideas, and updates to help you stay informed and inspired.</p>
+                    <p className="text-center mb-5">Insights, ideas, and updates to help you stay informed and
+                        inspired.</p>
                     <div className="row g-4">
                         <div className="col-12">
                             <div className="row g-4">
@@ -317,10 +511,12 @@ export default function HomePage() {
                                         >
                                             <div className="blog-content d-flex h-100 justify-content-end flex-column">
                                                 <div className="description text-white fw-medium mb-2">
-                                                    The residential construction industry is evolving fast, with homeowners demanding smarter,
+                                                    The residential construction industry is evolving fast, with
+                                                    homeowners demanding smarter,
                                                     greener, and more efficient spaces
                                                 </div>
-                                                <div className="d-flex align-items-center gap-1 justify-content-between">
+                                                <div
+                                                    className="d-flex align-items-center gap-1 justify-content-between">
                                                     <div className="blog-icon d-flex align-items-center gap-2">
                                                         <Image
                                                             src="/assets/img/blog-icon1.svg"
@@ -329,9 +525,10 @@ export default function HomePage() {
                                                             alt="Blog Icon"
                                                             loading="lazy"
                                                         />
-                                                        <span className="d-block fw-semibold text-white">Jonathan Louis</span>
+                                                        <span
+                                                            className="d-block fw-semibold text-white">Jonathan Louis</span>
                                                     </div>
-                                                    <div style={{ fontSize: '14px' }} className="date text-white">
+                                                    <div style={{fontSize: '14px'}} className="date text-white">
                                                         Aug 02, 2025
                                                     </div>
                                                 </div>
@@ -350,10 +547,15 @@ export default function HomePage() {
                     <div className="text-center">
                         <div className="text-center mb-4">
                             <h3 className={'fw-bold'}>Grow Your Business with Trusted Partnerships</h3>
-                            <p className="mb-0">We connect skilled general contractors with high-quality projects, reliable support, and streamlined workflows — so you can focus on building excellence. If you’re licensed, insured, and ready to scale, apply today to become a preferred contractor in our growing network.</p>
+                            <p className="mb-0">We connect skilled general contractors with high-quality projects,
+                                reliable support, and streamlined workflows — so you can focus on building excellence.
+                                If you’re licensed, insured, and ready to scale, apply today to become a preferred
+                                contractor in our growing network.</p>
                         </div>
                         <div className="text-center">
-                            <Link href="/auth/register/general_contractor" className="btn btn-light bg-white text-center d-lg-block mx-auto rounded-3" style={{width: '300px'}}>Join as General Contractor</Link>
+                            <Link href="/auth/register/subcontractor"
+                                  className="btn btn-light bg-white text-center d-lg-block mx-auto rounded-3"
+                                  style={{width: '300px'}}>Join as Subcontractor</Link>
                         </div>
                     </div>
                 </div>
@@ -365,8 +567,10 @@ export default function HomePage() {
                         <div className="col-lg-5">
                             <Image
                                 src="/assets/img/about-section.webp"
-                                style={{ objectFit: 'cover', minHeight: '550px',
-                                    borderRadius: '8px'}}
+                                style={{
+                                    objectFit: 'cover', minHeight: '550px',
+                                    borderRadius: '8px'
+                                }}
                                 className="img-fluid w-100"
                                 alt="Section Image"
                                 width={600}
@@ -414,7 +618,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            <Footer />
+            <Footer/>
         </div>
     );
 }

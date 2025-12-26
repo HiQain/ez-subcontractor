@@ -12,9 +12,11 @@ export default function PostAnAd() {
     const router = useRouter();
     const stripe = useStripe();
     const elements = useElements();
-    const searchParams = useSearchParams();
-    const adId = searchParams.get('ad_id');
-    const isEditMode = !!adId;
+    // const searchParams = useSearchParams();
+    // const adId = searchParams.get('ad_id');
+    const adId = null;
+    // const isEditMode = !!adId;
+    const isEditMode = null;
 
     // Tabs state
     const [activeTab, setActiveTab] = useState('saved-cards');

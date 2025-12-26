@@ -253,19 +253,20 @@ $white: #fff;
 
 
 .navbar {
+  background-color: #ffc107;
   .navbar-nav {
-    background-color: $gray;
+    background-color: #ffc107;
     .nav-link {
       font-size: 18px;
       font-weight: 600;
       padding: 10px 30px;
       border-radius: 10px;
       &:hover, &:focus {
-        color: $primary;
+        color: $dark;
       }
     }
     .nav-link.active {
-      color: $white;
+      color: $dark;
       background-color: $dark;
       pointer-events: none;
     }
@@ -284,7 +285,7 @@ $white: #fff;
   }
   .icon-buttons {
     .icon {
-      background-color: $gray;
+      background-color: $white;
       border-radius: 50%;
       width: 50px;
       height: 50px;

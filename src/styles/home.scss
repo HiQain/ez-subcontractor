@@ -119,6 +119,21 @@ $white: #fff;
     }
   }
 }
+.home-banner-sec.page-banner {
+  background-color: $dark;
+  video {
+    opacity: 0.5;
+  }
+  .slick-slider,
+  .slick-list,
+  .slick-track,
+  .banner-wrapper {
+    height: auto;
+  }
+  .banner-wrapper {
+    padding: 50px 0;
+  }
+}
 .role-cards {
   position: relative;
   z-index: 2;
