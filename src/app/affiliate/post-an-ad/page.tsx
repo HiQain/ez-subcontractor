@@ -1,7 +1,10 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import {
+    useRouter,
+    // useSearchParams
+} from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/post-detail.css';
@@ -14,9 +17,6 @@ export default function PostAnAd() {
     const elements = useElements();
     // const searchParams = useSearchParams();
     // const adId = searchParams.get('ad_id');
-    const adId = null;
-    // const isEditMode = !!adId;
-    const isEditMode = null;
 
     // Tabs state
     const [activeTab, setActiveTab] = useState('saved-cards');
@@ -38,6 +38,14 @@ export default function PostAnAd() {
     const durationWeeks = 7; // 7 weeks
     const [horizontalUrl, setHorizontalUrl] = useState('');
     const [verticalUrl, setVerticalUrl] = useState('');
+    const [adId, setAdId] = useState<string | null>(null);
+    const isEditMode = !!adId;
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const params = new URLSearchParams(window.location.search);
+        setAdId(params.get('ad_id'));
+    }, []);
 
     // 🔹 Toast Utility — identical to your register page
     const showToast = (message: string, type: 'success' | 'error' = 'error') => {

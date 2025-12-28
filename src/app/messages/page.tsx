@@ -8,7 +8,10 @@ import '../../styles/chat-2.css';
 import { useEffect, useRef, useState } from 'react';
 import { capitalizeEachWord, ChatMessage, clearChatAPI, Contractor, getContractors, getInitials, getMessages, sendMessageAPI } from '../api/chat';
 import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
-import { useSearchParams, useRouter } from 'next/navigation';
+import {
+  // useSearchParams,
+  useRouter
+} from 'next/navigation';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -21,11 +24,11 @@ export default function ChatPage() {
   // const chatUserPhone = searchParams.get('phone');
   // const chatUserCompanyName = searchParams.get('companyName');
 
-  const chatUserId = '';
-  const chatUserName = '';
-  const chatUserEmail = '';
-  const chatUserPhone = '';
-  const chatUserCompanyName = '';
+  // const chatUserId = '';
+  // const chatUserName = '';
+  // const chatUserEmail = '';
+  // const chatUserPhone = '';
+  // const chatUserCompanyName = '';
 
   const [results, setResults] = useState<Contractor[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -40,6 +43,23 @@ export default function ChatPage() {
   const [showSearchBarInChat, setShowSearchBarInChat] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [messageSearchTerm, setMessageSearchTerm] = useState("");
+  const [chatUserId, setChatUserId] = useState<string | null>(null);
+  const [chatUserName, setChatUserName] = useState<string | null>(null);
+  const [chatUserEmail, setChatUserEmail] = useState<string | null>(null);
+  const [chatUserPhone, setChatUserPhone] = useState<string | null>(null);
+  const [chatUserCompanyName, setChatUserCompanyName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+
+    setChatUserId(params.get('userId'));
+    setChatUserName(params.get('name'));
+    setChatUserEmail(params.get('email'));
+    setChatUserPhone(params.get('phone'));
+    setChatUserCompanyName(params.get('companyName'));
+  }, []);
 
   const handleMenuClick = (panelType: 'contact' | 'media' | 'search') => {
     setActivePanel(null);
