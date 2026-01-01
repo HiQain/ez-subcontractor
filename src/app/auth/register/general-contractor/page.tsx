@@ -177,7 +177,7 @@ export default function RegisterPage() {
 
         // ✅ Build payload — matches Postman exactly
         const roleMap: Record<string, string> = {
-            'general-contractor': 'general_contractor',
+            'general-contractor': 'general-contractor',
             'sub-contractor': 'subcontractor',
             'affiliate': 'affiliate',
         };
@@ -194,7 +194,7 @@ export default function RegisterPage() {
             zip: formData.zip || '46000',
             work_radius: parseInt(formData.work_radius) || 0,
             category: 1,
-            role: role
+            role: 'general_contractor'
         };
 
 
@@ -216,6 +216,7 @@ export default function RegisterPage() {
                 // 🔑 Extract token & user
                 const token = data.data.token;
                 localStorage.setItem('token', token);
+                localStorage.setItem('role', 'general_contractor');
                 if (token) {
                     showToast('Registration successful! Welcome aboard!');
                     // Delay navigation to show toast

@@ -26,12 +26,38 @@ export default function Header() {
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('role');
 
+        console.log(role);
         // Update state *once*
         setAuthState({
             role: token && role ? role : null,
             resolved: true,
         });
     }, []);
+
+    // 🔁 Fetch profile
+    useEffect(() => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        const fetchProfile = async () => {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/get-profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const data = await response.json();
+                console.log(data);
+                localStorage.setItem('userName', data.data.name);
+                localStorage.setItem('userEmail', data.data.email);
+            } catch (err) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('role');
+            }
+        };
+
+        fetchProfile();
+    }, [router]);
 
     const { role, resolved } = authState;
     const isLoggedIn = !!role;
@@ -88,7 +114,6 @@ export default function Header() {
                             <Image src="/assets/img/user.svg" width={20} height={20} alt="Login" />
                         </Link>
                     )}
-
                     <button
                         className="navbar-toggler border-0"
                         type="button"
@@ -106,7 +131,7 @@ export default function Header() {
                     {/* 👇 Menu logic — same as before */}
                     {(
                         pathname.startsWith('/general-contractor') ||
-                        (pathname === '/messages' && role === 'general_contractor')
+                        (pathname === '/messages' && role === 'general-contractor')
                     ) && (
                         <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
                             <li className="nav-item">
@@ -146,6 +171,30 @@ export default function Header() {
                             <li className="nav-item">
                                 <Link className="nav-link" href="/subcontractor/rating">
                                     Ratings
+                                </Link>
+                            </li>
+                        </ul>
+                    )}
+
+                    {(
+                        pathname.startsWith('/affiliate') ||
+                        (pathname === '/messages' && role === 'affiliate') ||
+                        (pathname === '/subscription-list' && role === 'affiliate')
+                    ) && (
+                        <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
+                            <li className="nav-item">
+                                <Link className="nav-link" href="/affiliate/dashboard">
+                                    Dashboard
+                                </Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" href="/messages">
+                                    Messages
+                                </Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" href="/affiliate/ad-posted">
+                                    My Ads
                                 </Link>
                             </li>
                         </ul>
@@ -252,11 +301,11 @@ export default function Header() {
                                     <li>
                                         <button
                                             type="button"
-                                            className={`dropdown-item ${role === 'general_contractor' ? 'bg-primary text-white' : ''}`}
+                                            className={`dropdown-item ${role === 'general-contractor' ? 'bg-primary text-white' : ''}`}
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                localStorage.setItem('role', 'general_contractor');
-                                                setAuthState({ role: 'general_contractor', resolved: true });
+                                                localStorage.setItem('role', 'general-contractor');
+                                                setAuthState({ role: 'general-contractor', resolved: true });
                                                 router.push('/home-general-contractor');
                                             }}
                                         >
@@ -332,7 +381,7 @@ export default function Header() {
                             </ul>
                         </div>
                         <Link
-                            href={`/${role}/profile`}
+                            href={`/${role === 'general_contractor' ? 'general-contractor' : role}/profile`}
                             className="nav-link icon"
                             aria-label="Profile"
                         >

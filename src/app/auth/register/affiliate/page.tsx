@@ -10,7 +10,7 @@ import {useRouter, useParams} from 'next/navigation';
 
 export default function RegisterPage() {
     const router = useRouter();
-    const params = useParams()
+    const params = useParams();
     const accountType = (params.type as string) || 'affiliate';
 
     // 🔹 Show non-blocking toast notification
@@ -141,6 +141,9 @@ export default function RegisterPage() {
         </svg>
     );
 
+    useEffect(() => {
+        console.log(localStorage.getItem('role'));
+    }, []);
 
     // ✅ Final submit handler — matches Postman payload exactly
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement> | null) => {
@@ -177,11 +180,10 @@ export default function RegisterPage() {
 
         // ✅ Build payload — matches Postman exactly
         const roleMap: Record<string, string> = {
-            'general-contractor': 'general_contractor',
+            'general-contractor': 'general-contractor',
             'sub-contractor': 'subcontractor',
             'affiliate': 'affiliate',
         };
-        const role = localStorage.getItem('role');
 
         const payload: Record<string, any> = {
             name: formData.name,
@@ -193,7 +195,7 @@ export default function RegisterPage() {
             zip: formData.zip || '46000',
             work_radius: parseInt(formData.work_radius) || 0,
             category: 1,
-            role: role
+            role: 'affiliate'
         };
 
         try {
@@ -214,6 +216,8 @@ export default function RegisterPage() {
                 // 🔑 Extract token & user
                 const token = data.data.token;
                 localStorage.setItem('token', token);
+                localStorage.setItem('role', 'affiliate');
+
                 if (token) {
                     showToast('Registration successful! Welcome aboard!');
 
@@ -227,7 +231,7 @@ export default function RegisterPage() {
                     }, 1500);
                     // Delay navigation to show toast
                     // setTimeout(() => {
-                    //     if (role == 'general_contractor') {
+                    //     if (role == 'general-contractor') {
                     //         console.log(1);
                     //         router.push('/general-contractor/dashboard');
                     //     }

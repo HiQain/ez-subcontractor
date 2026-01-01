@@ -148,6 +148,11 @@
   display: none;
 }
 
+.main-card-slide .slick-dots {
+  justify-content: center;
+  bottom: -40px;
+}
+
 .testimonial-sec {
   padding: 50px 0;
 }

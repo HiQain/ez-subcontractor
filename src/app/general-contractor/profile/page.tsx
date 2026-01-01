@@ -128,6 +128,8 @@ export default function ProfilePage() {
                 console.error('Profile fetch error:', err);
                 const msg = 'Network error. Please try again.';
                 setError(msg);
+                localStorage.removeItem('token');
+                localStorage.removeItem('role');
                 showToast(msg, 'error');
             } finally {
                 setLoading(false);
@@ -375,11 +377,14 @@ export default function ProfilePage() {
                                                 type="button"
                                                 className="icon delete border-0"
                                                 onClick={() => {
-                                                    const modalEl = document.getElementById('deleteAccountModal');
-                                                    // if (modalEl) {
-                                                    //     const modal = new window.bootstrap.Modal(modalEl);
-                                                    //     modal.show();
-                                                    // }
+                                                    if (typeof window !== 'undefined') {
+                                                        const modalEl = document.getElementById('deleteAccountModal');
+                                                        if (modalEl && 'bootstrap' in window) {
+                                                            // 👇 Type assertion to tell TS that bootstrap exists
+                                                            const modal = new (window as any).bootstrap.Modal(modalEl);
+                                                            modal.show();
+                                                        }
+                                                    }
                                                 }}
                                             >
                                                 <Image

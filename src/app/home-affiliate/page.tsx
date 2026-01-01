@@ -30,7 +30,9 @@ export default function HomePage() {
     const [selectedType, setSelectedType] = useState('');
     const [currentSlide, setCurrentSlide] = useState(0);
     const [faqs, setFaqs] = useState<any[]>([]);
-
+    const [howItWorks, setHowItWorks] = useState<any>(null);
+    const [plans, setPlans] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const sliderSettings = {
         slidesToShow: 3,
         slidesToScroll: 1,
@@ -69,7 +71,7 @@ export default function HomePage() {
 
     const accountTypes = [
         {
-            id: 'general_contractor',
+            id: 'general-contractor',
             title: 'General Contractor',
             icon: '/assets/img/icons/construction-worker.webp',
         },
@@ -84,6 +86,7 @@ export default function HomePage() {
             icon: '/assets/img/icons/portfolio.webp',
         },
     ];
+
 
 
     useEffect(() => {
@@ -143,6 +146,190 @@ export default function HomePage() {
         loadFaqs();
     }, []);
 
+    useEffect(() => {
+        const loadHowItWorks = async () => {
+            try {
+                const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}data/how-it-works?type=affiliate`;
+                const res = await fetch(url);
+                const json = await res.json();
+
+                if (json.success && json.data?.length > 0) {
+                    setHowItWorks(json.data[0]); // Take first item (API returns array)
+                } else {
+                    setHowItWorks({
+                        title: "How It Works",
+                        description: "We help subcontractors find projects fast. No middlemen. Just real jobs.",
+                        image: "/assets/img/about-hero.webp"
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to load How It Works:', e);
+                setHowItWorks({
+                    title: "How It Works",
+                    description: "Unable to load content. Please try again later."
+                });
+            }
+        };
+
+        loadHowItWorks();
+    }, []);
+
+
+    useEffect(() => {
+        const fetchPlans = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/public/plans?role=affiliate`);
+                const text = await res.text();
+
+                if (!text.startsWith('{') && !text.startsWith('[')) {
+                    throw new Error('Unauthorized or server returned HTML. Please log in.');
+                }
+
+                const data = JSON.parse(text);
+
+                if (res.ok && data.success && Array.isArray(data.data?.plans)) {
+                    const transformedPlans = data.data.plans.map((plan: any) => ({
+                        id: plan.id,
+                        title: plan.plan_name,
+                        price: parseFloat(plan.price),
+                        discount: plan.discount_price,
+                        features: plan.features.map((f: any) => f.feature),
+                        hasNote: plan.type === 'trial',
+                        isPopular: plan.label === 'Popular',
+                        showStrike: !!plan.discount_price,
+                        saveText: plan.discount_price ? `${Math.round(100 - (parseFloat(plan.discount_price) / parseFloat(plan.price)) * 100)}% OFF` : '',
+                        saveColor: '#DC2626',
+                        duration_days: plan.duration_days,
+                        type: plan.type,
+                        stripe_price_id: plan.stripe_price_id,
+                        extra_category_price: plan.extra_category_price,
+                        is_subscribed: plan.is_subscribed,
+                        is_cancelled: plan.is_cancelled,
+                    }));
+
+                    setPlans(transformedPlans);
+                } else {
+                    throw new Error(data.message?.[0] || 'Failed to load plans');
+                }
+            } catch (err: any) {
+                console.error('Error fetching plans:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPlans();
+    }, );
+
+    const renderNoteCard = () => (
+        <div className="note-card d-flex align-items-start gap-1">
+            <Image
+                src="/assets/img/icons/note.webp"
+                width={24}
+                height={24}
+                alt="Note"
+                loading="lazy"
+                className="d-block"
+            />
+            <div className="content">
+                <span style={{ fontSize: '14px' }} className="d-block fw-semibold mb-1">
+                    Note
+                </span>
+                <p style={{ fontSize: '12px' }} className="mb-0">
+                    After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with contractors, and accessing premium tools.
+                </p>
+            </div>
+        </div>
+    );
+
+    const renderPlanCard = (plan: any) => (
+        <div key={plan.id} className="col-lg-4 col-md-6">
+            <div className={`price-card ${plan.isPopular ? 'popular' : ''} free`}>
+                <div>
+                    <div className="pricing-header">
+                        {plan.isPopular ? (
+                            <div className="d-flex align-items-center justify-content-between mb-3">
+                                <span className="title1 mb-0 text-truncate">{plan.title}</span>
+                                <div
+                                    style={{ fontSize: '14px' }}
+                                    className="custom-btn bg-white shadow p-2 rounded-pill"
+                                >
+                                    🔥 Popular
+                                </div>
+                            </div>
+                        ) : (
+                            <span className="title1 text-truncate">{plan.title}</span>
+                        )}
+
+
+
+                        {plan.showStrike ? (
+                            <div className="d-flex align-items-center justify-content-between gap-1 flex-wrap">
+                                <div className="d-flex align-items-center gap-2">
+                                    <del className="fs-18 fw-medium text-black">$ {Math.trunc(plan.price)}</del>
+                                    <div className="d-flex align-items-center gap-2 justify-content-between">
+                                    <span className="price">
+                                        $
+                                        <span className="fw-bold">
+                                            {Math.trunc(plan.discount ? plan.price - plan.price / 100 * plan.discount : plan.price)}
+                                        </span>
+                                    </span>
+                                    </div>
+                                </div>
+                                {plan.saveText && (
+                                    <div
+                                        style={{ backgroundColor: plan.saveColor, maxWidth: '130px' }}
+                                        className="custom-btn text-white py-2 px-3 rounded-pill"
+                                    >
+                                        {Math.trunc(plan.discount)} % OFF
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="d-flex align-items-center gap-2">
+                                <span className="price">
+                                    $<span className="fw-bold">{Math.trunc(plan.price)}</span>
+                                </span>
+                                {plan.saveText && (
+                                    <button
+                                        type="button"
+                                        style={{ backgroundColor: plan.saveColor }}
+                                        className="custom-btn text-white p-2 rounded-pill"
+                                    >
+                                        {plan.saveText}
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="pricing-body mb-3">
+                        <ul className="m-0 p-0 list-with-icon">
+                            {plan.features.map((feature: string, i: number) => (
+                                <li key={i}>{feature}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="d-flex align-items-center flex-column">
+                    {plan.hasNote && renderNoteCard()}
+                    <div className="pricing-button w-100 pt-0">
+                        <a
+                            href={'/auth/register/affiliate'}
+                            className={plan.is_subscribed ? 'btn btn-primary bg-primary' : 'btn'}
+                        >
+                            {plan.is_subscribed && plan.status !== 'cancelled'
+                                ? 'Current Plan'
+                                : 'Buy Now'}
+                        </a>
+                    </div >
+                </div >
+            </div >
+        </div >
+    );
+
 
     const banners = [
         {
@@ -188,8 +375,8 @@ export default function HomePage() {
     const handleSelection = (typeId) => {
         setSelectedType(typeId);
         localStorage.setItem('role', typeId);
-        if (typeId == 'general_contractor') {
-            router.push('/auth/register/general_contractor');
+        if (typeId == 'general-contractor') {
+            router.push('/auth/register/general-contractor');
         } else if (typeId == 'subcontractor') {
             router.push('/auth/register/subcontractor');
         } else if (typeId == 'affiliate') {
@@ -267,116 +454,37 @@ export default function HomePage() {
                 background: `url('/assets/img/regular-bg.webp') center /cover no-repeat`,
             }} className="hero-sec about position-static">
                 <div className="container">
-                    <div className="row g-4">
-                        <div className="col-lg-6 order-lg-2">
-                            <Image
-                                src="/assets/img/about-hero.webp"
-                                width={708}
-                                height={448}
-                                alt="Section Image"
-                                className="img-fluid w-100 hero-img"
-                            />
-                        </div>
-                        <div className="col-lg-6 order-lg-1">
-                            <div className="content-wrapper d-flex flex-column h-100 justify-content-center">
-                                <Link href="#" className="btn btn-outline-dark mb-4">
-                                    HOW IT WORKS
-                                </Link>
-                                <h1 className="mb-4">Connect with Affiliate and get more Jobs</h1>
-                                <p className="mb-3 fw-medium fs-5">
-                                    We simplify how the construction industry connects, helping subcontractors find
-                                    reliable projects,
-                                    build long-term relationships with verified general contractors, and grow their
-                                    businesses with ease.
-                                </p>
-                                <Link href="/auth/register/affiliate" className="btn btn-primary rounded-3 mt-3">
-                                    Join as a Affiliate
-                                </Link>
+                    {howItWorks ? (
+                        <div className="row g-4">
+                            <div className="col-lg-6 order-lg-2">
+                                <Image
+                                    src={howItWorks.image}
+                                    width={708}
+                                    height={448}
+                                    alt="Section Image"
+                                    className="img-fluid w-100 hero-img"
+                                />
+                            </div>
+                            <div className="col-lg-6 order-lg-1">
+                                <div className="content-wrapper d-flex flex-column h-100 justify-content-center">
+                                    <Link href="#" className="btn btn-outline-dark mb-4">
+                                        HOW IT WORKS
+                                    </Link>
+                                    <h1 className="mb-4">{howItWorks.title}</h1>
+                                    <p className="mb-3 fw-medium">{howItWorks.description}</p>
+                                    <Link href="/auth/register/affiliate" className="btn btn-primary rounded-3 mt-3">
+                                        Join as a Affiliate
+                                    </Link>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </section>
-
-            <section className="project-sec pb-0">
-                <div className="container">
-                    <div className="content-wrapper mb-4 text-center">
-                        <h2 className="main-title text-capitalize">
-                            Explore real projects <br/>posted by top general contractors
-                        </h2>
-                    </div>
-
-                    {/* Desktop Slider */}
-                    <div className="main-card-slide d-none d-lg-block">
-                        <Slider {...sliderSettingsDesktop}>
-                            {projects.map((project, index) => (
-                                <div key={index} className="px-2">
-                                    <div className="custom-card">
-                                        <div
-                                            className="topbar d-flex align-items-center justify-content-between gap-1 flex-wrap mb-3">
-                                            <Link
-                                                href={`/projects?category=${project.category.toLowerCase()}`}
-                                                className="btn btn-primary"
-                                            >
-                                                {project.category}
-                                            </Link>
-                                            <div className="date text-primary-gray-light">{project.timeAgo}</div>
-                                        </div>
-                                        <div className="title text-black fs-5 fw-semibold mb-3">
-                                            {project.location}
-                                        </div>
-                                        <div className="description">
-                                            {expandedCards.has(index)
-                                                ? project.description.repeat(2)
-                                                : `${project.description.substring(0, 150)}...`}
-                                        </div>
-                                        <button
-                                            onClick={() => toggleExpand(index)}
-                                            className="see-more-btn d-block btn btn-link p-0 text-primary d-none"
-                                        >
-                                            {expandedCards.has(index) ? "See less" : "See more"}
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </Slider>
-                    </div>
-
-                    {/* Mobile Slider */}
-                    <div className="main-card-slide d-block d-lg-none">
-                        <Slider {...sliderSettingsMobile}>
-                            {projects.map((project, index) => (
-                                <div key={index} className="px-2">
-                                    <div className="custom-card">
-                                        <div
-                                            className="topbar d-flex align-items-center justify-content-between gap-1 flex-wrap mb-3">
-                                            <Link
-                                                href={`/projects?category=${project.category.toLowerCase()}`}
-                                                className="btn btn-primary"
-                                            >
-                                                {project.category}
-                                            </Link>
-                                            <div className="date text-primary-gray-light">{project.timeAgo}</div>
-                                        </div>
-                                        <div className="title text-black fs-5 fw-semibold mb-3">
-                                            {project.location}
-                                        </div>
-                                        <div className="description">
-                                            {expandedCards.has(index)
-                                                ? project.description.repeat(2)
-                                                : `${project.description.substring(0, 150)}...`}
-                                        </div>
-                                        <button
-                                            onClick={() => toggleExpand(index)}
-                                            className="see-more-btn d-block btn btn-link p-0 text-primary"
-                                        >
-                                            {expandedCards.has(index) ? "See less" : "See more"}
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </Slider>
-                    </div>
+                    ) : (
+                        <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -387,50 +495,16 @@ export default function HomePage() {
                     <div className="tab-content pricing-wrapper">
                         <div className="tab-pane fade show active pricing-content">
                             <div className="row g-3 justify-content-center">
-                                <div className="col-lg-4 col-md-6">
-                                    <div className="price-card popular free">
-                                        <div>
-                                            <div className="pricing-header">
-                                                <div className="d-flex align-items-center justify-content-between mb-3">
-                                                    <span className="title1 mb-0 text-truncate">Yearly Plan</span>
-                                                    <div className="custom-btn bg-white shadow p-2 rounded-pill"
-                                                         style={{fontSize: '14px'}}>🔥 Popular
-                                                    </div>
-                                                </div>
-                                                <div
-                                                    className="d-flex align-items-center justify-content-between gap-1 flex-wrap">
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        <del className="fs-18 fw-medium text-black">$ 600</del>
-                                                        <div
-                                                            className="d-flex align-items-center gap-2 justify-content-between">
-                                                            <span className="price">$<span className="fw-bold">400</span></span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="custom-btn text-white py-2 px-3 rounded-pill"
-                                                         style={{backgroundColor: 'rgb(220, 38, 38)', maxWidth: '130px'}}>33
-                                                        % OFF
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="pricing-body mb-3">
-                                                <ul className="m-0 p-0 list-with-icon">
-                                                    <li>Full access to all job postings</li>
-                                                    <li>Live chat + file exchange</li>
-                                                    <li>View contractor contact info</li>
-                                                    <li>Full project details</li>
-                                                    <li>Discounted extra category fee</li>
-                                                </ul>
-                                            </div>
+                                {plans.length > 0 ? (
+                                    plans.map((plan) => renderPlanCard(plan))
+                                ) : (
+                                    <div className="text-center py-5">
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Loading projects...</span>
                                         </div>
-                                        <div className="d-flex align-items-center flex-column">
-                                            <div className="pricing-button w-100 p-0">
-                                                <div className="pricing-button w-100 pt-0">
-                                                    <Link href={'/auth/register/subcontractor'} className="btn">Buy Now</Link>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <p className="mt-3 text-muted">Fetching plans</p>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>

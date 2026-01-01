@@ -90,7 +90,7 @@ export default function DashboardSubContractor() {
     const [bannerImagesLoading, setBannerImagesLoading] = useState(true);
     const [bannerImagesRightLoading, setBannerImagesRightLoading] = useState(true);
     const [bannerImagesError, setBannerImagesError] = useState<string | null>(null);
-    const [bannerImagesRightError, setBannerRightImagesError] = useState<string | null>(null)
+    const [bannerImagesRightError, setBannerRightImagesError] = useState<string | null>(null);
 
     const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
 

@@ -13,7 +13,7 @@ export default function SelectAccountType() {
 
     const accountTypes = [
         {
-            id: 'general_contractor',
+            id: 'general-contractor',
             title: 'General Contractor',
             icon: '/assets/img/icons/construction-worker.webp',
         },

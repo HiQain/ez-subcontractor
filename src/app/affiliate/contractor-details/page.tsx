@@ -1,11 +1,250 @@
 'use client';
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/profile.css';
 
+interface Contractor {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    company_name: string;
+    zip: string;
+    role: string;
+    profile_image_url: string | null;
+    average_rating: string;
+    ratings_count: number;
+    categories: string[];
+    has_liability_insurance: boolean;
+    work_radius?: string;
+    city?: string;
+    state?: string;
+    address?: string;
+    specialization: string;
+    license_number: string;
+}
+
 export default function ContractorDetails() {
+    const router = useRouter();
+    const [contractor, setContractor] = useState<Contractor | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // 🔹 Save state (for toggle)
+    const [isSaved, setIsSaved] = useState(false);
+
+    // 🔹 Toast function (reuse from before)
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
+
+    // 🔹 Fetch from API (fallback)
+    // const fetchContractorFromAPI = async (id: number) => {
+    //     try {
+    //         const token = localStorage.getItem('token');
+    //         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/contractors/${id}`, {
+    //             headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+    //         });
+    //
+    //         if (!response.ok) throw new Error('Not found');
+    //
+    //         const data = await response.json();
+    //         if (data.success && data.data) {
+    //             const apiContractor = data.data as Contractor;
+    //             setIsSaved(apiContractor.is_saved || false);
+    //             // ✅ Sync localStorage with fresh data (optional)
+    //             localStorage.setItem('selectedContractor', JSON.stringify(apiContractor));
+    //             setContractor(apiContractor);
+    //         }
+    //     } catch (err) {
+    //         setError('Contractor details unavailable.');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
+
+    // 🔹 Try localStorage first, fallback to API
+    useEffect(() => {
+        const saved = localStorage.getItem('selectedContractor');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved) as Contractor;
+                setContractor(parsed);
+                setLoading(false);
+
+            } catch (e) {
+                console.warn('Invalid contractor in localStorage', e);
+                localStorage.removeItem('selectedContractor');
+                setError('Invalid saved data. Redirecting...');
+                setTimeout(() => router.push('/affiliate/dashboard'), 2000);
+            }
+        } else {
+            // ❌ No localStorage → must have come via direct URL or stale cache
+            setError('No contractor selected. Redirecting to dashboard...');
+            setTimeout(() => router.push('/affiliate/dashboard'), 2000);
+        }
+    }, [router]);
+
+    // 🔹 Toggle Save (same logic — updates both UI + API + localStorage)
+    const toggleSave = async () => {
+        if (!contractor) return;
+
+        const token = localStorage.getItem('token');
+        const endpoint = isSaved ? 'common/contractors/unsave' : 'common/contractors/save';
+        const formData = new FormData();
+        formData.append('contractor_id', contractor.id.toString());
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData,
+            });
+
+            if (!response.ok) throw new Error();
+
+            // ✅ Update UI
+            const newSaved = !isSaved;
+            setIsSaved(newSaved);
+
+            // ✅ Update localStorage
+            const updatedContractor = { ...contractor, is_saved: newSaved };
+            localStorage.setItem('selectedContractor', JSON.stringify(updatedContractor));
+            setContractor(updatedContractor);
+
+            // ✅ Toast
+            showToast(
+                newSaved ? 'Contractor saved successfully!' : 'Contractor removed from saved list',
+                'success'
+            );
+        } catch (err) {
+            console.error('Toggle save error:', err);
+            showToast(`Failed to ${isSaved ? 'unsave' : 'save'} contractor.`, 'error');
+        }
+    };
+
+    // 🔹 Render stars
+    const renderStars = (rating: string) => {
+        const avg = parseFloat(rating) || 0;
+        return [1, 2, 3, 4, 5].map((_, i) => {
+            const starValue = i + 1;
+            const isFull = starValue <= Math.floor(avg);
+            const isHalf = !isFull && starValue <= avg + 0.5;
+
+            return (
+                <Image
+                    key={i}
+                    src={
+                        isFull
+                            ? '/assets/img/start1.svg'
+                            : isHalf
+                            ? '/assets/img/star2.svg'
+                            : '/assets/img/star-empty.svg'
+                    }
+                    width={50}
+                    height={50}
+                    alt="Star Icon"
+                    style={{
+                        width: 'clamp(20px,5vw,50px)',
+                        height: 'clamp(20px,5vw,50px)',
+                    }}
+                />
+            );
+        });
+    };
+
+    // 🌀 Loading / Error
+    if (loading) {
+        return (
+            <>
+                <Header />
+                <div className="sections overflow-hidden">
+                    <section className="banner-sec profile">
+                        <div className="container">
+                            <div className="right-bar d-flex align-items-center justify-content-center" style={{ height: '600px' }}>
+                                <div className="spinner-border text-primary" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <Footer />
+            </>
+        );
+    }
+
+    if (error) {
+        return (
+            <>
+                <Header />
+                <div className="sections overflow-hidden">
+                    <section className="banner-sec profile">
+                        <div className="container">
+                            <div className="right-bar text-center py-5">
+                                <div className="alert alert-warning" role="alert">
+                                    {error}
+                                </div>
+                                <button
+                                    className="btn btn-primary mt-3"
+                                    onClick={() => router.push('/affiliate/dashboard')}
+                                >
+                                    Go to Dashboard
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <Footer />
+            </>
+        );
+    }
+
+    if (!contractor) return null;
+
     return (
         <>
             <Header />
@@ -16,69 +255,75 @@ export default function ContractorDetails() {
                             {/* Top Bar */}
                             <div className="d-flex align-items-center gap-3 justify-content-between flex-wrap mb-5">
                                 <div className="icon-wrapper d-flex align-items-center gap-3">
-                                    <Link href="#" className="icon">
+                                    <button
+                                        type="button"
+                                        className="icon"
+                                        onClick={() => router.push('/affiliate/dashboard')}
+                                        aria-label="Go back"
+                                    >
                                         <Image
                                             src="/assets/img/button-angle.svg"
                                             width={10}
                                             height={15}
-                                            alt="Icon"
+                                            alt="Back"
                                         />
-                                    </Link>
+                                    </button>
                                     <span className="fs-4 fw-semibold">Contractor Details</span>
                                 </div>
-                                <Link href="#" className="icon1">
+                                <button
+                                    type="button"
+                                    className={`icon1 ${isSaved ? 'saved' : 'save'}`}
+                                    onClick={toggleSave}
+                                    aria-label={isSaved ? 'Unsave' : 'Save'}
+                                >
                                     <Image
-                                        src="/assets/img/copy-icon.svg"
+                                        src={
+                                            isSaved
+                                                ? '/assets/img/bookmark-filled.svg'
+                                                : '/assets/img/bookmark-outline.svg'
+                                        }
                                         width={24}
                                         height={24}
-                                        alt="Icon"
+                                        alt="Save"
                                     />
-                                </Link>
+                                </button>
                             </div>
 
                             {/* Review Bar */}
                             <div className="review-bar d-flex align-items-center justify-content-between gap-2 flex-wrap mb-5">
                                 <div className="image-box d-flex align-items-center gap-4">
                                     <Image
-                                        src="/assets/img/profile-img.webp"
-                                        className="worker-img"
+                                        src={contractor.profile_image_url || '/assets/img/profile-placeholder.webp'}
+                                        className="worker-img rounded-circle"
                                         width={180}
                                         height={180}
-                                        alt="Worker Image"
+                                        alt={`${contractor.name}'s Profile`}
+                                        style={{ objectFit: 'cover' }}
                                     />
                                     <div className="content">
-                                        <div className="title fw-semibold fs-4 mb-2">Jason Doe</div>
-                                        <Link href="#" className="btn btn-primary p-1 ps-3 pe-3 mb-3">
-                                            Subcontractor
-                                        </Link>
-                                        <p className="text-gray-light fw-medium">30201</p>
+                                        <div className="title fw-semibold fs-4 mb-2">{contractor.name}</div>
+                                        <span className="btn btn-primary p-1 ps-3 pe-3 mb-3 text-capitalize">
+                                            {contractor.role}
+                                        </span>
+                                        <p className="text-gray-light fw-medium">{
+                                            contractor.address ?
+                                                contractor.address :
+                                                (contractor.city, + ' ' + contractor.state, + ' ' + contractor.zip)
+                                        }</p>
                                     </div>
                                 </div>
 
                                 <div className="right d-flex align-items-center gap-4 flex-wrap">
                                     <div className="rating-icons d-flex align-items-center gap-1 flex-wrap">
-                                        {Array(4)
-                                            .fill('/assets/img/start1.svg')
-                                            .concat(['/assets/img/star2.svg'])
-                                            .map((src, i) => (
-                                                <Image
-                                                    key={i}
-                                                    src={src}
-                                                    width={50}
-                                                    height={50}
-                                                    alt="Star Icon"
-                                                    style={{
-                                                        width: 'clamp(20px,5vw,50px)',
-                                                        height: 'clamp(20px,5vw,50px)',
-                                                    }}
-                                                />
-                                            ))}
+                                        {renderStars(contractor.average_rating)}
                                     </div>
                                     <div className="content">
                                         <div className="text-black text-center fs-3 fw-bold mb-1">
-                                            4.5/5
+                                            {parseFloat(contractor.average_rating).toFixed(1)}/5
                                         </div>
-                                        <a href="#" className="text-gray-light text-decoration-underline">223 Reviews</a>
+                                        <span className="text-gray-light">
+                                            {contractor.ratings_count} Reviews
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -86,72 +331,112 @@ export default function ContractorDetails() {
                             {/* Company Info */}
                             <div className="review-bar mb-5">
                                 <div className="icon-wrapper d-flex flex-column gap-4 mb-4">
-                                    {[1, 2, 3].map((_, i) => (
-                                        <div className="icon-box" key={i}>
-                                            <div className="icon1">
-                                                <Image
-                                                    src="/assets/img/icons/office-dark.svg"
-                                                    width={24}
-                                                    height={24}
-                                                    alt="Icon"
-                                                />
+                                    <div className="icon-box">
+                                        <div className="icon1">
+                                            <Image
+                                                src="/assets/img/icons/office-dark.svg"
+                                                width={24}
+                                                height={24}
+                                                alt="Icon"
+                                            />
+                                        </div>
+                                        <div className="content">
+                                            <div className="fs-14 text-gray-light mb-1 fw-medium">
+                                                Company Name
                                             </div>
-                                            <div className="content">
-                                                <div className="fs-14 text-gray-light mb-1 fw-medium">
-                                                    Company Name
-                                                </div>
-                                                <div className="fw-semibold">Jason Tiles Limited</div>
+                                            <div className="fw-semibold">
+                                                {contractor.company_name || '—'}
                                             </div>
                                         </div>
-                                    ))}
+                                    </div>
+                                    <div className="icon-box">
+                                        <div className="icon1">
+                                            <Image
+                                                src="/assets/img/icons/message-dark.svg"
+                                                width={24}
+                                                height={24}
+                                                alt="Icon"
+                                            />
+                                        </div>
+                                        <div className="content">
+                                            <div className="fs-14 text-gray-light mb-1 fw-medium">
+                                                Email
+                                            </div>
+                                            <a href={`mailto:${contractor.email}`} className="fw-semibold text-dark">
+                                                {contractor.email}
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div className="icon-box">
+                                        <div className="icon1">
+                                            <Image
+                                                src="/assets/img/icons/call-dark.svg"
+                                                width={24}
+                                                height={24}
+                                                alt="Icon"
+                                            />
+                                        </div>
+                                        <div className="content">
+                                            <div className="fs-14 text-gray-light mb-1 fw-medium">
+                                                Phone
+                                            </div>
+                                            <a href={`tel:${contractor.phone}`} className="fw-semibold text-dark">
+                                                {contractor.phone}
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div
-                                    style={{ gap: 'clamp(20px,7vw,80px)' }}
-                                    className="content-wrapper d-flex align-items-center flex-wrap mb-4"
-                                >
-                                    {[1, 2].map((_, i) => (
-                                        <div className="content" key={i}>
+                                <div className="content-wrapper d-flex align-items-center flex-wrap" style={{ gap: 'clamp(20px,7vw,80px)' }}>
+                                    {contractor.work_radius && (
+                                        <div className="content">
                                             <div className="fs-14 text-gray-light fw-medium mb-1">
-                                                Liability Insurance
+                                                Work Radius
                                             </div>
-                                            <div className="fw-semibold">Yes</div>
+                                            <div className="fw-semibold">{contractor.work_radius} miles</div>
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
 
-                                <div className="text-gray-light fw-medium mb-2">Categories</div>
+                                <div className="text-gray-light fw-medium mb-2 mt-4">Categories</div>
                                 <div className="d-flex align-items-center gap-2 flex-wrap">
-                                    {['Framing', 'Electrical', 'Plumbing'].map((cat, i) => (
-                                        <Link
-                                            href="#"
-                                            key={i}
-                                            className="btn bg-dark rounded-3 p-2 fs-14 fw-semibold"
-                                            style={{ color: 'white' }}
+                                    {contractor.specialization?.length ? (
+                                        <span
+                                            className="btn bg-dark text-white rounded-3 p-2 fs-14 fw-semibold"
                                         >
-                                            {cat}
-                                        </Link>
-                                    ))}
+                                                {contractor.specialization}
+                                            </span>
+                                    ) : (
+                                        <span className="text-muted">—</span>
+                                    )}
                                 </div>
                             </div>
 
                             {/* Buttons */}
-                            <div className="buttons d-flex align-items-center gap-3 md-flex-wrap">
-                                {[1, 2, 3].map((_, i) => (
-                                    <Link
-                                        href="#"
-                                        key={i}
-                                        className="btn btn-primary rounded-3 w-100 justify-content-center"
-                                    >
-                                        <Image
-                                            src="/assets/img/icons/chat-dark.svg"
-                                            width={24}
-                                            height={24}
-                                            alt="Icon"
-                                        />
-                                        <span className="fs-18">Chat Now</span>
-                                    </Link>
-                                ))}
+                            <div className="buttons d-flex align-items-center gap-3 flex-wrap">
+                                <a
+                                    href={`https://m.me/`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn btn-primary rounded-3 flex-grow-1 d-flex align-items-center justify-content-center gap-2"
+                                >
+                                    <Image src="/assets/img/icons/chat-dark.svg" width={24} height={24} alt="Chat" />
+                                    <span className="fs-18">Chat Now</span>
+                                </a>
+                                <a
+                                    href={`mailto:${contractor.email}`}
+                                    className="btn btn-primary rounded-3 flex-grow-1 d-flex align-items-center justify-content-center gap-2"
+                                >
+                                    <Image src="/assets/img/icons/message-dark.svg" width={24} height={24} alt="Email" />
+                                    <span className="fs-18">Email</span>
+                                </a>
+                                <a
+                                    href={`tel:${contractor.phone}`}
+                                    className="btn btn-primary rounded-3 flex-grow-1 d-flex align-items-center justify-content-center gap-2"
+                                >
+                                    <Image src="/assets/img/icons/call-dark.svg" width={24} height={24} alt="Call" />
+                                    <span className="fs-18">Phone</span>
+                                </a>
                             </div>
                         </div>
                     </div>

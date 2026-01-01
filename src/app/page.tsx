@@ -1,4 +1,3 @@
-// app/HomePageClient.jsx
 "use client";
 
 import Link from "next/link";
@@ -15,17 +14,59 @@ import "../styles/slick-slider.css";
 import { generateToken, messaging } from "./notification/firebase";
 import { onMessage } from "firebase/messaging";
 import { showNotificationToast } from "./notification/toast";
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
+
+interface Project {
+    id: number;
+    city: string;
+    state: string;
+    description: string;
+    status: string;
+    created_at: string;
+    category: {
+        name: string;
+    };
+    user: {
+        id: number;
+        name: string;
+        email: string;
+        phone: string;
+        company_name: string;
+        profile_image_url: string;
+        zip: string;
+    };
+}
+
+const stripHtml = (html: string): string => {
+    if (typeof window === 'undefined') {
+        // Fallback for SSR: simple regex (less robust but safe)
+        return html
+            .replace(/<[^>]*>?/gm, '') // remove tags
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    // Client-side: use DOM parser (more accurate)
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    return (temp.textContent || temp.innerText || '')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
 
 export default function HomePage() {
     const router = useRouter();
-    const sliderRef = useRef(null);
-    const [selectedType, setSelectedType] = useState('');
+    const sliderRef = useRef<Slider>(null);
+    const [selectedType, setSelectedType] = useState<string>('');
     const [currentSlide, setCurrentSlide] = useState(0);
+
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const accountTypes = [
         {
-            id: 'general_contractor',
+            id: 'general-contractor',
             title: 'General Contractor',
             icon: '/assets/img/icons/construction-worker.webp',
         },
@@ -41,39 +82,60 @@ export default function HomePage() {
         },
     ];
 
+    // 🔹 Geolocation (optional — kept as requested)
+    const [location, setLocation] = useState<{ lat: number; lng: number; error?: string } | null>(null);
+    useEffect(() => {
+        if (typeof window !== 'undefined' && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    });
+                },
+                (error) => {
+                    setLocation({ lat: 0, lng: 0, error: error.message });
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0,
+                }
+            );
+        } else {
+            setLocation({ lat: 0, lng: 0, error: 'Geolocation not supported' });
+        }
+    }, []);
 
+    // 🔹 Page setup & Firebase init
     useEffect(() => {
         document.title = "Construction Projects & Sub-Contractors Network";
         const metaDescription = document.querySelector('meta[name="description"]');
+        const content =
+            'The trusted platform connecting General Contractors with verified Sub-Contractors. Post or find construction projects, bid on real work, and build your team for thank-you. Free Trial Available!';
+
         if (metaDescription) {
-            metaDescription.setAttribute(
-                'content',
-                'The trusted platform connecting General Contractors with verified Sub-Contractors. Post or find construction projects, bid on real work, and build your team for thank-you. Free Trial Available!'
-            );
+            metaDescription.setAttribute('content', content);
         } else {
-            const newMetaDescription = document.createElement('meta');
-            newMetaDescription.name = 'description';
-            newMetaDescription.content =
-                'The trusted platform connecting General Contractors with verified Sub-Contractors. Post or find construction projects, bid on real work, and build your team for thank-you. Free Trial Available!';
-            document.head.appendChild(newMetaDescription);
+            const newMeta = document.createElement('meta');
+            newMeta.name = 'description';
+            newMeta.content = content;
+            document.head.appendChild(newMeta);
         }
 
-
+        // Try to play video on first interaction
         const video = document.querySelector('.hero-video') as HTMLVideoElement;
         if (video) {
-            // Try to play on user interaction (e.g., first click/tap)
             const attemptPlay = () => {
-                video.play().catch(() => {
-                    // Still blocked? Show a subtle "play" button over hero
-                    // (optional UX enhancement)
-                });
+                video.play().catch(() => { /* silent fail */ });
             };
             document.addEventListener('click', attemptPlay, { once: true });
             document.addEventListener('touchstart', attemptPlay, { once: true });
         }
 
+        // Firebase messaging
         generateToken();
-        onMessage(messaging, (payload) => {
+        const unsubscribe = onMessage(messaging, (payload) => {
             if (payload.notification) {
                 showNotificationToast(
                     payload.notification.title || 'New Notification',
@@ -81,65 +143,106 @@ export default function HomePage() {
                     'info'
                 );
             }
-        })
+        });
+
+        return () => unsubscribe();
     }, []);
 
-    const banners = [
-        {
-            id: 1,
-            image: "/assets/img/home-banner-img1.webp",
-            title: "Real Leads, Good subs and excellent results",
-            btn1Text: "Post a Project",
-            btn1Link: "/auth/login",
-            btn2Text: "Search a Project",
-            btn2Link: "/projects",
-            notice: "No credit card required — enjoy a free 30-day trial.",
-            video: "/assets/img/video.mp4",
-            video_poster: "/assets/img/poster.webp",
-        },
-        // {
-        //     id: 2,
-        //     image: "/assets/img/home-banner-img2.webp",
-        //     title: "Connects Contractors with Trusted, Licensed Subs.",
-        //     btn1Text: "Post a Project",
-        //     btn1Link: "/auth/login",
-        //     btn2Text: "Search a Project",
-        //     btn2Link: "/projects",
-        //     notice: "No credit card required — enjoy a free to subscribe",
-        // },
-        // {
-        //     id: 3,
-        //     image: "/assets/img/home-banner-img3.webp",
-        //     title: "Find Trusted Subs quickly, Post Your Project Free",
-        //     btn1Text: "Post a Project",
-        //     btn1Link: "/auth/login",
-        //     btn2Text: "Search a Project",
-        //     btn2Link: "/projects",
-        //     notice: "No credit card required — enjoy a free to subscribe",
-        // },
-        // {
-        //     id: 4,
-        //     image: "/assets/img/home-banner-img4.webp",
-        //     title:
-        //         "Access Verified Contractor Projects — No Brokers, No Middlemen, Just Real Jobs Daily.",
-        //     btn1Text: "Post a Project",
-        //     btn1Link: "/auth/login",
-        //     btn2Text: "Search a Project",
-        //     btn2Link: "/projects",
-        //     notice: "No credit card required — enjoy a free to subscribe",
-        // },
-        // {
-        //     id: 5,
-        //     image: "/assets/img/home-banner-img5.webp",
-        //     title: "Stop Chasing Leads. Start Bidding Jobs.",
-        //     btn1Text: "Post a Project",
-        //     btn1Link: "/auth/login",
-        //     btn2Text: "Search a Project",
-        //     btn2Link: "/projects",
-        //     notice: "No credit card required — enjoy a free to subscribe",
-        // },
-    ];
+    // 🔹 Fetch Projects
+    const fetchProjects = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects?limit=6`,
+                {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                    // Optional: prevent caching
+                    // next: { revalidate: 300 },
+                }
+            );
 
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('API Error:', data);
+                throw new Error(data.message || 'Failed to load projects');
+            }
+
+            let fetchedProjects: Project[] = data?.data?.data || [];
+
+            // ✅ 1. Limit to 6 (client-side safety)
+            fetchedProjects = fetchedProjects.reverse().slice(0, 6);
+
+            // ✅ 2. Sort by newest first (created_at DESC)
+            const sortedProjects = fetchedProjects.sort((a, b) =>
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            );
+
+            setProjects(sortedProjects);
+        } catch (err: any) {
+            console.error('Fetch projects error:', err);
+            // Optionally set error state
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 🔹 Call fetch on mount
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+
+    // 🔹 Format time ago
+    const formatTimeAgo = (dateString: string): string => {
+        const now = new Date();
+        const past = new Date(dateString);
+        const seconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+
+        let interval = Math.floor(seconds / 31536000);
+        if (interval >= 1) return `${interval} year${interval > 1 ? 's' : ''} ago`;
+
+        interval = Math.floor(seconds / 2592000);
+        if (interval >= 1) return `${interval} month${interval > 1 ? 's' : ''} ago`;
+
+        interval = Math.floor(seconds / 86400);
+        if (interval >= 1) return `${interval} day${interval > 1 ? 's' : ''} ago`;
+
+        interval = Math.floor(seconds / 3600);
+        if (interval >= 1) return `${interval} hour${interval > 1 ? 's' : ''} ago`;
+
+        interval = Math.floor(seconds / 60);
+        if (interval >= 1) return `${interval} min${interval > 1 ? 's' : ''} ago`;
+
+        return 'Just now';
+    };
+
+    // 🔹 Expand/Collapse by project id
+    const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
+    const toggleExpand = (id: number) => {
+        setExpandedCards(prev => {
+            const newSet = new Set(prev);
+            newSet.has(id) ? newSet.delete(id) : newSet.add(id);
+            return newSet;
+        });
+    };
+
+    // 🔹 Handle role selection
+    const handleSelection = (typeId: string) => {
+        setSelectedType(typeId);
+        localStorage.setItem('role', typeId);
+        if (typeId === 'general-contractor') {
+            router.push('/home-general-contractor');
+        } else if (typeId === 'subcontractor') {
+            router.push('/home-subcontractor');
+        } else if (typeId === 'affiliate') {
+            router.push('/home-affiliate');
+        }
+    };
+
+    // 🔹 Slider settings
     const bannerSettings = {
         infinite: true,
         fade: true,
@@ -149,34 +252,7 @@ export default function HomePage() {
         arrows: false,
         pauseOnHover: false,
         dots: false,
-        beforeChange: (_, next) => setCurrentSlide(next),
-    };
-
-    const projects = Array(6).fill({
-        category: "Framing",
-        location: "Whittier, CA",
-        description: `Looking for a licensed painter to complete full interior repainting of a 2,000 sq ft office. Includes two coats of primer and final flat finish.`,
-        timeAgo: "23 mins ago",
-    });
-
-    const [expandedCards, setExpandedCards] = useState(new Set());
-    const toggleExpand = (id) => {
-        const newExpanded = new Set(expandedCards);
-        newExpanded.has(id) ? newExpanded.delete(id) : newExpanded.add(id);
-        setExpandedCards(newExpanded);
-    };
-
-    const handleSelection = (typeId) => {
-        setSelectedType(typeId);
-        localStorage.setItem('role', typeId);
-        if (typeId == 'general_contractor') {
-            router.push('/auth/register/general_contractor');
-        } else if (typeId == 'subcontractor') {
-            router.push('/auth/register/subcontractor');
-        } else if (typeId == 'affiliate') {
-            router.push('/auth/register/affiliate');
-        }
-        console.log(typeId);
+        beforeChange: (_: number, next: number) => setCurrentSlide(next),
     };
 
     const sliderSettingsDesktop = {
@@ -198,6 +274,22 @@ export default function HomePage() {
         speed: 600,
     };
 
+    // 🔹 Banners
+    const banners = [
+        {
+            id: 1,
+            image: "/assets/img/home-banner-img1.webp",
+            title: "Real Leads, Good subs and excellent results",
+            btn1Text: "Post a Project",
+            btn1Link: "/auth/login",
+            btn2Text: "Search a Project",
+            btn2Link: "/projects",
+            notice: "No credit card required — enjoy a free 30-day trial.",
+            video: "/assets/img/video.mp4",
+            video_poster: "/assets/img/poster.webp",
+        },
+    ];
+
     return (
         <div>
             <Header />
@@ -208,15 +300,12 @@ export default function HomePage() {
                     <Slider ref={sliderRef} {...bannerSettings}>
                         {banners.map((banner) => (
                             <div key={banner.id}>
-                                <div
-                                    className="banner-wrapper"
-                                >
+                                <div className="banner-wrapper">
                                     <video
                                         autoPlay
                                         muted
                                         loop
                                         playsInline
-                                        preload="none"
                                         poster="/assets/img/poster.webp"
                                         className="hero-video"
                                         style={{
@@ -232,93 +321,46 @@ export default function HomePage() {
                                         <source src={banner.video} type="video/mp4" />
                                     </video>
                                     <div className="content-wrapper text-center text-white px-3">
-                                        {/* ✅ First slide <h1>, others <h2> */}
                                         {banner.id === 1 ? (
                                             <h1 className="main-title mb-4">{banner.title}</h1>
                                         ) : (
                                             <h2 className="main-title h1 mb-4">{banner.title}</h2>
                                         )}
-
-                                        <div className="main-wrapper mx-auto d-none" style={{ maxWidth: "876px" }}>
-                                            <div className="buttons d-flex flex-wrap justify-content-center gap-3 mb-4">
-                                                <Link
-                                                    href={banner.btn1Link}
-                                                    className="btn btn-primary home-hero-btn rounded-3 d-flex align-items-center gap-2"
-                                                >
-                                                    <span>{banner.btn1Text}</span>
-                                                    <Image
-                                                        src="/assets/img/icons/arrow-white.svg"
-                                                        width={12}
-                                                        height={14}
-                                                        alt="Arrow"
-                                                        style={{ filter: "invert(1)" }}
-                                                    />
-                                                </Link>
-                                                <Link
-                                                    href={banner.btn2Link}
-                                                    className="btn bg-dark home-hero-btn rounded-3 d-flex align-items-center gap-2"
-                                                >
-                                                    <span className="text-white">{banner.btn2Text}</span>
-                                                    <Image
-                                                        src="/assets/img/icons/arrow-white.svg"
-                                                        width={12}
-                                                        height={14}
-                                                        alt="Arrow"
-                                                    />
-                                                </Link>
-                                            </div>
-                                            <Link
-                                                href="/subscription"
-                                                className="notice-button d-flex justify-content-center text-white"
-                                            >
-                                                {banner.notice}
-                                            </Link>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </Slider>
-
-                    {/* 🔹 Custom Pagination */}
-                    {/*<div className="custom-pagination d-flex align-items-center justify-content-center gap-2 mt-3">*/}
-                    {/*    {banners.map((_, index) => (*/}
-                    {/*        <button*/}
-                    {/*            key={index}*/}
-                    {/*            onClick={() => sliderRef.current?.slickGoTo(index)}*/}
-                    {/*            className={`custom-dot ${currentSlide === index ? "active" : ""}`}*/}
-                    {/*            aria-label={`Go to slide ${index + 1}`}*/}
-                    {/*        />*/}
-                    {/*    ))}*/}
-                    {/*</div>*/}
                 </section>
 
-                <section className="role-cards">
+                {/* 🔹 Role Selection */}
+                <section className="role-cards py-4">
                     <div className="container">
                         <div className="row">
                             <div className="col-xl-8 offset-xl-2">
-                                <div className="row">
+                                <div className="row justify-content-center">
                                     {accountTypes.map((acc) => (
-                                        <div className="col-lg-4">
+                                        <div className="col-lg-4 col-md-6 mb-4" key={acc.id}>
                                             <div
-                                                className={`account-card mb-3 px-lg-4 shadow-sm ${selectedType === acc.id ? 'active' : ''}`}
-                                                key={acc.id}
+                                                className={`account-card shadow-sm p-4 text-center ${selectedType === acc.id ? 'active' : ''}`}
                                                 onClick={() => handleSelection(acc.id)}
-                                                style={{cursor: 'pointer', minWidth: '430px'}}
-
+                                                style={{ cursor: 'pointer' }}
                                             >
-                                                <div className={'text-center'}>
-                                                    <Image src={acc.icon} width={50} height={50}
-                                                           alt={`${acc.title} Icon`} className={"mb-3"}/>
-                                                    <h5 className="title fw-semibold">{acc.title}</h5>
-                                                </div>
+                                                <Image
+                                                    src={acc.icon}
+                                                    width={50}
+                                                    height={50}
+                                                    alt={`${acc.title} Icon`}
+                                                    className="mb-3"
+                                                />
+                                                <h5 className="title fw-semibold">{acc.title}</h5>
                                                 <input
                                                     type="radio"
                                                     name="accountType"
-                                                    className="account-radio"
+                                                    className="account-radio visually-hidden"
                                                     value={acc.id}
                                                     checked={selectedType === acc.id}
-                                                    onChange={() => handleSelection(acc.id)}
+                                                    readOnly
                                                 />
                                             </div>
                                         </div>
@@ -330,7 +372,7 @@ export default function HomePage() {
                 </section>
 
                 {/* 🔹 Project Section */}
-                <section className="project-sec py-5">
+                <section className="project-sec py-5 mb-5">
                     <div className="container">
                         <div className="content-wrapper mb-4 text-center">
                             <h2 className="main-title">
@@ -338,89 +380,79 @@ export default function HomePage() {
                             </h2>
                         </div>
 
-                        {/* Desktop Slider */}
-                        <div className="main-card-slide d-none d-lg-block">
-                            <Slider {...sliderSettingsDesktop}>
-                                {projects.map((project, index) => (
-                                    <div key={index} className="px-2">
-                                        <div className="custom-card">
-                                            <div className="topbar d-flex align-items-center justify-content-between gap-1 flex-wrap mb-3">
-                                                <Link
-                                                    href={`/projects?category=${project.category.toLowerCase()}`}
-                                                    className="btn btn-primary"
-                                                >
-                                                    {project.category}
-                                                </Link>
-                                                <div className="date text-primary-gray-light">{project.timeAgo}</div>
+                        {loading ? (
+                            <div className="text-center py-5">
+                                <div className="spinner-border text-primary" role="status">
+                                    <span className="visually-hidden">Loading projects...</span>
+                                </div>
+                                <p className="mt-3 text-muted">Fetching latest projects</p>
+                            </div>
+                        ) : projects.length === 0 ? (
+                            <div className="text-center py-5">
+                                <p className="text-muted">No active projects at the moment.</p>
+                                <Link href="/auth/login" className="btn btn-primary mt-2">
+                                    Post Your First Project
+                                </Link>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Desktop Slider */}
+                                <div className="main-card-slide d-none d-lg-block">
+                                    <Slider {...sliderSettingsDesktop}>
+                                        {projects.map((project) => (
+                                            <div key={project.id} className="px-2">
+                                                <div className="custom-card p-4 h-100" style={{minHeight: '244px'}}>
+                                                    <div className="topbar d-flex align-items-center justify-content-between gap-1 mb-3">
+                                                        <div
+                                                            className="btn btn-primary btn-sm text-truncate fs-14"
+                                                        >
+                                                            {project.category.name}
+                                                        </div>
+                                                        <div className="date text-primary-gray-light fs-12 text-end" style={{minWidth: '100px'}}>
+                                                            {formatTimeAgo(project.created_at)}
+                                                        </div>
+                                                    </div>
+                                                    <div className="title text-black fs-5 fw-semibold mb-3">
+                                                        {project.city}, {project.state}
+                                                    </div>
+                                                    <div className="description mb-3 text-truncate3 fw-normal">
+                                                        {stripHtml(project.description)}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="title text-black fs-5 fw-semibold mb-3">
-                                                {project.location}
-                                            </div>
-                                            <div className="description">
-                                                {expandedCards.has(index)
-                                                    ? project.description.repeat(2)
-                                                    : `${project.description.substring(0, 150)}...`}
-                                            </div>
-                                            <button
-                                                onClick={() => toggleExpand(index)}
-                                                className="see-more-btn d-block btn btn-link p-0 text-primary d-none"
-                                            >
-                                                {expandedCards.has(index) ? "See less" : "See more"}
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </Slider>
-                        </div>
+                                        ))}
+                                    </Slider>
+                                </div>
 
-                        {/* Mobile Slider */}
-                        <div className="main-card-slide d-block d-lg-none">
-                            <Slider {...sliderSettingsMobile}>
-                                {projects.map((project, index) => (
-                                    <div key={index} className="px-2">
-                                        <div className="custom-card">
-                                            <div className="topbar d-flex align-items-center justify-content-between gap-1 flex-wrap mb-3">
-                                                <Link
-                                                    href={`/projects?category=${project.category.toLowerCase()}`}
-                                                    className="btn btn-primary"
-                                                >
-                                                    {project.category}
-                                                </Link>
-                                                <div className="date text-primary-gray-light">{project.timeAgo}</div>
+                                {/* Mobile Slider */}
+                                <div className="main-card-slide d-block d-lg-none">
+                                    <Slider {...sliderSettingsMobile}>
+                                        {projects.map((project) => (
+                                            <div key={project.id} className="px-2">
+                                                <div className="custom-card p-4">
+                                                    <div className="topbar mb-3">
+                                                        <div className="date text-primary-gray-light fs-12 mb-3">
+                                                            {formatTimeAgo(project.created_at)}
+                                                        </div>
+                                                        <div
+                                                            className="btn btn-primary btn-sm px-3 py-1 text-start"
+                                                        >
+                                                            {project.category.name}
+                                                        </div>
+                                                    </div>
+                                                    <div className="title text-black fs-5 fw-semibold mb-3">
+                                                        {project.city}, {project.state}
+                                                    </div>
+                                                    <div className="description mb-3 text-truncate fw-normal">
+                                                        {stripHtml(project.description)}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="title text-black fs-5 fw-semibold mb-3">
-                                                {project.location}
-                                            </div>
-                                            <div className="description">
-                                                {expandedCards.has(index)
-                                                    ? project.description.repeat(2)
-                                                    : `${project.description.substring(0, 150)}...`}
-                                            </div>
-                                            <button
-                                                onClick={() => toggleExpand(index)}
-                                                className="see-more-btn d-block btn btn-link p-0 text-primary"
-                                            >
-                                                {expandedCards.has(index) ? "See less" : "See more"}
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </Slider>
-                        </div>
-
-                        <div className="buttons d-flex align-items-center justify-content-between gap-2 flex-wrap mt-5">
-                            <div className="custom-pagination d-flex align-items-center justify-content-center gap-2" />
-                            <Link href="/" className="btn bg-dark rounded-3">
-                                <span className="text-white">See All</span>
-                                <Image
-                                    src="/assets/img/icons/arrow-white.svg"
-                                    width={12}
-                                    height={14}
-                                    alt="Arrow"
-                                    className="d-block"
-                                />
-                            </Link>
-                        </div>
+                                        ))}
+                                    </Slider>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </section>
             </div>

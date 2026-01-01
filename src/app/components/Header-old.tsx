@@ -106,7 +106,7 @@ export default function Header() {
                     {/* 👇 Menu logic — same as before */}
                     {(
                         pathname.startsWith('/general-contractor') ||
-                        (pathname === '/messages' && role === 'general_contractor')
+                        (pathname === '/messages' && role === 'general-contractor')
                     ) && (
                         <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
                             <li className="nav-item">
@@ -173,11 +173,11 @@ export default function Header() {
                                     <li>
                                         <button
                                             type="button"
-                                            className={`dropdown-item ${role === 'general_contractor' ? 'bg-primary text-white' : ''}`}
+                                            className={`dropdown-item ${role === 'general-contractor' ? 'bg-primary text-white' : ''}`}
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                localStorage.setItem('role', 'general_contractor');
-                                                setAuthState({ role: 'general_contractor', resolved: true });
+                                                localStorage.setItem('role', 'general-contractor');
+                                                setAuthState({ role: 'general-contractor', resolved: true });
                                                 router.push('/home-general-contractor');
                                             }}
                                         >

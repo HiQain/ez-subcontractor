@@ -20,6 +20,8 @@ export default function PricingPage() {
     // 🔁 Check auth on mount (client-side only)
     useEffect(() => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+        console.log(localStorage.getItem('role'));
         setIsLoggedIn(!!token);
     }, []);
 
@@ -42,6 +44,7 @@ export default function PricingPage() {
                 }
 
                 const data = JSON.parse(text);
+
 
                 if (res.ok && data.success && Array.isArray(data.data?.plans)) {
                     const transformedPlans = data.data.plans.map((plan: any) => ({

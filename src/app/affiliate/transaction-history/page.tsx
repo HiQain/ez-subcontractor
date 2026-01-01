@@ -1,219 +1,203 @@
 'use client';
-import Image from 'next/image';
-import Link from 'next/link';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
+
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 import '../../../styles/profile.css';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import SidebarSubcontractor from "../../components/SidebarAffiliate";
 
-const sidebarLinks = [
-    { href: '/affiliate/change-password', text: 'Change Password', icon: '/assets/img/icons/lock.svg' },
-    { href: '/affiliate/saved-contractors', text: 'Saved Contractors', icon: '/assets/img/icons/saved.svg' },
-    { href: '/affiliate/my-subscription', text: 'My Subscription', icon: '/assets/img/icons/saved.svg' },
-    { href: '/affiliate/transaction-history', text: 'Transaction History', icon: '/assets/img/icons/saved.svg' },
-    { href: '/affiliate/saved-cards', text: 'Saved Cards', icon: '/assets/img/icons/saved.svg' },
-];
+interface Transaction {
+    id: number;
+    subscription_id: string;
+    amount: string;
+    transaction_id: string;
+    promo_code: string | null;
+    card_brand: string;
+    card_last4: string;
+    card_holder: string;
+    created_at: string;
+    plan: {
+        id: number;
+        name: string;
+    };
+}
 
-export default function TransactionHistory() {
-    const activePage = '/affiliate/transaction-history'; // Active page highlight
+export default function TransactionsPage() {
+    const router = useRouter();
+    const pathname = usePathname();
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
+    const [logoutLoading, setLogoutLoading] = useState(false);
+
+    // ✅ Fetch transactions from API
+    useEffect(() => {
+        const fetchTransactions = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/transactions`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` }),
+                    },
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.message?.[0] || 'Failed to fetch transactions');
+                }
+
+                setTransactions(data.data);
+            } catch (err: any) {
+                setError(err.message || 'Something went wrong');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTransactions();
+    }, []);
+
+    // 🔹 Filter transactions based on search term
+    useEffect(() => {
+        if (!searchTerm.trim()) {
+            setFilteredTransactions(transactions);
+        } else {
+            const term = searchTerm.toLowerCase();
+            const filtered = transactions.filter(tx =>
+                tx.transaction_id.toLowerCase().includes(term) ||
+                tx.plan.name.toLowerCase().includes(term) ||
+                tx.card_holder.toLowerCase().includes(term) ||
+                tx.amount.toLowerCase().includes(term)
+            );
+            setFilteredTransactions(filtered);
+        }
+    }, [searchTerm, transactions]);
+
+    const handleLogout = async () => {
+        setLogoutLoading(true);
+
+        try {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                router.push('/auth/login');
+                return;
+            }
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}auth/logout`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const text = await response.text();
+            let data;
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch {
+                data = { message: text };
+            }
+
+            if (response.ok) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('token');
+                localStorage.removeItem('subscription');
+                router.push('/auth/login');
+            } else {
+                alert(data?.message || 'Logout failed');
+            }
+        } catch (err) {
+            console.error('Logout Error:', err);
+            alert('Network error. Please try again.');
+        } finally {
+            setLogoutLoading(false);
+        }
+    };
 
     return (
-        <>
+        <div>
             <Header />
-
             <div className="sections overflow-hidden">
                 <section className="banner-sec profile">
                     <div className="container">
                         <div className="row g-4">
-                            {/* SidebarSubcontractor */}
+
                             <div className="col-xl-3">
-                                <div className="sidebar">
-                                    <div className="main-wrapper bg-dark p-0">
-                                        <div className="topbar mb-5">
-                                            <div className="icon-wrapper">
-                                                <Image
-                                                    src="/assets/img/profile-img.webp"
-                                                    width={80}
-                                                    height={80}
-                                                    alt="Profile Image"
-                                                    loading="lazy"
-                                                />
-                                                <div className="content-wrapper">
-                                                    <div className="title text-black fs-5 fw-medium mb-2">Joseph Dome</div>
-
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/message-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Message Icon"
-                                                            loading="lazy"
-                                                        />
-                                                        <Link href="mailto:hello@example.com" className="fs-14 fw-medium text-dark">
-                                                            hello@example.com
-                                                        </Link>
-                                                    </div>
-
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/call-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Call Icon"
-                                                            loading="lazy"
-                                                        />
-                                                        <Link href="tel:+(000) 000-000" className="fs-14 fw-medium text-dark">
-                                                            (000) 000-000
-                                                        </Link>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <Image
-                                                src="/assets/img/icons/arrow-dark.svg"
-                                                style={{ objectFit: 'contain' }}
-                                                width={16}
-                                                height={10}
-                                                alt="Arrow"
-                                                loading="lazy"
-                                            />
-                                        </div>
-
-                                        {/* SidebarSubcontractor Links */}
-                                        <div className="buttons-wrapper">
-                                            {sidebarLinks.map((link) => (
-                                                <Link
-                                                    key={link.href}
-                                                    href={link.href}
-                                                    className={`custom-btn ${activePage === link.href ? 'active' : ''}`}
-                                                >
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        <Image src={link.icon} width={20} height={20} alt="Icon" loading="lazy" />
-                                                        <span className="text-white">{link.text}</span>
-                                                    </div>
-                                                    <Image
-                                                        src="/assets/img/icons/angle-right.svg"
-                                                        style={{ objectFit: 'contain' }}
-                                                        width={15}
-                                                        height={9}
-                                                        alt="Icon"
-                                                        loading="lazy"
-                                                    />
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Logout */}
-                                    <div className="bottom-bar">
-                                        <div className="buttons-wrapper">
-                                            <Link
-                                                href="#"
-                                                className="custom-btn s1 bg-danger"
-                                                style={{ borderColor: '#DC2626' }}
-                                            >
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/logout.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Logout Icon"
-                                                        loading="lazy"
-                                                    />
-                                                    <span className="text-white">Logout</span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    style={{ objectFit: 'contain' }}
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </div>
+                                <SidebarSubcontractor onLogout={handleLogout} />
                             </div>
 
-                            {/* Right Content */}
+                            {/* Right Bar */}
                             <div className="col-xl-9">
                                 <div className="right-bar">
-                                    {/* Header */}
                                     <div className="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-4">
-                                        <div className="icon-wrapper d-flex align-items-center gap-3">
-                                            <Link href="#" className="icon">
-                                                <Image
-                                                    src="/assets/img/button-angle.svg"
-                                                    width={10}
-                                                    height={15}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-                                            <span className="fs-4 fw-semibold">Transaction History</span>
-                                        </div>
-
-                                        <div className="form-wrapper mb-0 d-flex align-items-center gap-2">
-                                            <Image
-                                                src="/assets/img/icons/search-gray.svg"
-                                                width={18}
-                                                height={18}
-                                                alt="Search Icon"
-                                                loading="lazy"
-                                            />
-                                            <input type="text" placeholder="Search here" />
-                                            <Image
-                                                src="/assets/img/icons/voice.svg"
-                                                width={18}
-                                                height={18}
-                                                alt="Voice Icon"
-                                                loading="lazy"
+                                        <div className="change fw-semibold fs-4">Transaction History</div>
+                                        <div className="form-wrapper mb-0" style={{ flexGrow: 1, maxWidth: '300px' }}>
+                                            <input
+                                                type="text"
+                                                placeholder="Search here"
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
                                             />
                                         </div>
                                     </div>
 
-                                    {/* Table */}
-                                    <div className="p-0 mb-3">
+                                    <div className="p-0 mb-4">
                                         <div className="table-responsive">
-                                            <table className="custom-table">
-                                                <thead>
-                                                <tr>
-                                                    <th>S. No</th>
-                                                    <th>Transaction ID</th>
-                                                    <th>Subscription</th>
-                                                    <th>Date and Time</th>
-                                                    <th>Amount</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <tr>
-                                                    <td>01</td>
-                                                    <td>55412821</td>
-                                                    <td>Yearly</td>
-                                                    <td>Jan 21, 2025 - 12:21</td>
-                                                    <td>$650</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>02</td>
-                                                    <td>55412821</td>
-                                                    <td>Monthly</td>
-                                                    <td>Jan 21, 2025 - 12:21</td>
-                                                    <td>$400</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>03</td>
-                                                    <td>55412821</td>
-                                                    <td>Yearly</td>
-                                                    <td>Jan 21, 2025 - 12:21</td>
-                                                    <td>$50</td>
-                                                </tr>
-                                                </tbody>
-                                            </table>
+                                            {loading ? (
+                                                <p className='p-4'>Loading transactions...</p>
+                                            ) : error ? (
+                                                <p className="text-danger">{error}</p>
+                                            ) : transactions.length === 0 ? (
+                                                <p>No transactions found.</p>
+                                            ) : (
+                                                <table className="custom-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>S. No</th>
+                                                            <th>Transaction ID</th>
+                                                            <th>Subscription</th>
+                                                            <th>Card</th>
+                                                            <th>Date and Time</th>
+                                                            <th>Amount</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {filteredTransactions.length === 0 ? (
+                                                            <tr>
+                                                                <td colSpan={6} className="text-center">No transactions found</td>
+                                                            </tr>
+                                                        ) : (
+                                                            filteredTransactions.map((tx, index) => (
+                                                                <tr key={tx.id}>
+                                                                    <td>{index + 1}</td>
+                                                                    <td>{tx.transaction_id}</td>
+                                                                    <td>{tx.plan.name}</td>
+                                                                    <td>{tx.card_brand} ****{tx.card_last4} ({tx.card_holder})</td>
+                                                                    <td>{new Date(tx.created_at).toLocaleString()}</td>
+                                                                    <td>${tx.amount}</td>
+                                                                </tr>
+                                                            ))
+                                                        )}
+                                                    </tbody>
+                                                </table>
+                                            )}
                                         </div>
                                     </div>
 
-                                    {/* Pagination */}
-                                    <div className="data-table-pagination">
+                                    {/* Pagination - keep static for now */}
+                                    {/* <div className="data-table-pagination">
                                         <div className="rows-per-page">
                                             <div className="custom-select" tabIndex={0}>
                                                 <span className="custom-select__label">Rows per page:</span>
@@ -231,58 +215,24 @@ export default function TransactionHistory() {
                                                 >
                                                     <polyline points="6 9 12 15 18 9"></polyline>
                                                 </svg>
-
                                                 <ul className="custom-select__options">
-                                                    <li className="custom-select__option" data-value="7">
-                                                        7
-                                                    </li>
-                                                    <li className="custom-select__option custom-select__option--selected" data-value="14">
-                                                        14
-                                                    </li>
-                                                    <li className="custom-select__option" data-value="20">
-                                                        20
-                                                    </li>
-                                                    <li className="custom-select__option" data-value="50">
-                                                        50
-                                                    </li>
+                                                    <li className="custom-select__option" data-value="7">7</li>
+                                                    <li className="custom-select__option custom-select__option--selected" data-value="14">14</li>
+                                                    <li className="custom-select__option" data-value="20">20</li>
+                                                    <li className="custom-select__option" data-value="50">50</li>
                                                 </ul>
                                             </div>
                                         </div>
-
-                                        <div className="pagination-controls">
-                                            <button className="pagination-button pagination-button--nav" aria-label="First page" disabled>
-                                                «
-                                            </button>
-                                            <button className="pagination-button pagination-button--nav" aria-label="Previous page" disabled>
-                                                &lt;
-                                            </button>
-
-                                            <button className="pagination-button pagination-button--page pagination-button--active" aria-current="page">
-                                                1
-                                            </button>
-                                            <button className="pagination-button pagination-button--page">2</button>
-                                            <button className="pagination-button pagination-button--page">3</button>
-
-                                            <span className="pagination-separator">–</span>
-
-                                            <button className="pagination-button pagination-button--page">10</button>
-
-                                            <button className="pagination-button pagination-button--nav" aria-label="Next page">
-                                                &gt;
-                                            </button>
-                                            <button className="pagination-button pagination-button--nav" aria-label="Last page">
-                                                »
-                                            </button>
-                                        </div>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
+                            {/* Right Bar End */}
+
                         </div>
                     </div>
                 </section>
             </div>
-
             <Footer />
-        </>
+        </div>
     );
 }

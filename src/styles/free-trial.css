@@ -260,20 +260,6 @@
   background: linear-gradient(to bottom, rgba(205, 205, 205, 0.5019607843), #F9F9F9);
   padding: 20px;
 }
-.filter-sec .filter-card::after {
-  content: "";
-  position: absolute;
-  right: 20px;
-  top: 20px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: white url("/assets/img/copy-icon.svg") center/20px 20px no-repeat;
-  box-shadow: 0px 0px 0px 4px 0px rgba(0, 0, 0, 0.1882352941);
-}
 .filter-sec .filter-card .icon {
   background-color: #272727 !important;
   border-radius: 50%;
@@ -282,6 +268,17 @@
   align-items: center;
   width: 40px;
   height: 40px;
+}
+.filter-sec .filter-card .icon.save,
+.filter-sec .filter-card .icon.saved {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  border: none;
+  background-color: #fff !important;
+}
+.filter-sec .filter-card .icon.saved {
+  background-color: #C9DA2B !important;
 }
 
 .range-wrapper {

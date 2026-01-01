@@ -162,7 +162,7 @@ export default function LoginPage() {
                 // Delay for UX
                 setTimeout(() => {
                     switch (user.role) {
-                        case 'general_contractor':
+                        case 'general-contractor':
                             router.push('/general-contractor/dashboard');
                             break;
                         case 'subcontractor':

@@ -6,11 +6,12 @@ import { usePathname } from 'next/navigation';
 
 // Hardcoded links — no prop needed
 const sidebarLinks = [
-    { href: '/subcontractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/user.svg' },
-    { href: '/subcontractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
-    { href: '/subcontractor/saved-listing', label: 'Saved Listing', icon: '/assets/img/icons/saved.svg' },
-    { href: '/subcontractor/my-subscription-old', label: 'My Subscription', icon: '/assets/img/icons/subscription.svg' },
-    { href: '/subcontractor/transaction-history-old', label: 'Transaction History', icon: '/assets/img/icons/transactions.svg' },
+    { href: '/affiliate/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/user.svg' },
+    { href: '/affiliate/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
+    { href: '/affiliate/saved-contractors', label: 'Saved Contractors', icon: '/assets/img/icons/saved.svg' },
+    { href: '/affiliate/my-subscription', label: 'My Subscription', icon: '/assets/img/icons/subscription.svg' },
+    { href: '/affiliate/transaction-history', label: 'Transaction History', icon: '/assets/img/icons/transactions.svg' },
+    { href: '/affiliate/saved-cards', label: 'Saved Cards', icon: '/assets/img/icons/saved.svg' },
 ];
 
 interface SidebarProps {

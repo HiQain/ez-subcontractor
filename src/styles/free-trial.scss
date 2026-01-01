@@ -2,6 +2,7 @@ $primary: #C9DA2B !important;
 $gray: #F9F9F9 !important;
 $gray-light: #9A9A9A !important;
 $dark: #272727 !important;
+$white: #fff !important;
 
 .banner-sec.trial {
   .slider {
@@ -308,21 +309,6 @@ $dark: #272727 !important;
     background: linear-gradient(to bottom, #CDCDCD80, #F9F9F9);
     padding: 20px;
 
-    &::after {
-      content: '';
-      position: absolute;
-      right: 20px;
-      top: 20px;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: white url('/assets/img/copy-icon.svg') center /20px 20px no-repeat;
-      box-shadow: 0px 0px 0px 4px 0px #00000030;
-    }
-
     .icon {
       background-color: $dark;
       border-radius: 50%;
@@ -331,6 +317,17 @@ $dark: #272727 !important;
       align-items: center;
       width: 40px;
       height: 40px;
+    }
+    .icon.save,
+    .icon.saved {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      border: none;
+      background-color: $white;
+    }
+    .icon.saved {
+      background-color: $primary;
     }
   }
 }

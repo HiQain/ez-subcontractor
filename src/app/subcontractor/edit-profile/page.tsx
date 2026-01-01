@@ -552,7 +552,7 @@ export default function EditProfile() {
                                                         placeholder="hello@example.com"
                                                         value={formData.email}
                                                         onChange={handleChange}
-                                                        required
+                                                        disabled
                                                     />
                                                 </div>
 

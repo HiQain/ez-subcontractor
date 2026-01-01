@@ -1,15 +1,104 @@
 'use client';
-import { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/profile.css';
+import SidebarSubcontractor from "../../components/SidebarAffiliate";
 
 export default function ChangePassword() {
     const [showOld, setShowOld] = useState(false);
     const [showNew, setShowNew] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
+    const [logoutLoading, setLogoutLoading] = useState(false);
+
+    const pathname = usePathname();
+    const router = useRouter();
+
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
+
+
+    // Fetch user info for sidebar (optional, can be skipped if not needed)
+    const [user, setUser] = useState<{ name: string; email: string; phone: string } | null>(null);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/auth/login');
+            return;
+        }
+
+        // Optional: fetch user for sidebar (reuse profile API)
+        const fetchUser = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/get-profile`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const data = await res.json();
+                if (res.ok && data.data) {
+                    setUser({
+                        name: data.data.name || 'N/A',
+                        email: data.data.email || 'N/A',
+                        phone: data.data.phone || 'N/A',
+                    });
+                }
+            } catch (err) {
+                console.warn('Failed to load sidebar user info');
+                showToast('Failed to load user information.', 'error');
+            }
+        };
+
+        fetchUser();
+    }, [router]);
 
     const EyeIcon = ({ active }: { active: boolean }) => (
         <svg
@@ -24,11 +113,137 @@ export default function ChangePassword() {
             strokeLinejoin="round"
             className={`eye-icon ${active ? 'active' : ''}`}
         >
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-            <line className="slash" x1="2" y1="2" x2="22" y2="22"></line>
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+            <line
+                className="slash"
+                x1="2"
+                y1="2"
+                x2="22"
+                y2="22"
+                style={{ stroke: active ? 'none' : 'currentColor' }}
+            />
         </svg>
     );
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+
+        // Validation
+        if (!oldPassword.trim()) {
+            showToast('Old password is required.', 'error');
+            return;
+        }
+        if (!newPassword.trim()) {
+            showToast('New password is required.', 'error');
+            return;
+        }
+        if (newPassword.length < 6) {
+            showToast('New password must be at least 6 characters.', 'error');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            showToast('New password and confirmation do not match.', 'error');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/auth/login');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/change-password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    old_password: oldPassword, // ✅ snake_case as per API
+                    new_password: newPassword,
+                    password_confirmation: confirmPassword,
+                }),
+            });
+
+            const text = await response.text();
+            let data;
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch {
+                data = { message: text || 'Unknown error' };
+            }
+
+            if (response.ok) {
+                showToast('Password updated successfully!');
+                // Optional: auto-logout & redirect to login (recommended for security)
+                setTimeout(() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('isLoggedIn');
+                    localStorage.removeItem('userEmail');
+                    router.push('/auth/login');
+                }, 1500);
+            } else {
+                showToast(data.message || 'Failed to change password. Please try again.', 'error');
+            }
+        } catch (err) {
+            console.error('Change password error:', err);
+            showToast('Network error. Please check your connection and try again.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLogout = async () => {
+        setLogoutLoading(true);
+
+        try {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                router.push('/auth/login');
+                return;
+            }
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}auth/logout`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const text = await response.text();
+            let data;
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch {
+                data = { message: text };
+            }
+
+            if (response.ok) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('token');
+                localStorage.removeItem('subscription');
+                router.push('/auth/login');
+            } else {
+                alert(data?.message || 'Logout failed');
+            }
+        } catch (err) {
+            console.error('Logout Error:', err);
+            alert('Network error. Please try again.');
+        } finally {
+            setLogoutLoading(false);
+        }
+    };
 
     return (
         <>
@@ -37,204 +252,9 @@ export default function ChangePassword() {
                 <section className="banner-sec profile position-static">
                     <div className="container">
                         <div className="row g-4">
-                            {/* SidebarSubcontractor */}
+                            {/* SidebarSubcontractor — now dynamic */}
                             <div className="col-xl-3">
-                                <div className="sidebar">
-                                    <div className="main-wrapper bg-dark p-0">
-                                        <div className="topbar mb-5">
-                                            <div className="icon-wrapper">
-                                                <Image
-                                                    src="/assets/img/icons/construction-worker.webp"
-                                                    width={80}
-                                                    height={80}
-                                                    alt="Worker Icon"
-                                                    loading="lazy"
-                                                />
-                                                <div className="content-wrapper">
-                                                    <div className="title text-black fs-5 fw-medium mb-2">
-                                                        Joseph Dome
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/message-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Message Icon"
-                                                            loading="lazy"
-                                                        />
-                                                        <Link
-                                                            href="mailto:hello@example.com"
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            hello@example.com
-                                                        </Link>
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2 mb-1">
-                                                        <Image
-                                                            src="/assets/img/icons/call-dark.svg"
-                                                            width={16}
-                                                            height={16}
-                                                            alt="Call Icon"
-                                                            loading="lazy"
-                                                        />
-                                                        <Link
-                                                            href="tel:+(000) 000-000"
-                                                            className="fs-14 fw-medium text-dark"
-                                                        >
-                                                            (000) 000-000
-                                                        </Link>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <Image
-                                                src="/assets/img/icons/arrow-dark.svg"
-                                                style={{ objectFit: 'contain' }}
-                                                width={16}
-                                                height={10}
-                                                alt="Arrow"
-                                                loading="lazy"
-                                            />
-                                        </div>
-
-                                        {/* SidebarSubcontractor Buttons */}
-                                        <div className="buttons-wrapper">
-                                            <Link href="/affiliate/change-password" className="custom-btn active">
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/lock.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Icon"
-                                                        loading="lazy"
-                                                    />
-                                                    <span className="text-white">Change Password</span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    style={{ objectFit: 'contain' }}
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-
-                                            <Link href="/affiliate/saved-contractors" className="custom-btn">
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/saved.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Icon"
-                                                        loading="lazy"
-                                                    />
-                                                    <span className="text-white">Saved Contractors</span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    style={{ objectFit: 'contain' }}
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-
-                                            <Link href="/affiliate/my-subscription" className="custom-btn">
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/saved.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Icon"
-                                                        loading="lazy"
-                                                    />
-                                                    <span className="text-white">My Subscription</span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    style={{ objectFit: 'contain' }}
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-
-                                            <Link href="/affiliate/transaction-history" className="custom-btn">
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/saved.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Icon"
-                                                        loading="lazy"
-                                                    />
-                                                    <span className="text-white">Transaction History</span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    style={{ objectFit: 'contain' }}
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-
-                                            <Link href="/affiliate/saved-cards" className="custom-btn">
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/saved.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Icon"
-                                                        loading="lazy"
-                                                    />
-                                                    <span className="text-white">Saved Cards</span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    style={{ objectFit: 'contain' }}
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-                                        </div>
-                                    </div>
-
-                                    {/* Logout Button */}
-                                    <div className="bottom-bar">
-                                        <div className="buttons-wrapper">
-                                            <Link
-                                                href="#"
-                                                className="custom-btn s1 bg-danger"
-                                                style={{ borderColor: '#DC2626' }}
-                                            >
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <Image
-                                                        src="/assets/img/icons/logout.svg"
-                                                        width={20}
-                                                        height={20}
-                                                        alt="Logout Icon"
-                                                        loading="lazy"
-                                                    />
-                                                    <span className="text-white">Logout</span>
-                                                </div>
-                                                <Image
-                                                    src="/assets/img/icons/angle-right.svg"
-                                                    style={{ objectFit: 'contain' }}
-                                                    width={15}
-                                                    height={9}
-                                                    alt="Icon"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </div>
+                                <SidebarSubcontractor onLogout={handleLogout} />
                             </div>
 
                             {/* Right Content */}
@@ -242,86 +262,102 @@ export default function ChangePassword() {
                                 <div style={{ maxWidth: '482px' }} className="right-bar">
                                     <div className="d-flex align-items-center gap-3 justify-content-between flex-wrap mb-5">
                                         <div className="icon-wrapper d-flex align-items-center gap-3">
-                                            <Link href="#" className="icon">
+                                            <button
+                                                type="button"
+                                                onClick={() => router.back()}
+                                                className="icon"
+                                                aria-label="Go back"
+                                            >
                                                 <Image
                                                     src="/assets/img/button-angle.svg"
                                                     width={10}
                                                     height={15}
-                                                    alt="Icon"
-                                                    loading="lazy"
+                                                    alt="Back"
                                                 />
-                                            </Link>
+                                            </button>
                                             <span className="fs-4 fw-semibold">Change Password</span>
                                         </div>
                                     </div>
 
-                                    {/* Old Password */}
-                                    <div className="input-wrapper d-flex flex-column position-relative mb-4">
-                                        <label htmlFor="old_password" className="mb-1 fw-semibold">
-                                            Old Password *
-                                        </label>
-                                        <input
-                                            type={showOld ? 'text' : 'password'}
-                                            id="old_password"
-                                            className="form-control pe-5"
-                                            placeholder="Enter old password"
-                                        />
-                                        <span
-                                            className="toggle-password position-absolute"
-                                            style={{ right: '10px', top: '38px', cursor: 'pointer' }}
-                                            onClick={() => setShowOld(!showOld)}
-                                        >
-                      <EyeIcon active={showOld} />
-                    </span>
-                                    </div>
+                                    <form onSubmit={handleSubmit}>
+                                        {/* Old Password */}
+                                        <div className="input-wrapper d-flex flex-column position-relative mb-4">
+                                            <label htmlFor="old_password" className="mb-1 fw-semibold">
+                                                Old Password <span className="text-danger">*</span>
+                                            </label>
+                                            <input
+                                                type={showOld ? 'text' : 'password'}
+                                                id="old_password"
+                                                className="form-control pe-5"
+                                                placeholder="Enter old password"
+                                                value={oldPassword}
+                                                onChange={(e) => setOldPassword(e.target.value)}
+                                                disabled={loading}
+                                            />
+                                            <span
+                                                className="toggle-password position-absolute"
+                                                style={{ right: '10px', top: '38px', cursor: 'pointer' }}
+                                                onClick={() => setShowOld(!showOld)}
+                                            >
+                                                <EyeIcon active={showOld} />
+                                            </span>
+                                        </div>
 
-                                    {/* New Password */}
-                                    <div className="input-wrapper d-flex flex-column position-relative mb-4">
-                                        <label htmlFor="password" className="mb-1 fw-semibold">
-                                            New Password *
-                                        </label>
-                                        <input
-                                            type={showNew ? 'text' : 'password'}
-                                            id="password"
-                                            className="form-control pe-5"
-                                            placeholder="Enter new password"
-                                        />
-                                        <span
-                                            className="toggle-password position-absolute"
-                                            style={{ right: '10px', top: '38px', cursor: 'pointer' }}
-                                            onClick={() => setShowNew(!showNew)}
-                                        >
-                      <EyeIcon active={showNew} />
-                    </span>
-                                    </div>
+                                        {/* New Password */}
+                                        <div className="input-wrapper d-flex flex-column position-relative mb-4">
+                                            <label htmlFor="password" className="mb-1 fw-semibold">
+                                                New Password <span className="text-danger">*</span>
+                                            </label>
+                                            <input
+                                                type={showNew ? 'text' : 'password'}
+                                                id="password"
+                                                className="form-control pe-5"
+                                                placeholder="Enter new password"
+                                                value={newPassword}
+                                                onChange={(e) => setNewPassword(e.target.value)}
+                                                disabled={loading}
+                                            />
+                                            <span
+                                                className="toggle-password position-absolute"
+                                                style={{ right: '10px', top: '38px', cursor: 'pointer' }}
+                                                onClick={() => setShowNew(!showNew)}
+                                            >
+                                                <EyeIcon active={showNew} />
+                                            </span>
+                                        </div>
 
-                                    {/* Confirm Password */}
-                                    <div className="input-wrapper d-flex flex-column position-relative mb-4">
-                                        <label htmlFor="confirm_password" className="mb-1 fw-semibold">
-                                            Confirm Password *
-                                        </label>
-                                        <input
-                                            type={showConfirm ? 'text' : 'password'}
-                                            id="confirm_password"
-                                            className="form-control pe-5"
-                                            placeholder="Enter confirm password"
-                                        />
-                                        <span
-                                            className="toggle-password position-absolute"
-                                            style={{ right: '10px', top: '38px', cursor: 'pointer' }}
-                                            onClick={() => setShowConfirm(!showConfirm)}
-                                        >
-                      <EyeIcon active={showConfirm} />
-                    </span>
-                                    </div>
+                                        {/* Confirm Password */}
+                                        <div className="input-wrapper d-flex flex-column position-relative mb-4">
+                                            <label htmlFor="confirm_password" className="mb-1 fw-semibold">
+                                                Confirm Password <span className="text-danger">*</span>
+                                            </label>
+                                            <input
+                                                type={showConfirm ? 'text' : 'password'}
+                                                id="confirm_password"
+                                                className="form-control pe-5"
+                                                placeholder="Enter confirm password"
+                                                value={confirmPassword}
+                                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                                disabled={loading}
+                                            />
+                                            <span
+                                                className="toggle-password position-absolute"
+                                                style={{ right: '10px', top: '38px', cursor: 'pointer' }}
+                                                onClick={() => setShowConfirm(!showConfirm)}
+                                            >
+                                                <EyeIcon active={showConfirm} />
+                                            </span>
+                                        </div>
 
-                                    <div className="buttons-wrapper d-flex align-items-center gap-4">
-                                        <input
-                                            type="submit"
-                                            className="btn btn-primary rounded-3 w-100"
-                                            value="Change Password"
-                                        />
-                                    </div>
+                                        <div className="buttons-wrapper d-flex align-items-center gap-4">
+                                            <input
+                                                type="submit"
+                                                className="btn btn-primary rounded-3 w-100"
+                                                value={loading ? 'Changing...' : 'Change Password'}
+                                                disabled={loading}
+                                            />
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>

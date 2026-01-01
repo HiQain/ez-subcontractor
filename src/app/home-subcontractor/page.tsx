@@ -24,12 +24,55 @@ import {onMessage} from "firebase/messaging";
 import {showNotificationToast} from "../notification/toast";
 import {useRouter} from "next/navigation";
 
+interface Project {
+    id: number;
+    city: string;
+    state: string;
+    description: string;
+    status: string;
+    created_at: string;
+    category: {
+        name: string;
+    };
+    user: {
+        id: number;
+        name: string;
+        email: string;
+        phone: string;
+        company_name: string;
+        profile_image_url: string;
+        zip: string;
+    };
+}
+
+const stripHtml = (html: string): string => {
+    if (typeof window === 'undefined') {
+        // Fallback for SSR: simple regex (less robust but safe)
+        return html
+            .replace(/<[^>]*>?/gm, '') // remove tags
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    // Client-side: use DOM parser (more accurate)
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    return (temp.textContent || temp.innerText || '')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
 export default function HomePage() {
     const router = useRouter();
     const sliderRef = useRef(null);
     const [selectedType, setSelectedType] = useState('');
     const [currentSlide, setCurrentSlide] = useState(0);
     const [faqs, setFaqs] = useState<any[]>([]);
+    const [howItWorks, setHowItWorks] = useState<any>(null);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [plans, setPlans] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const sliderSettings = {
         slidesToShow: 3,
@@ -69,7 +112,7 @@ export default function HomePage() {
 
     const accountTypes = [
         {
-            id: 'general_contractor',
+            id: 'general-contractor',
             title: 'General Contractor',
             icon: '/assets/img/icons/construction-worker.webp',
         },
@@ -84,6 +127,30 @@ export default function HomePage() {
             icon: '/assets/img/icons/portfolio.webp',
         },
     ];
+
+    const [location, setLocation] = useState<{ lat: number; lng: number; error?: string } | null>(null);
+    useEffect(() => {
+        if (typeof window !== 'undefined' && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    });
+                },
+                (error) => {
+                    setLocation({ lat: 0, lng: 0, error: error.message });
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0,
+                }
+            );
+        } else {
+            setLocation({ lat: 0, lng: 0, error: 'Geolocation not supported' });
+        }
+    }, []);
 
 
     useEffect(() => {
@@ -128,6 +195,78 @@ export default function HomePage() {
         })
     }, []);
 
+    // 🔹 Fetch Projects
+    const fetchProjects = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects?limit=6`,
+                {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                    // Optional: prevent caching
+                    // next: { revalidate: 300 },
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('API Error:', data);
+                throw new Error(data.message || 'Failed to load projects');
+            }
+
+            let fetchedProjects: Project[] = data?.data?.data || [];
+
+            // ✅ 1. Limit to 6 (client-side safety)
+            fetchedProjects = fetchedProjects.reverse().slice(0, 6);
+
+            // ✅ 2. Sort by newest first (created_at DESC)
+            const sortedProjects = fetchedProjects.sort((a, b) =>
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            );
+
+            setProjects(sortedProjects);
+        } catch (err: any) {
+            console.error('Fetch projects error:', err);
+            // Optionally set error state
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 🔹 Call fetch on mount
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+
+    // 🔹 Format time ago
+    const formatTimeAgo = (dateString: string): string => {
+        const now = new Date();
+        const past = new Date(dateString);
+        const seconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+
+        let interval = Math.floor(seconds / 31536000);
+        if (interval >= 1) return `${interval} year${interval > 1 ? 's' : ''} ago`;
+
+        interval = Math.floor(seconds / 2592000);
+        if (interval >= 1) return `${interval} month${interval > 1 ? 's' : ''} ago`;
+
+        interval = Math.floor(seconds / 86400);
+        if (interval >= 1) return `${interval} day${interval > 1 ? 's' : ''} ago`;
+
+        interval = Math.floor(seconds / 3600);
+        if (interval >= 1) return `${interval} hour${interval > 1 ? 's' : ''} ago`;
+
+        interval = Math.floor(seconds / 60);
+        if (interval >= 1) return `${interval} min${interval > 1 ? 's' : ''} ago`;
+
+        return 'Just now';
+    };
+
+
     useEffect(() => {
         const loadFaqs = async () => {
             try {
@@ -143,6 +282,187 @@ export default function HomePage() {
         loadFaqs();
     }, []);
 
+    useEffect(() => {
+        const loadHowItWorks = async () => {
+            try {
+                const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}data/how-it-works?type=subcontractor`;
+                const res = await fetch(url);
+                const json = await res.json();
+
+                if (json.success && json.data?.length > 0) {
+                    setHowItWorks(json.data[0]); // Take first item (API returns array)
+                } else {
+                    setHowItWorks({
+                        title: "How It Works",
+                        description: "We help subcontractors find projects fast. No middlemen. Just real jobs."
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to load How It Works:', e);
+                setHowItWorks({
+                    title: "How It Works",
+                    description: "Unable to load content. Please try again later."
+                });
+            }
+        };
+
+        loadHowItWorks();
+    }, []);
+
+    useEffect(() => {
+        const fetchPlans = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/public/plans?role=subcontractor`);
+                const text = await res.text();
+
+                if (!text.startsWith('{') && !text.startsWith('[')) {
+                    throw new Error('Unauthorized or server returned HTML. Please log in.');
+                }
+
+                const data = JSON.parse(text);
+
+                if (res.ok && data.success && Array.isArray(data.data?.plans)) {
+                    const transformedPlans = data.data.plans.map((plan: any) => ({
+                        id: plan.id,
+                        title: plan.plan_name,
+                        price: parseFloat(plan.price),
+                        discount: plan.discount_price,
+                        features: plan.features.map((f: any) => f.feature),
+                        hasNote: plan.type === 'trial',
+                        isPopular: plan.label === 'Popular',
+                        showStrike: !!plan.discount_price,
+                        saveText: plan.discount_price ? `${Math.round(100 - (parseFloat(plan.discount_price) / parseFloat(plan.price)) * 100)}% OFF` : '',
+                        saveColor: '#DC2626',
+                        duration_days: plan.duration_days,
+                        type: plan.type,
+                        stripe_price_id: plan.stripe_price_id,
+                        extra_category_price: plan.extra_category_price,
+                        is_subscribed: plan.is_subscribed,
+                        is_cancelled: plan.is_cancelled,
+                    }));
+
+                    setPlans(transformedPlans);
+                } else {
+                    throw new Error(data.message?.[0] || 'Failed to load plans');
+                }
+            } catch (err: any) {
+                console.error('Error fetching plans:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPlans();
+    }, );
+
+    const renderNoteCard = () => (
+        <div className="note-card d-flex align-items-start gap-1">
+            <Image
+                src="/assets/img/icons/note.webp"
+                width={24}
+                height={24}
+                alt="Note"
+                loading="lazy"
+                className="d-block"
+            />
+            <div className="content">
+                <span style={{ fontSize: '14px' }} className="d-block fw-semibold mb-1">
+                    Note
+                </span>
+                <p style={{ fontSize: '12px' }} className="mb-0">
+                    After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with contractors, and accessing premium tools.
+                </p>
+            </div>
+        </div>
+    );
+
+    const renderPlanCard = (plan: any) => (
+        <div key={plan.id} className="col-lg-4 col-md-6">
+            <div className={`price-card ${plan.isPopular ? 'popular' : ''} free`}>
+                <div>
+                    <div className="pricing-header">
+                        {plan.isPopular ? (
+                            <div className="d-flex align-items-center justify-content-between mb-3">
+                                <span className="title1 mb-0 text-truncate">{plan.title}</span>
+                                <div
+                                    style={{ fontSize: '14px' }}
+                                    className="custom-btn bg-white shadow p-2 rounded-pill"
+                                >
+                                    🔥 Popular
+                                </div>
+                            </div>
+                        ) : (
+                            <span className="title1 text-truncate">{plan.title}</span>
+                        )}
+
+
+
+                        {plan.showStrike ? (
+                            <div className="d-flex align-items-center justify-content-between gap-1 flex-wrap">
+                                <div className="d-flex align-items-center gap-2">
+                                    <del className="fs-18 fw-medium text-black">$ {Math.trunc(plan.price)}</del>
+                                    <div className="d-flex align-items-center gap-2 justify-content-between">
+                                    <span className="price">
+                                        $
+                                        <span className="fw-bold">
+                                            {Math.trunc(plan.discount ? plan.price - plan.price / 100 * plan.discount : plan.price)}
+                                        </span>
+                                    </span>
+                                    </div>
+                                </div>
+                                {plan.saveText && (
+                                    <div
+                                        style={{ backgroundColor: plan.saveColor, maxWidth: '130px' }}
+                                        className="custom-btn text-white py-2 px-3 rounded-pill"
+                                    >
+                                        {Math.trunc(plan.discount)} % OFF
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="d-flex align-items-center gap-2">
+                                <span className="price">
+                                    $<span className="fw-bold">{Math.trunc(plan.price)}</span>
+                                </span>
+                                {plan.saveText && (
+                                    <button
+                                        type="button"
+                                        style={{ backgroundColor: plan.saveColor }}
+                                        className="custom-btn text-white p-2 rounded-pill"
+                                    >
+                                        {plan.saveText}
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="pricing-body mb-3">
+                        <ul className="m-0 p-0 list-with-icon">
+                            {plan.features.map((feature: string, i: number) => (
+                                <li key={i}>{feature}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="d-flex align-items-center flex-column">
+                    {plan.hasNote && renderNoteCard()}
+                    <div className="pricing-button w-100 pt-0">
+                        <a
+                            href={'/auth/register/subcontractor'}
+                            className={plan.is_subscribed ? 'btn btn-primary bg-primary' : 'btn'}
+                        >
+                            {plan.is_subscribed && plan.status !== 'cancelled'
+                                ? 'Current Plan'
+                                : 'Buy Now'}
+                        </a>
+                    </div >
+                </div >
+            </div >
+        </div >
+    );
 
     const banners = [
         {
@@ -171,12 +491,12 @@ export default function HomePage() {
         beforeChange: (_, next) => setCurrentSlide(next),
     };
 
-    const projects = Array(6).fill({
-        category: "Framing",
-        location: "Whittier, CA",
-        description: `Looking for a licensed painter to complete full interior repainting of a 2,000 sq ft office. Includes two coats of primer and final flat finish.`,
-        timeAgo: "23 mins ago",
-    });
+    // const projects = Array(6).fill({
+    //     category: "Framing",
+    //     location: "Whittier, CA",
+    //     description: `Looking for a licensed painter to complete full interior repainting of a 2,000 sq ft office. Includes two coats of primer and final flat finish.`,
+    //     timeAgo: "23 mins ago",
+    // });
 
     const [expandedCards, setExpandedCards] = useState(new Set());
     const toggleExpand = (id) => {
@@ -188,8 +508,8 @@ export default function HomePage() {
     const handleSelection = (typeId) => {
         setSelectedType(typeId);
         localStorage.setItem('role', typeId);
-        if (typeId == 'general_contractor') {
-            router.push('/auth/register/general_contractor');
+        if (typeId == 'general-contractor') {
+            router.push('/auth/register/general-contractor');
         } else if (typeId == 'subcontractor') {
             router.push('/auth/register/subcontractor');
         } else if (typeId == 'affiliate') {
@@ -202,7 +522,7 @@ export default function HomePage() {
         slidesToShow: 3,
         slidesToScroll: 1,
         arrows: false,
-        dots: false,
+        dots: true,
         infinite: true,
         autoplay: true,
         speed: 600,
@@ -212,7 +532,7 @@ export default function HomePage() {
         slidesToShow: 1,
         slidesToScroll: 1,
         arrows: false,
-        dots: false,
+        dots: true,
         infinite: true,
         speed: 600,
     };
@@ -267,38 +587,41 @@ export default function HomePage() {
                 background: `url('/assets/img/regular-bg.webp') center /cover no-repeat`,
             }} className="hero-sec about position-static">
                 <div className="container">
-                    <div className="row g-4">
-                        <div className="col-lg-6 order-lg-2">
-                            <Image
-                                src="/assets/img/about-hero.webp"
-                                width={708}
-                                height={448}
-                                alt="Section Image"
-                                className="img-fluid w-100 hero-img"
-                            />
-                        </div>
-                        <div className="col-lg-6 order-lg-1">
-                            <div className="content-wrapper d-flex flex-column h-100 justify-content-center">
-                                <Link href="#" className="btn btn-outline-dark mb-4">
-                                    HOW IT WORKS
-                                </Link>
-                                <h1 className="mb-4">Connect with Subcontractors and get more Jobs</h1>
-                                <p className="mb-3 fw-medium fs-5">
-                                    We simplify how the construction industry connects, helping subcontractors find
-                                    reliable projects,
-                                    build long-term relationships with verified general contractors, and grow their
-                                    businesses with ease.
-                                </p>
-                                <Link href="/auth/register/subcontractor" className="btn btn-primary rounded-3 mt-3">
-                                    Join as a Subcontractor
-                                </Link>
+                    {howItWorks ? (
+                        <div className="row g-4">
+                            <div className="col-lg-6 order-lg-2">
+                                <Image
+                                    src={howItWorks.image}
+                                    width={708}
+                                    height={448}
+                                    alt="Section Image"
+                                    className="img-fluid w-100 hero-img"
+                                />
+                            </div>
+                            <div className="col-lg-6 order-lg-1">
+                                <div className="content-wrapper d-flex flex-column h-100 justify-content-center">
+                                    <Link href="#" className="btn btn-outline-dark mb-4">
+                                        HOW IT WORKS
+                                    </Link>
+                                    <h1 className="mb-4">{howItWorks.title}</h1>
+                                    <p className="mb-3 fw-medium">{howItWorks.description}</p>
+                                    <Link href="/auth/register/subcontractor" className="btn btn-primary rounded-3 mt-3">
+                                        Join as a Subcontractor
+                                    </Link>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </section>
 
-            <section className="project-sec pb-0">
+            <section className="project-sec py-5">
                 <div className="container">
                     <div className="content-wrapper mb-4 text-center">
                         <h2 className="main-title text-capitalize">
@@ -306,77 +629,79 @@ export default function HomePage() {
                         </h2>
                     </div>
 
-                    {/* Desktop Slider */}
-                    <div className="main-card-slide d-none d-lg-block">
-                        <Slider {...sliderSettingsDesktop}>
-                            {projects.map((project, index) => (
-                                <div key={index} className="px-2">
-                                    <div className="custom-card">
-                                        <div
-                                            className="topbar d-flex align-items-center justify-content-between gap-1 flex-wrap mb-3">
-                                            <Link
-                                                href={`/projects?category=${project.category.toLowerCase()}`}
-                                                className="btn btn-primary"
-                                            >
-                                                {project.category}
-                                            </Link>
-                                            <div className="date text-primary-gray-light">{project.timeAgo}</div>
+                    {loading ? (
+                        <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading projects...</span>
+                            </div>
+                            <p className="mt-3 text-muted">Fetching latest projects</p>
+                        </div>
+                    ) : projects.length === 0 ? (
+                        <div className="text-center py-5">
+                            <p className="text-muted">No active projects at the moment.</p>
+                            <Link href="/auth/login" className="btn btn-primary mt-2">
+                                Post Your First Project
+                            </Link>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Desktop Slider */}
+                            <div className="main-card-slide d-none d-lg-block">
+                                <Slider {...sliderSettingsDesktop}>
+                                    {projects.map((project) => (
+                                        <div key={project.id} className="px-2">
+                                            <div className="custom-card p-4 h-100" style={{minHeight: '244px'}}>
+                                                <div className="topbar d-flex align-items-center justify-content-between gap-1 mb-3">
+                                                    <div
+                                                        className="btn btn-primary btn-sm text-truncate fs-14"
+                                                    >
+                                                        {project.category.name}
+                                                    </div>
+                                                    <div className="date text-primary-gray-light fs-12 text-end" style={{minWidth: '100px'}}>
+                                                        {formatTimeAgo(project.created_at)}
+                                                    </div>
+                                                </div>
+                                                <div className="title text-black fs-5 fw-semibold mb-3">
+                                                    {project.city}, {project.state}
+                                                </div>
+                                                <div className="description mb-3 text-truncate3 fw-normal">
+                                                    {stripHtml(project.description)}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="title text-black fs-5 fw-semibold mb-3">
-                                            {project.location}
-                                        </div>
-                                        <div className="description">
-                                            {expandedCards.has(index)
-                                                ? project.description.repeat(2)
-                                                : `${project.description.substring(0, 150)}...`}
-                                        </div>
-                                        <button
-                                            onClick={() => toggleExpand(index)}
-                                            className="see-more-btn d-block btn btn-link p-0 text-primary d-none"
-                                        >
-                                            {expandedCards.has(index) ? "See less" : "See more"}
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </Slider>
-                    </div>
+                                    ))}
+                                </Slider>
+                            </div>
 
-                    {/* Mobile Slider */}
-                    <div className="main-card-slide d-block d-lg-none">
-                        <Slider {...sliderSettingsMobile}>
-                            {projects.map((project, index) => (
-                                <div key={index} className="px-2">
-                                    <div className="custom-card">
-                                        <div
-                                            className="topbar d-flex align-items-center justify-content-between gap-1 flex-wrap mb-3">
-                                            <Link
-                                                href={`/projects?category=${project.category.toLowerCase()}`}
-                                                className="btn btn-primary"
-                                            >
-                                                {project.category}
-                                            </Link>
-                                            <div className="date text-primary-gray-light">{project.timeAgo}</div>
+                            {/* Mobile Slider */}
+                            <div className="main-card-slide d-block d-lg-none">
+                                <Slider {...sliderSettingsMobile}>
+                                    {projects.map((project) => (
+                                        <div key={project.id} className="px-2">
+                                            <div className="custom-card p-4">
+                                                <div className="topbar mb-3">
+                                                    <div className="date text-primary-gray-light fs-12 mb-3">
+                                                        {formatTimeAgo(project.created_at)}
+                                                    </div>
+                                                    <div
+                                                        className="btn btn-primary btn-sm px-3 py-1 text-start"
+                                                    >
+                                                        {project.category.name}
+                                                    </div>
+                                                </div>
+                                                <div className="title text-black fs-5 fw-semibold mb-3">
+                                                    {project.city}, {project.state}
+                                                </div>
+                                                <div className="description mb-3 text-truncate fw-normal">
+                                                    {stripHtml(project.description)}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="title text-black fs-5 fw-semibold mb-3">
-                                            {project.location}
-                                        </div>
-                                        <div className="description">
-                                            {expandedCards.has(index)
-                                                ? project.description.repeat(2)
-                                                : `${project.description.substring(0, 150)}...`}
-                                        </div>
-                                        <button
-                                            onClick={() => toggleExpand(index)}
-                                            className="see-more-btn d-block btn btn-link p-0 text-primary"
-                                        >
-                                            {expandedCards.has(index) ? "See less" : "See more"}
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </Slider>
-                    </div>
+                                    ))}
+                                </Slider>
+                            </div>
+                        </>
+                    )}
                 </div>
             </section>
 
@@ -387,101 +712,16 @@ export default function HomePage() {
                     <div className="tab-content pricing-wrapper">
                         <div className="tab-pane fade show active pricing-content">
                             <div className="row g-3 justify-content-center">
-                                <div className="col-lg-4 col-md-6">
-                                    <div className="price-card  free">
-                                        <div>
-                                            <div className="pricing-header"><span className="title1 text-truncate">Free Registration</span>
-                                                <div className="d-flex align-items-center gap-2"><span className="price">$<span
-                                                    className="fw-bold">0</span></span></div>
-                                            </div>
-                                            <div className="pricing-body mb-3">
-                                                <ul className="m-0 p-0 list-with-icon">
-                                                    <li>See unlimited projects</li>
-                                                    <li>No credit card required</li>
-                                                    <li>Receive project notifications</li>
-                                                    <li>Set radius to receive projects</li>
-                                                </ul>
-                                            </div>
+                                {plans.length > 0 ? (
+                                    plans.map((plan) => renderPlanCard(plan))
+                                ) : (
+                                    <div className="text-center py-5">
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Loading projects...</span>
                                         </div>
-                                        <div className="d-flex align-items-center flex-column">
-                                            <div className="pricing-button w-100 p-0">
-                                                <div className="pricing-button w-100 pt-0">
-                                                    <Link href={'/auth/register/subcontractor'} className="btn">Buy Now</Link>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <p className="mt-3 text-muted">Fetching plans</p>
                                     </div>
-                                </div>
-                                <div className="col-lg-4 col-md-6">
-                                    <div className="price-card  free">
-                                        <div>
-                                            <div className="pricing-header"><span
-                                                className="title1 text-truncate">Monthly Plan</span>
-                                                <div className="d-flex align-items-center gap-2"><span className="price">$<span
-                                                    className="fw-bold">50</span></span></div>
-                                            </div>
-                                            <div className="pricing-body mb-3">
-                                                <ul className="m-0 p-0 list-with-icon">
-                                                    <li>Full access to all job postings</li>
-                                                    <li>Live chat + file exchange</li>
-                                                    <li>View contractor contact info</li>
-                                                    <li>Project timelines, budgets, requirements</li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div className="d-flex align-items-center flex-column">
-                                            <div className="pricing-button w-100 p-0">
-                                                <div className="pricing-button w-100 pt-0">
-                                                    <Link href={'/auth/register/subcontractor'} className="btn">Buy Now</Link>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-lg-4 col-md-6">
-                                    <div className="price-card popular free">
-                                        <div>
-                                            <div className="pricing-header">
-                                                <div className="d-flex align-items-center justify-content-between mb-3">
-                                                    <span className="title1 mb-0 text-truncate">Yearly Plan</span>
-                                                    <div className="custom-btn bg-white shadow p-2 rounded-pill"
-                                                         style={{fontSize: '14px'}}>🔥 Popular
-                                                    </div>
-                                                </div>
-                                                <div
-                                                    className="d-flex align-items-center justify-content-between gap-1 flex-wrap">
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        <del className="fs-18 fw-medium text-black">$ 600</del>
-                                                        <div
-                                                            className="d-flex align-items-center gap-2 justify-content-between">
-                                                            <span className="price">$<span className="fw-bold">400</span></span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="custom-btn text-white py-2 px-3 rounded-pill"
-                                                         style={{backgroundColor: 'rgb(220, 38, 38)', maxWidth: '130px'}}>33
-                                                        % OFF
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="pricing-body mb-3">
-                                                <ul className="m-0 p-0 list-with-icon">
-                                                    <li>Full access to all job postings</li>
-                                                    <li>Live chat + file exchange</li>
-                                                    <li>View contractor contact info</li>
-                                                    <li>Full project details</li>
-                                                    <li>Discounted extra category fee</li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div className="d-flex align-items-center flex-column">
-                                            <div className="pricing-button w-100 p-0">
-                                                <div className="pricing-button w-100 pt-0">
-                                                    <Link href={'/auth/register/subcontractor'} className="btn">Buy Now</Link>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -29,7 +29,7 @@ export default function HomePage() {
     const [selectedType, setSelectedType] = useState('');
     const [currentSlide, setCurrentSlide] = useState(0);
     const [faqs, setFaqs] = useState<any[]>([]);
-
+    const [howItWorks, setHowItWorks] = useState<any>(null);
     const sliderSettings = {
         slidesToShow: 3,
         slidesToScroll: 1,
@@ -68,7 +68,7 @@ export default function HomePage() {
 
     const accountTypes = [
         {
-            id: 'general_contractor',
+            id: 'general-contractor',
             title: 'General Contractor',
             icon: '/assets/img/icons/construction-worker.webp',
         },
@@ -130,7 +130,7 @@ export default function HomePage() {
     useEffect(() => {
         const loadFaqs = async () => {
             try {
-                const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}data/faqs?type=general_contractor`;
+                const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}data/faqs?type=general-contractor`;
                 const res = await fetch(url);
                 const json = await res.json();
                 console.log(json);
@@ -142,6 +142,32 @@ export default function HomePage() {
         loadFaqs();
     }, []);
 
+    useEffect(() => {
+        const loadHowItWorks = async () => {
+            try {
+                const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}data/how-it-works?type=general_contractor`;
+                const res = await fetch(url);
+                const json = await res.json();
+
+                if (json.success && json.data?.length > 0) {
+                    setHowItWorks(json.data[0]); // Take first item (API returns array)
+                } else {
+                    setHowItWorks({
+                        title: "How It Works",
+                        description: "We help subcontractors find projects fast. No middlemen. Just real jobs."
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to load How It Works:', e);
+                setHowItWorks({
+                    title: "How It Works",
+                    description: "Unable to load content. Please try again later."
+                });
+            }
+        };
+
+        loadHowItWorks();
+    }, []);
 
     const banners = [
         {
@@ -187,8 +213,8 @@ export default function HomePage() {
     const handleSelection = (typeId) => {
         setSelectedType(typeId);
         localStorage.setItem('role', typeId);
-        if (typeId == 'general_contractor') {
-            router.push('/auth/register/general_contractor');
+        if (typeId == 'general-contractor') {
+            router.push('/auth/register/general-contractor');
         } else if (typeId == 'subcontractor') {
             router.push('/auth/register/subcontractor');
         } else if (typeId == 'affiliate') {
@@ -215,6 +241,7 @@ export default function HomePage() {
         infinite: true,
         speed: 600,
     };
+
 
     return (
         <div>
@@ -266,32 +293,37 @@ export default function HomePage() {
                 background: `url('/assets/img/regular-bg.webp') center /cover no-repeat`,
             }} className="hero-sec about position-static">
                 <div className="container">
-                    <div className="row g-4">
-                        <div className="col-lg-6 order-lg-2">
-                            <Image
-                                src="/assets/img/about-hero.webp"
-                                width={708}
-                                height={448}
-                                alt="Section Image"
-                                className="img-fluid w-100 hero-img"
-                            />
-                        </div>
-                        <div className="col-lg-6 order-lg-1">
-                            <div className="content-wrapper d-flex flex-column h-100 justify-content-center">
-                                <Link href="#" className="btn btn-outline-dark mb-4">
-                                    HOW IT WORKS
-                                </Link>
-                                <h1 className="mb-4">Connect with General contractors and get more Jobs</h1>
-                                <p className="mb-3 fw-medium fs-5">
-                                    We simplify how the construction industry connects, helping subcontractors find reliable projects,
-                                    build long-term relationships with verified general contractors, and grow their businesses with ease.
-                                </p>
-                                <Link href="/auth/register/general_contractor" className="btn btn-primary rounded-3 mt-3">
-                                    Join as a General Contractor
-                                </Link>
+                    {howItWorks ? (
+                        <div className="row g-4">
+                            <div className="col-lg-6 order-lg-2">
+                                <Image
+                                    src={howItWorks.image}
+                                    width={708}
+                                    height={448}
+                                    alt="Section Image"
+                                    className="img-fluid w-100 hero-img"
+                                />
+                            </div>
+                            <div className="col-lg-6 order-lg-1">
+                                <div className="content-wrapper d-flex flex-column h-100 justify-content-center">
+                                    <Link href="#" className="btn btn-outline-dark mb-4">
+                                        HOW IT WORKS
+                                    </Link>
+                                    <h1 className="mb-4">{howItWorks.title}</h1>
+                                    <p className="mb-3 fw-medium">{howItWorks.description}</p>
+                                    <Link href="/auth/register/general-contractor" className="btn btn-primary rounded-3 mt-3">
+                                        Join as a General Contractor
+                                    </Link>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -353,7 +385,7 @@ export default function HomePage() {
                             <p className="mb-0">We connect skilled general contractors with high-quality projects, reliable support, and streamlined workflows — so you can focus on building excellence. If you’re licensed, insured, and ready to scale, apply today to become a preferred contractor in our growing network.</p>
                         </div>
                         <div className="text-center">
-                            <Link href="/auth/register/general_contractor" className="btn btn-light bg-white text-center d-lg-block mx-auto rounded-3" style={{width: '300px'}}>Join as General Contractor</Link>
+                            <Link href="/auth/register/general-contractor" className="btn btn-light bg-white text-center d-lg-block mx-auto rounded-3" style={{width: '300px'}}>Join as General Contractor</Link>
                         </div>
                     </div>
                 </div>

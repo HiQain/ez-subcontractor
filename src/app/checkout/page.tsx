@@ -25,6 +25,7 @@ export default function CheckoutPage() {
     const [appliedPromo, setAppliedPromo] = useState<any>(null);
     const [promoLoading, setPromoLoading] = useState(false);
     const [promoError, setPromoError] = useState<string | null>(null);
+    const [role, setRole] = useState<string | null>(null);
 
     const getPlanRule = (plan: any) => {
         if (!plan) return { free: 0, extraPrice: 0 };
@@ -137,7 +138,8 @@ export default function CheckoutPage() {
     useEffect(() => {
         const storedName = localStorage.getItem('userName');
         const storedEmail = localStorage.getItem('userEmail');
-
+        const role = localStorage.getItem('role');
+        setRole(role);
         if (storedName) setName(storedName);
         if (storedEmail) setEmail(storedEmail);
     }, []);
@@ -356,31 +358,34 @@ export default function CheckoutPage() {
                                         </div>
                                     </div>
 
-                                    {/* Category Select */}
-                                    <div className="input-wrapper d-flex flex-column position-relative">
-                                        <label className="mb-1 fw-semibold">Select Specializations *</label>
-                                        <div className={`custom-select ${isOpen ? 'open' : ''}`} onClick={() => setIsOpen(!isOpen)}>
-                                            <div className="select-selected">
-                                                {selectedCategories.length > 0 ?
-                                                    selectedCategories.map(c => c.name).join(', ') :
-                                                    'Select Specializations'}
+                                    {role === 'subcontractor' && (
+                                        <div className="input-wrapper d-flex flex-column position-relative">
+                                            <label className="mb-1 fw-semibold">Select Specializations *</label>
+                                            <div className={`custom-select ${isOpen ? 'open' : ''}`}
+                                                 onClick={() => setIsOpen(!isOpen)}>
+                                                <div className="select-selected">
+                                                    {selectedCategories.length > 0 ?
+                                                        selectedCategories.map(c => c.name).join(', ') :
+                                                        'Select Specializations'}
+                                                </div>
+                                                <i className="bi bi-chevron-down select-arrow"></i>
+                                                {isOpen && (
+                                                    <ul className="select-options">
+                                                        {categories.map(cat => (
+                                                            <li key={cat.id} onClick={() => toggleCategory(cat)}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={selectedCategories.some(c => c.id === cat.id)}
+                                                                /> {cat.name}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
                                             </div>
-                                            <i className="bi bi-chevron-down select-arrow"></i>
-                                            {isOpen && (
-                                                <ul className="select-options">
-                                                    {categories.map(cat => (
-                                                        <li key={cat.id} onClick={() => toggleCategory(cat)}>
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={selectedCategories.some(c => c.id === cat.id)}
-                                                                readOnly
-                                                            /> {cat.name}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
                                         </div>
-                                    </div>
+                                    )
+                                    }
+
 
                                     {/* Selected Categories Buttons */}
                                     <div className="buttons d-flex align-items-center gap-2 flex-wrap">
@@ -433,32 +438,35 @@ export default function CheckoutPage() {
                                         <div className="input-wrapper-s2 d-flex align-items-start gap-2">
                                             <div className="input-wrapper d-flex flex-column flex-grow-1">
                                                 <label className="mb-1 fw-semibold">Promo Code</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Enter promo code"
-                                                    value={promoCode}
-                                                    onChange={(e) => setPromoCode(e.target.value)}
-                                                    disabled={!!appliedPromo}
-                                                />
+                                                <div className="d-flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter promo code"
+                                                        value={promoCode}
+                                                        onChange={(e) => setPromoCode(e.target.value)}
+                                                        disabled={!!appliedPromo}
+                                                    />
+                                                    {appliedPromo ? (
+                                                        <button
+                                                            className="btn btn-danger"
+                                                            style={{height: '45px', lineHeight: '18px'}}
+                                                            onClick={handleRemovePromo}
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            className="btn btn-primary rounded-3"
+                                                            style={{height: '45px', lineHeight: '18px'}}
+                                                            onClick={handleApplyPromo}
+                                                            disabled={promoLoading}
+                                                        >
+                                                            {promoLoading ? 'Applying...' : 'Apply'}
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
-                                            {appliedPromo ? (
-                                                <button
-                                                    className="btn btn-danger"
-                                                    style={{ height: '38px', marginTop: '31px' }}
-                                                    onClick={handleRemovePromo}
-                                                >
-                                                    Remove
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    className="btn btn-primary"
-                                                    style={{ height: '38px', marginTop: '31px' }}
-                                                    onClick={handleApplyPromo}
-                                                    disabled={promoLoading}
-                                                >
-                                                    {promoLoading ? 'Applying...' : 'Apply'}
-                                                </button>
-                                            )}
+
                                         </div>
                                     )}
 
