@@ -362,7 +362,7 @@ export default function CheckoutPage() {
                                         <div className="input-wrapper d-flex flex-column position-relative">
                                             <label className="mb-1 fw-semibold">Select Specializations *</label>
                                             <div className={`custom-select ${isOpen ? 'open' : ''}`}
-                                                 onClick={() => setIsOpen(!isOpen)}>
+                                                onClick={() => setIsOpen(!isOpen)}>
                                                 <div className="select-selected">
                                                     {selectedCategories.length > 0 ?
                                                         selectedCategories.map(c => c.name).join(', ') :
@@ -449,7 +449,7 @@ export default function CheckoutPage() {
                                                     {appliedPromo ? (
                                                         <button
                                                             className="btn btn-danger"
-                                                            style={{height: '45px', lineHeight: '18px'}}
+                                                            style={{ height: '45px', lineHeight: '18px' }}
                                                             onClick={handleRemovePromo}
                                                         >
                                                             Remove
@@ -457,7 +457,7 @@ export default function CheckoutPage() {
                                                     ) : (
                                                         <button
                                                             className="btn btn-primary rounded-3"
-                                                            style={{height: '45px', lineHeight: '18px'}}
+                                                            style={{ height: '45px', lineHeight: '18px' }}
                                                             onClick={handleApplyPromo}
                                                             disabled={promoLoading}
                                                         >
