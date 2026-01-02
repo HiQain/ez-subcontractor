@@ -193,7 +193,9 @@ export default function CheckoutPage() {
     const extraCategoriesPrice = extraCategoryCount * rule.extraPrice;
 
     // ✅ Safely handle null selectedPlan
-    const planPrice = parseFloat(selectedPlan?.price || '0');
+    const planPrice = parseFloat(selectedPlan?.discount
+        ? selectedPlan?.price - (selectedPlan?.price / 100) * selectedPlan?.discount
+        : selectedPlan?.price || '0');
 
     const total = planPrice + extraCategoriesPrice;
     let finalTotal = total;
