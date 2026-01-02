@@ -175,7 +175,6 @@ export default function CheckoutPage() {
 
         // ✅ PLAN 1 SPECIAL BEHAVIOR
         // Only 1 allowed → replace existing with new one
-        console.log('PlanType', selectedPlan)
         if (selectedPlan.title === 'Free Registration') {
             setSelectedCategories([category]);
             return;
@@ -285,7 +284,9 @@ export default function CheckoutPage() {
                     },
                     body: JSON.stringify({
                         plan_id: selectedPlan.id,
-                        category_ids: selectedCategories.map(c => c.id),
+                        ...(role === 'subcontractor' && {
+                            category_ids: selectedCategories.map(c => c.id),
+                        }),
                         payment_method_id: paymentMethod.id,
                     }),
                 }
@@ -521,10 +522,12 @@ export default function CheckoutPage() {
                                                     <span style={{ fontSize: '14px' }} className="fw-semibold">${finalTotal}</span>
                                                 </div>
 
-                                                <p className="mb-0 mt-2" style={{ fontSize: '14px' }}>
-                                                    You’ve selected {selectedCategories.length} category
-                                                    {selectedCategories.length > 1 ? 'ies' : ''}
-                                                </p>
+                                                {role === 'subcontractor' && (
+                                                    <p className="mb-0 mt-2" style={{ fontSize: '14px' }}>
+                                                        You’ve selected {selectedCategories.length} category
+                                                        {selectedCategories.length > 1 ? 'ies' : ''}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

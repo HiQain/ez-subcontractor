@@ -9,12 +9,16 @@ const nextConfig = {
     ];
   },
   images: {
-    domains: ['ezsubcontractor.designspartans.com'],
+    domains: [
+      'api.ezsubcontractor.com',
+      'ezsubcontractor.designspartans.com'
+    ],
   },
   reactStrictMode: true,
-  images: {
-    domains: ['ezsubcontractor.designspartans.com'],
-  },
+  domains: [
+    'api.ezsubcontractor.com',
+    'ezsubcontractor.designspartans.com'
+  ],
 };
 
 module.exports = nextConfig;
