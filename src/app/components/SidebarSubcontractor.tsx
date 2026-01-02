@@ -9,8 +9,8 @@ const sidebarLinks = [
     { href: '/subcontractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/user.svg' },
     { href: '/subcontractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
     { href: '/subcontractor/saved-listing', label: 'Saved Listing', icon: '/assets/img/icons/saved.svg' },
-    { href: '/subcontractor/my-subscription-old', label: 'My Subscription', icon: '/assets/img/icons/subscription.svg' },
-    { href: '/subcontractor/transaction-history-old', label: 'Transaction History', icon: '/assets/img/icons/transactions.svg' },
+    { href: '/subcontractor/my-subscription', label: 'My Subscription', icon: '/assets/img/icons/subscription.svg' },
+    { href: '/subcontractor/transaction-history', label: 'Transaction History', icon: '/assets/img/icons/transactions.svg' },
 ];
 
 interface SidebarProps {
@@ -57,7 +57,7 @@ export default function SidebarSubcontractor({ onLogout }: SidebarProps) {
             <div className="bottom-bar">
                 <div className="buttons-wrapper">
                     <button
-                        onClick={onLogout || (() => {})}
+                        onClick={onLogout || (() => { })}
                         className="custom-btn bg-danger"
                         style={{ borderColor: '#DC2626' }}
                     >

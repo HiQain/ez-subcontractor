@@ -305,8 +305,8 @@ export default function ProfilePage() {
                         isFull
                             ? '/assets/img/start1.svg'
                             : isHalf
-                            ? '/assets/img/star2.svg'
-                            : '/assets/img/star-empty.svg'
+                                ? '/assets/img/star2.svg'
+                                : '/assets/img/star-empty.svg'
                     }
                     width={50}
                     height={50}

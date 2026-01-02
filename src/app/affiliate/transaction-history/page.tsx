@@ -160,7 +160,7 @@ export default function TransactionsPage() {
                                             ) : error ? (
                                                 <p className="text-danger">{error}</p>
                                             ) : transactions.length === 0 ? (
-                                                <p>No transactions found.</p>
+                                                <p className='p-4'>No transactions found.</p>
                                             ) : (
                                                 <table className="custom-table">
                                                     <thead>

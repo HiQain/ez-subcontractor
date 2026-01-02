@@ -257,8 +257,8 @@ export default function AffiliateDashboard() {
                         isFull
                             ? '/assets/img/start1.svg'
                             : isHalf
-                            ? '/assets/img/star2.svg'
-                            : '/assets/img/star-empty.svg'
+                                ? '/assets/img/star2.svg'
+                                : '/assets/img/star-empty.svg'
                     }
                     width={16}
                     height={16}
@@ -480,7 +480,16 @@ export default function AffiliateDashboard() {
                                                         </div>
 
                                                         <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap">
-                                                            <Link href="#" className="icon">
+                                                            <Link href={{
+                                                                pathname: '/messages',
+                                                                query: {
+                                                                    userId: contractor.id,
+                                                                    name: contractor.name,
+                                                                    email: contractor.email,
+                                                                    phone: contractor.phone,
+                                                                    companyName: contractor.company_name,
+                                                                },
+                                                            }} className="icon">
                                                                 <Image
                                                                     src="/assets/img/icons/Chat.svg"
                                                                     width={20}

@@ -181,8 +181,8 @@ export default function ContractorDetails() {
                         isFull
                             ? '/assets/img/start1.svg'
                             : isHalf
-                            ? '/assets/img/star2.svg'
-                            : '/assets/img/star-empty.svg'
+                                ? '/assets/img/star2.svg'
+                                : '/assets/img/star-empty.svg'
                     }
                     width={50}
                     height={50}
@@ -404,8 +404,8 @@ export default function ContractorDetails() {
                                         <span
                                             className="btn bg-dark text-white rounded-3 p-2 fs-14 fw-semibold"
                                         >
-                                                {contractor.specialization}
-                                            </span>
+                                            {contractor.specialization}
+                                        </span>
                                     ) : (
                                         <span className="text-muted">—</span>
                                     )}
@@ -414,15 +414,22 @@ export default function ContractorDetails() {
 
                             {/* Buttons */}
                             <div className="buttons d-flex align-items-center gap-3 flex-wrap">
-                                <a
-                                    href={`https://m.me/`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <Link
+                                    href={{
+                                        pathname: '/messages',
+                                        query: {
+                                            userId: contractor.id,
+                                            name: contractor.name,
+                                            email: contractor.email,
+                                            phone: contractor.phone,
+                                            companyName: contractor.company_name,
+                                        },
+                                    }}
                                     className="btn btn-primary rounded-3 flex-grow-1 d-flex align-items-center justify-content-center gap-2"
                                 >
                                     <Image src="/assets/img/icons/chat-dark.svg" width={24} height={24} alt="Chat" />
                                     <span className="fs-18">Chat Now</span>
-                                </a>
+                                </Link>
                                 <a
                                     href={`mailto:${contractor.email}`}
                                     className="btn btn-primary rounded-3 flex-grow-1 d-flex align-items-center justify-content-center gap-2"
