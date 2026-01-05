@@ -1,7 +1,7 @@
 'use client';
 
 import '../../../styles/login.css';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -14,6 +14,33 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+
+        if (token && role) {
+            switch (role) {
+                case 'general-contractor':
+                    router.replace('/general-contractor/dashboard');
+                    return;
+
+                case 'subcontractor':
+                    router.replace('/subcontractor/dashboard');
+                    return;
+
+                case 'affiliate':
+                    router.replace('/affiliate/dashboard');
+                    return;
+
+                default:
+                    router.replace('/auth/login');
+                    return;
+            }
+        }
+    }, [router]);
 
     // 🔹 Show non-blocking toast notification
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -166,10 +193,18 @@ export default function LoginPage() {
                             router.push('/general-contractor/dashboard');
                             break;
                         case 'subcontractor':
-                            router.push('/subscription-list');
+                            if (user.is_subscription) {
+                                router.push('/subcontractor/dashboard');
+                            } else {
+                                router.push('/subscription-list');
+                            }
                             break;
                         case 'affiliate':
-                            router.push('/subscription-list');
+                            if (user.is_subscription) {
+                                router.push('/affiliate/dashboard');
+                            } else {
+                                router.push('/subscription-list');
+                            }
                             break;
                         default:
                             router.push('/');

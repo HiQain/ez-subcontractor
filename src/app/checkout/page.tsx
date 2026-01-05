@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
@@ -26,6 +26,8 @@ export default function CheckoutPage() {
     const [promoLoading, setPromoLoading] = useState(false);
     const [promoError, setPromoError] = useState<string | null>(null);
     const [role, setRole] = useState<string | null>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const getPlanRule = (plan: any) => {
         if (!plan) return { free: 0, extraPrice: 0 };
@@ -160,6 +162,20 @@ export default function CheckoutPage() {
             }
         };
         fetchCategories();
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
     }, []);
 
     const toggleCategory = (category: { id: number; name: string }) => {
@@ -362,24 +378,58 @@ export default function CheckoutPage() {
                                     </div>
 
                                     {role === 'subcontractor' && (
-                                        <div className="input-wrapper d-flex flex-column position-relative">
+                                        <div ref={dropdownRef}>
                                             <label className="mb-1 fw-semibold">Select Specializations *</label>
                                             <div className={`custom-select ${isOpen ? 'open' : ''}`}
                                                 onClick={() => setIsOpen(!isOpen)}>
-                                                <div className="select-selected">
-                                                    {selectedCategories.length > 0 ?
-                                                        selectedCategories.map(c => c.name).join(', ') :
-                                                        'Select Specializations'}
+                                                <div className="select-selected d-flex flex-wrap gap-1 align-items-center">
+                                                    {selectedCategories.length > 0 ? (
+                                                        selectedCategories.map(cat => (
+                                                            <div
+                                                                key={cat.id}
+                                                                className="btn btn-primary p-1 px-2 fs-12 rounded-3 d-flex align-items-center gap-1"
+                                                            >
+                                                                <span>{cat.name}</span>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        'Select Specializations'
+                                                    )}
+                                                    <i className="bi bi-chevron-down select-arrow" style={{ marginLeft: 'auto' }}></i>
                                                 </div>
                                                 <i className="bi bi-chevron-down select-arrow"></i>
                                                 {isOpen && (
                                                     <ul className="select-options">
-                                                        {categories.map(cat => (
-                                                            <li key={cat.id} onClick={() => toggleCategory(cat)}>
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={selectedCategories.some(c => c.id === cat.id)}
-                                                                /> {cat.name}
+                                                        <li style={{ padding: '10px 10px' }}>
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Search categories..."
+                                                                value={searchTerm}
+                                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                                style={{
+                                                                    width: '100%',
+                                                                    padding: '6px 8px',
+                                                                    borderRadius: '6px',
+                                                                    border: '1px solid #ccc',
+                                                                    marginBottom: '6px',
+                                                                }}
+                                                            />
+                                                        </li>
+
+                                                        {categories.filter(cat => cat.name.toLowerCase().includes(searchTerm.toLowerCase())).map(cat => (
+                                                            <li key={cat.id} onClick={() => {
+                                                                toggleCategory(cat)
+                                                                setSearchTerm('');
+                                                            }}>
+                                                                <div style={{ position: 'relative', }}>
+                                                                    {cat.name}
+                                                                    <input
+                                                                        style={{ position: 'absolute', right: '0px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}
+                                                                        type="checkbox"
+                                                                        checked={selectedCategories.some(c => c.id === cat.id)}
+                                                                    />
+                                                                </div>
                                                             </li>
                                                         ))}
                                                     </ul>
@@ -388,7 +438,6 @@ export default function CheckoutPage() {
                                         </div>
                                     )
                                     }
-
 
                                     {/* Selected Categories Buttons */}
                                     <div className="buttons d-flex align-items-center gap-2 flex-wrap">
@@ -409,7 +458,6 @@ export default function CheckoutPage() {
                                             </div>
                                         ))}
                                     </div>
-
 
                                     {/* STRIPE CARD FORM */}
                                     <div className="input-wrapper d-flex flex-column">
@@ -489,7 +537,7 @@ export default function CheckoutPage() {
                                                     <span style={{ fontSize: '14px' }}>{selectedPlan.title}</span>
                                                     <span className="fw-semibold" style={{ fontSize: '14px' }}>${
                                                         selectedPlan.discount
-                                                            ? selectedPlan.price - (selectedPlan.price / 100) * selectedPlan.discount
+                                                            ? Math.trunc(selectedPlan.price - (selectedPlan.price / 100) * selectedPlan.discount)
                                                             : selectedPlan.price
                                                     }</span>
                                                 </div>
@@ -521,13 +569,12 @@ export default function CheckoutPage() {
 
                                                 <div className="d-flex align-items-center justify-content-between">
                                                     <span style={{ fontSize: '14px' }} className="fw-semibold">Total</span>
-                                                    <span style={{ fontSize: '14px' }} className="fw-semibold">${finalTotal}</span>
+                                                    <span style={{ fontSize: '14px' }} className="fw-semibold">${Math.trunc(finalTotal)}</span>
                                                 </div>
 
                                                 {role === 'subcontractor' && (
                                                     <p className="mb-0 mt-2" style={{ fontSize: '14px' }}>
-                                                        You’ve selected {selectedCategories.length} category
-                                                        {selectedCategories.length > 1 ? 'ies' : ''}
+                                                        You’ve selected {selectedCategories.length} {selectedCategories.length > 1 ? 'categories' : 'category'}
                                                     </p>
                                                 )}
                                             </div>
@@ -574,7 +621,7 @@ export default function CheckoutPage() {
                                                                 $
                                                                 <span className="fw-bold">
                                                                     {selectedPlan.discount
-                                                                        ? selectedPlan.price - (selectedPlan.price / 100) * selectedPlan.discount
+                                                                        ? Math.trunc(selectedPlan.price - (selectedPlan.price / 100) * selectedPlan.discount)
                                                                         : selectedPlan.price}
                                                                 </span>
                                                             </span>
@@ -583,7 +630,7 @@ export default function CheckoutPage() {
                                                                     style={{ backgroundColor: selectedPlan.saveColor }}
                                                                     className="custom-btn text-white py-2 px-3 rounded-pill"
                                                                 >
-                                                                    {parseFloat(selectedPlan.discount)} % OFF
+                                                                    {Math.trunc(selectedPlan.discount)} % OFF
                                                                 </div>
                                                             )}
                                                         </div>

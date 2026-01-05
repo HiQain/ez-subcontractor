@@ -58,6 +58,7 @@ const stripHtml = (html: string): string => {
 export default function HomePage() {
     const router = useRouter();
     const sliderRef = useRef<Slider>(null);
+    const [checkingAuth, setCheckingAuth] = useState(true);
     const [selectedType, setSelectedType] = useState<string>('');
     const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -81,6 +82,35 @@ export default function HomePage() {
             icon: '/assets/img/icons/portfolio.webp',
         },
     ];
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+
+        if (token && role) {
+            switch (role) {
+                case 'general-contractor':
+                    router.replace('/general-contractor/dashboard');
+                    return;
+
+                case 'subcontractor':
+                    router.replace('/subcontractor/dashboard');
+                    return;
+
+                case 'affiliate':
+                    router.replace('/affiliate/dashboard');
+                    return;
+
+                default:
+                    router.replace('/auth/login');
+                    return;
+            }
+        }
+
+        setCheckingAuth(false);
+    }, [router]);
 
     // 🔹 Geolocation (optional — kept as requested)
     const [location, setLocation] = useState<{ lat: number; lng: number; error?: string } | null>(null);
@@ -279,7 +309,7 @@ export default function HomePage() {
         {
             id: 1,
             image: "/assets/img/home-banner-img1.webp",
-            title: "Real Leads, Good subs and excellent results",
+            title: "Real Leads, Good Subs and Excellent Results",
             btn1Text: "Post a Project",
             btn1Link: "/auth/login",
             btn2Text: "Search a Project",
@@ -289,6 +319,10 @@ export default function HomePage() {
             video_poster: "/assets/img/poster.webp",
         },
     ];
+
+    if (checkingAuth) {
+        return null;
+    }
 
     return (
         <div>
@@ -401,14 +435,14 @@ export default function HomePage() {
                                     <Slider {...sliderSettingsDesktop}>
                                         {projects.map((project) => (
                                             <div key={project.id} className="px-2">
-                                                <div className="custom-card p-4 h-100" style={{minHeight: '244px'}}>
+                                                <div className="custom-card p-4 h-100" style={{ minHeight: '244px' }}>
                                                     <div className="topbar d-flex align-items-center justify-content-between gap-1 mb-3">
                                                         <div
                                                             className="btn btn-primary btn-sm text-truncate fs-14"
                                                         >
                                                             {project.category.name}
                                                         </div>
-                                                        <div className="date text-primary-gray-light fs-12 text-end" style={{minWidth: '100px'}}>
+                                                        <div className="date text-primary-gray-light fs-12 text-end" style={{ minWidth: '100px' }}>
                                                             {formatTimeAgo(project.created_at)}
                                                         </div>
                                                     </div>

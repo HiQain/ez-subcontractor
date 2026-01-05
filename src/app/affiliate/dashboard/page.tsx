@@ -445,7 +445,7 @@ export default function AffiliateDashboard() {
                                                                 }}
                                                                 className="btn btn-primary py-2 px-4 mx-auto mb-3 shadow-none text-capitalize"
                                                             >
-                                                                {contractor.role}
+                                                                {contractor.role === 'general_contractor' ? 'General Contractor' : contractor.role}
                                                             </button>
                                                         </div>
 
