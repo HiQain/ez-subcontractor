@@ -405,6 +405,7 @@ export default function ProfilePage() {
                                                 width={180}
                                                 height={180}
                                                 alt="Worker Image"
+                                                style={{ objectFit: 'cover', border: '1px, solid, black' }}
                                             />
                                             <div className="content">
                                                 <div className="title fw-semibold fs-4 mb-0">{profile.fullName}</div>

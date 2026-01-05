@@ -372,20 +372,17 @@ export default function ProfilePage() {
                                                     width={180}
                                                     height={180}
                                                     alt="Worker Image"
-                                                    style={{ objectFit: 'cover' }}
+                                                    style={{ objectFit: 'cover', border: '1px, solid, black' }}
                                                 />
                                                 <div className="content">
                                                     <div className="title fw-semibold fs-4 mb-2">{profile.fullName}</div>
                                                     <p className="mb-1 text-gray-light text-capitalize">{profile.role}</p>
-                                                    <p className="mb-1 text-gray-light">
-                                                        {profile.city}, {profile.state} {profile.zipCode}
-                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="review-bar">
-                                            <div className="row g-2 mb-5">
+                                            <div className="row g-2">
                                                 <div className="col-xl-3 col-sm-6">
                                                     <div className="content">
                                                         <div className="text-gray-light fw-medium mb-2">Full Name</div>
@@ -424,36 +421,6 @@ export default function ProfilePage() {
                                                         >
                                                             {profile.email}
                                                         </Link>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-
-                                            <div className="row g-2">
-                                                <div className="col-xl-3 col-sm-6">
-                                                    <div className="content">
-                                                        <div className="text-gray-light fw-medium mb-2">City</div>
-                                                        <div className="fw-semibold fs-18">{profile.city}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-xl-3 col-sm-6">
-                                                    <div className="content">
-                                                        <div className="text-gray-light fw-medium mb-2">State</div>
-                                                        <div className="fw-semibold fs-18">{profile.state}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-xl-3 col-sm-6">
-                                                    <div className="content">
-                                                        <div className="text-gray-light fw-medium mb-2">Zip Code</div>
-                                                        <div className="fw-semibold fs-18">{profile.zipCode}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-xl-3 col-sm-6">
-                                                    <div className="content">
-                                                        <div className="text-gray-light fw-medium mb-2">
-                                                            Work Radius
-                                                        </div>
-                                                        <div className="fw-semibold fs-18">{profile.workRadius} miles</div>
                                                     </div>
                                                 </div>
                                             </div>

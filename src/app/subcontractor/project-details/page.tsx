@@ -567,24 +567,24 @@ export default function ProjectSubcontractorDetailsPage() {
                                                 companyName: project.user.company_name,
                                             },
                                         }}
-                                        className="btn bg-dark w-100 justify-content-center rounded-3 mt-4 mb-3 d-flex align-items-center gap-2"
+                                        className="btn bg-dark w-100 justify-content-center rounded-3 mt-4 mb-3"
                                     >
                                         <Image src="/assets/img/Chat-light.svg" width={20} height={20} alt="Chat Icon" />
-                                        <span className="text-white">Chat Now</span>
+                                        <span className="p-1" style={{ color: 'white' }}>Chat Now</span>
                                     </Link>
 
                                     <div>
                                         {project.user?.email && (
                                             <Link href={`mailto:${project.user.email}`} className="btn btn-outline-dark rounded-3 w-100 justify-content-center mb-3">
                                                 <Image src="/assets/img/icons/message-dark.svg" width={20} height={20} alt="Email Icon" />
-                                                <span>Email</span>
+                                                <span className='p-1'>Email</span>
                                             </Link>
                                         )}
 
                                         {project.user?.phone && (
                                             <Link href={`tel:${project.user.phone}`} className="btn btn-outline-dark rounded-3 w-100 justify-content-center">
                                                 <Image src="/assets/img/icons/call-dark.svg" width={20} height={20} alt="Phone Icon" />
-                                                <span>Phone</span>
+                                                <span className='p-1'>Phone</span>
                                             </Link>
                                         )}
                                     </div>

@@ -16,6 +16,11 @@ interface Category {
     name: string;
 }
 
+interface Specialization {
+    id: number;
+    title: string;
+}
+
 export default function EditProfile() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -80,10 +85,7 @@ export default function EditProfile() {
         license_number: '',
         zip: '',
         work_radius: '',
-        category: '',
-        address: '',
-        city: '',
-        state: '',
+        category: [] as Specialization[],
         email: '',
     });
 
@@ -113,10 +115,7 @@ export default function EditProfile() {
                     license_number: data.data.license_number || '',
                     zip: data.data.zip || '',
                     work_radius: data.data.work_radius || 0,
-                    category: data.data.specialization || '',
-                    address: data.data.address || '',
-                    city: data.data.city || '',
-                    state: data.data.state || '',
+                    category: data.data.specializations || [],
                     email: data.data.email || '',
                 });
             }
@@ -150,10 +149,7 @@ export default function EditProfile() {
                         license_number: data.data.license_number || '',
                         zip: data.data.zip || '',
                         work_radius: data.data.work_radius || 0,
-                        category: data.data.specialization || '',
-                        address: data.data.address || '',
-                        city: data.data.city || '',
-                        state: data.data.state || '',
+                        category: data.data.specializations || [],
                         email: data.data.email || '',
                     });
                 }
@@ -235,7 +231,18 @@ export default function EditProfile() {
             width: '100%',
         }).on('change', function () {
             const val = $(this).val() as string;
-            setFormData(prev => ({ ...prev, category: val || '' }));
+            if (!val) return;
+
+            const selectedIds = Array.isArray(val) ? val : [val];
+
+            const selectedSpecializations: Specialization[] = categories
+                .filter(cat => selectedIds.includes(cat.id))
+                .map(cat => ({ id: parseInt(cat.id), title: cat.name }));
+
+            setFormData(prev => ({
+                ...prev,
+                category: selectedSpecializations
+            }));
             if (errors.category) {
                 setErrors(prev => {
                     const { category: _, ...rest } = prev;
@@ -345,10 +352,7 @@ export default function EditProfile() {
                     zip: formData.zip,
                     work_radius: formData.work_radius,
                     category: formData.category,
-                    specialization: formData.category,
-                    address: formData.address,
-                    city: formData.city,
-                    state: formData.state,
+                    specialization: formData.category.map(cat => cat.id),
                 }),
             });
 
@@ -480,7 +484,7 @@ export default function EditProfile() {
                                                 height={234}
                                                 alt="Worker Image"
                                                 className="d-block mb-4 img-fluid rounded-circle object-fit-cover"
-                                                style={{ width: '234px', height: '234px' }}
+                                                style={{ width: '234px', height: '234px', border: '1px, solid, black' }}
                                             />
                                             <button
                                                 type="button"
@@ -573,51 +577,6 @@ export default function EditProfile() {
                                                 </div>
 
                                                 <div className="input-wrapper d-flex flex-column">
-                                                    <label htmlFor="address" className="mb-1 fw-semibold">
-                                                        Address
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        id="address"
-                                                        name="address"
-                                                        className="form-control"
-                                                        placeholder="abc street"
-                                                        value={formData.address}
-                                                        onChange={handleChange}
-                                                    />
-                                                </div>
-
-                                                <div className="input-wrapper d-flex flex-column">
-                                                    <label htmlFor="city" className="mb-1 fw-semibold">
-                                                        City
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        id="city"
-                                                        name="city"
-                                                        className="form-control"
-                                                        placeholder="New York"
-                                                        value={formData.city}
-                                                        onChange={handleChange}
-                                                    />
-                                                </div>
-
-                                                <div className="input-wrapper d-flex flex-column">
-                                                    <label htmlFor="state" className="mb-1 fw-semibold">
-                                                        State
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        id="state"
-                                                        name="state"
-                                                        className="form-control"
-                                                        placeholder="Texas"
-                                                        value={formData.state}
-                                                        onChange={handleChange}
-                                                    />
-                                                </div>
-
-                                                <div className="input-wrapper d-flex flex-column">
                                                     <label htmlFor="zip" className="mb-1 fw-semibold">
                                                         ZIP Code
                                                     </label>
@@ -633,29 +592,6 @@ export default function EditProfile() {
                                                 </div>
 
                                                 <div className="input-wrapper d-flex flex-column">
-                                                    <label htmlFor="category-select" className="mb-1 fw-semibold">
-                                                        Category
-                                                    </label>
-                                                    <select
-                                                        id="category-select"
-                                                        className="form-control"
-                                                        value={formData.category}
-                                                        onChange={(e) => setFormData(prev => ({
-                                                            ...prev,
-                                                            category: e.target.value
-                                                        }))}
-                                                        disabled={categoriesLoading}
-                                                    >
-                                                        <option value="">Select category</option>
-                                                        {categories.map((cat) => (
-                                                            <option key={cat.id} value={cat.id}>
-                                                                {cat.name}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-
-                                                <div className="input-wrapper d-flex flex-column">
                                                     <label htmlFor="license_number" className="mb-1 fw-semibold">
                                                         License Number
                                                     </label>
@@ -668,6 +604,22 @@ export default function EditProfile() {
                                                         value={formData.license_number}
                                                         onChange={handleChange}
                                                     />
+                                                </div>
+
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label htmlFor="category-select" className="mb-1 fw-semibold">
+                                                        Category
+                                                    </label>
+                                                    <div className="d-flex align-items-center gap-2 flex-wrap mb-4">
+                                                        {formData.category.map((cat) => (
+                                                            <div
+                                                                key={cat.id}
+                                                                className="fw-semibold bg-dark text-white fs-14 px-2 py-1 rounded-1"
+                                                            >
+                                                                {cat.title}
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
                                             <button

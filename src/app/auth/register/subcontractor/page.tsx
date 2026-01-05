@@ -25,10 +25,10 @@ export default function RegisterPage() {
         company_name: 'ABC Corporation',
         password: 'Password123!',
         password_confirmation: 'Password123!',
-        license_number: 'LC22442',
+        license_number: '',
         zip: '10000',
-        work_radius: '5',
-        category: '1', // default fallback
+        work_radius: 0,
+        category: '',
     });
 
     const [currentStep, setCurrentStep] = useState(1); // 1 = Personal, 2 = Business
@@ -307,13 +307,13 @@ export default function RegisterPage() {
         }
         if (!isAgreed) newErrors.agreement = 'You must agree to the terms and conditions';
 
-        if (['general-contractor', 'sub-contractor'].includes(accountType)) {
+        if (['general-contractor', 'subcontractor'].includes(accountType)) {
             if (!formData.category) newErrors.category = 'Please select a category';
             if (!formData.license_number.trim()) newErrors.license_number = 'License Number is required';
         }
 
         if (!formData.zip.trim()) newErrors.zip = 'Zip Code is required';
-        if (!formData.work_radius.trim()) newErrors.work_radius = 'Work Radius is required';
+        if (formData.work_radius === 0) newErrors.work_radius = 'Work Radius is required';
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -335,8 +335,8 @@ export default function RegisterPage() {
             password_confirmation: formData.password_confirmation,
             license_number: formData.license_number,
             zip: formData.zip,
-            work_radius: parseInt(formData.work_radius) || 0,
-            category: parseInt(formData.category) || 1,
+            work_radius: formData.work_radius || 0,
+            category: formData.category || '1',
             role: 'subcontractor',
         };
 
@@ -606,12 +606,18 @@ export default function RegisterPage() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column mb-3">
-                                                <label htmlFor="category" className="mb-1 fw-semibold">Category <span className="text-danger">*</span></label>
+                                                <label htmlFor="category-select" className="mb-1 fw-semibold">
+                                                    Category <span className="text-danger">*</span>
+                                                </label>
                                                 <select
                                                     id="category-select"
                                                     className="form-control"
                                                     value={formData.category}
-                                                    disabled={categoriesLoading || isLoading}
+                                                    onChange={(e) => setFormData(prev => ({
+                                                        ...prev,
+                                                        category: e.target.value
+                                                    }))}
+                                                    disabled={categoriesLoading}
                                                 >
                                                     <option value="">Select category</option>
                                                     {categories.map((cat) => (
@@ -620,7 +626,6 @@ export default function RegisterPage() {
                                                         </option>
                                                     ))}
                                                 </select>
-                                                {errors.category && <span className="text-danger animate-slide-up">{errors.category}</span>}
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column mb-3">
@@ -645,21 +650,44 @@ export default function RegisterPage() {
                                                     name="zip"
                                                     placeholder="12345"
                                                     value={formData.zip}
-                                                    onChange={handleChange}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            zip: value
+                                                        }));
+                                                    }}
                                                     className="form-control"
                                                     disabled={isLoading}
+                                                    inputMode="numeric"
+                                                    maxLength={5}
                                                 />
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column mb-3">
-                                                <label htmlFor="work_radius" className="mb-1 fw-semibold">Work Radius (miles)</label>
+                                                <label htmlFor="work_radius" className="mb-1 fw-semibold">
+                                                    Work Radius (miles) <span className="text-danger">*</span>
+                                                </label>
                                                 <input
                                                     type="number"
                                                     id="work_radius"
                                                     name="work_radius"
-                                                    placeholder="25"
+                                                    placeholder="0"
+                                                    min="0"
+                                                    step="1"
                                                     value={formData.work_radius}
-                                                    onChange={handleChange}
+                                                    onChange={(e) => {
+                                                        const value = Math.max(0, Number(e.target.value || 0));
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            work_radius: value
+                                                        }));
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === '-' || e.key === '+') {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
                                                     className="form-control"
                                                     disabled={isLoading}
                                                 />

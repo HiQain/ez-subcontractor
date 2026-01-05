@@ -430,7 +430,7 @@ export default function EditProfile() {
                                             height={234}
                                             alt="Worker Image"
                                             className="d-block mb-4 img-fluid rounded-circle object-fit-cover"
-                                            style={{ width: '234px', height: '234px' }}
+                                            style={{ width: '234px', height: '234px', border: '1px, solid, black' }}
                                         />
                                         <button
                                             type="button" // Important: not "submit"
@@ -529,7 +529,7 @@ export default function EditProfile() {
                                             </div>
 
                                         </div>
-                                        <br/>
+                                        <br />
                                         <button
                                             type="submit"
                                             disabled={submitting}

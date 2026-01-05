@@ -20,7 +20,7 @@ interface ProfileData {
     state: string;
     zipCode: string;
     workRadius: number;
-    category: number | null;
+    category: Specialization[];
     average_rating: string;
     total_ratings: number;
 }
@@ -28,6 +28,10 @@ interface ProfileData {
 interface Category {
     id: string;
     name: string;
+}
+interface Specialization {
+    id: number;
+    title: string;
 }
 
 export default function ProfilePage() {
@@ -166,7 +170,7 @@ export default function ProfilePage() {
                         state: data.data.state || '',
                         zipCode: data.data.zip || '',
                         workRadius: data.data.work_radius || 0,
-                        category: data.data.specialization ? Number(data.data.specialization) : null,
+                        category: data.data.specializations || [],
                         average_rating: (parseFloat(data.data.average_rating) || 0).toString(),
                         total_ratings: data.data.total_ratings || 0,
                     });
@@ -401,13 +405,13 @@ export default function ProfilePage() {
                                                     width={180}
                                                     height={180}
                                                     alt="Worker Image"
-                                                    style={{ objectFit: 'cover' }}
+                                                    style={{ objectFit: 'cover', border: '1px, solid, black' }}
                                                 />
                                                 <div className="content">
                                                     <div className="title fw-semibold fs-4 mb-2">{profile.fullName}</div>
                                                     <p className="mb-1 text-gray-light text-capitalize">{profile.role}</p>
                                                     <p className="mb-1 text-gray-light">
-                                                        {profile.city}, {profile.state} {profile.zipCode}
+                                                        {profile.zipCode}
                                                     </p>
                                                 </div>
                                             </div>
@@ -469,24 +473,17 @@ export default function ProfilePage() {
 
                                             <div className="text-gray-light fw-medium mb-2">Category</div>
                                             <div className="d-flex align-items-center gap-2 flex-wrap mb-4">
-                                                <div className="fw-semibold bg-dark text-white fs-14 px-2 py-1 rounded-1">
-                                                    {getCategoryName(profile.category)}
-                                                </div>
+                                                {profile.category.map((cat) => (
+                                                    <div
+                                                        key={cat.id}
+                                                        className="fw-semibold bg-dark text-white fs-14 px-2 py-1 rounded-1"
+                                                    >
+                                                        {cat.title}
+                                                    </div>
+                                                ))}
                                             </div>
 
                                             <div className="row g-2">
-                                                <div className="col-xl-3 col-sm-6">
-                                                    <div className="content">
-                                                        <div className="text-gray-light fw-medium mb-2">City</div>
-                                                        <div className="fw-semibold fs-18">{profile.city}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-xl-3 col-sm-6">
-                                                    <div className="content">
-                                                        <div className="text-gray-light fw-medium mb-2">State</div>
-                                                        <div className="fw-semibold fs-18">{profile.state}</div>
-                                                    </div>
-                                                </div>
                                                 <div className="col-xl-3 col-sm-6">
                                                     <div className="content">
                                                         <div className="text-gray-light fw-medium mb-2">Zip Code</div>
