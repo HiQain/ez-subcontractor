@@ -322,9 +322,9 @@ export default function HomePage() {
                                     </video>
                                     <div className="content-wrapper text-center text-white px-3">
                                         {banner.id === 1 ? (
-                                            <h1 className="main-title mb-4">{banner.title}</h1>
+                                            <h1 className="main-title mb-4 text-capitalize">{banner.title}</h1>
                                         ) : (
-                                            <h2 className="main-title h1 mb-4">{banner.title}</h2>
+                                            <h2 className="main-title h1 mb-4 text-capitalize">{banner.title}</h2>
                                         )}
                                     </div>
                                 </div>

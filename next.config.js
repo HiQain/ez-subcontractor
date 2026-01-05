@@ -1,24 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // output: 'export',
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://ezsubcontractor.designspartans.com/api/:path*', // Proxy to real API
+        destination: 'https://api.ezsubcontractor.com/api/:path*', // Proxy to real API
       },
     ];
   },
   images: {
-    domains: [
-      'api.ezsubcontractor.com',
-      'ezsubcontractor.designspartans.com'
-    ],
+    unoptimized: true,
+    domains: ['api.ezsubcontractor.com'],
   },
   reactStrictMode: true,
-  domains: [
-    'api.ezsubcontractor.com',
-    'ezsubcontractor.designspartans.com'
-  ],
 };
 
 module.exports = nextConfig;

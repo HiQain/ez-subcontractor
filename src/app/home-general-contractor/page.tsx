@@ -130,10 +130,10 @@ export default function HomePage() {
     useEffect(() => {
         const loadFaqs = async () => {
             try {
-                const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}data/faqs?type=general-contractor`;
+                const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}data/faqs?type=general_contractor`;
                 const res = await fetch(url);
                 const json = await res.json();
-                console.log(json);
+                console.log('faq', json);
                 setFaqs(json.data || []);
             } catch (e) {
                 setFaqs([]);
@@ -148,7 +148,7 @@ export default function HomePage() {
                 const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}data/how-it-works?type=general_contractor`;
                 const res = await fetch(url);
                 const json = await res.json();
-
+                console.log(json);
                 if (json.success && json.data?.length > 0) {
                     setHowItWorks(json.data[0]); // Take first item (API returns array)
                 } else {
