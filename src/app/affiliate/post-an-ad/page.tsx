@@ -1,10 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import {
-    useRouter,
-    // useSearchParams
-} from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/post-detail.css';
@@ -15,8 +12,6 @@ export default function PostAnAd() {
     const router = useRouter();
     const stripe = useStripe();
     const elements = useElements();
-    // const searchParams = useSearchParams();
-    // const adId = searchParams.get('ad_id');
 
     // Tabs state
     const [activeTab, setActiveTab] = useState('saved-cards');
@@ -35,7 +30,7 @@ export default function PostAnAd() {
     const [adPlacements, setAdPlacements] = useState<any[]>([]);
     const [adLoading, setAdLoading] = useState(false);
     const [selectedAd, setSelectedAd] = useState<any | null>(null);
-    const durationWeeks = 7; // 7 weeks
+    const durationWeeks = 1;
     const [horizontalUrl, setHorizontalUrl] = useState('');
     const [verticalUrl, setVerticalUrl] = useState('');
     const [adId, setAdId] = useState<string | null>(null);
@@ -740,18 +735,6 @@ export default function PostAnAd() {
                             </div>
 
                             {/* Note + Summary */}
-                            <div className="note-card d-flex align-items-start gap-1 mb-4">
-                                <Image src="/assets/img/icons/note.webp" width={24} height={24} alt="Note" loading="lazy" className="d-block" />
-                                <div className="content">
-                                    <span className="d-block fw-semibold mb-1" style={{ fontSize: '14px' }}>Note</span>
-                                    <ul className="m-0 p-0">
-                                        <li className="fs-12">You can only post one ad at a time</li>
-                                        <li className="fs-12">You can only post one ad at a time</li>
-                                        <li className="fs-12">You can only post one ad at a time</li>
-                                    </ul>
-                                </div>
-                            </div>
-
                             <div className="summary-box mb-4">
                                 <div className="icon-box d-flex gap-2">
                                     <Image src="/assets/img/summary.svg" width={24} height={24} alt="Icon" loading="lazy" />

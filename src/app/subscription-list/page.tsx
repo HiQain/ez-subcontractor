@@ -140,12 +140,12 @@ export default function PricingPage() {
                                 <div className="d-flex align-items-center gap-2">
                                     <del className="fs-18 fw-medium text-black">$ {Math.trunc(plan.price)}</del>
                                     <div className="d-flex align-items-center gap-2 justify-content-between">
-                                    <span className="price">
-                                        $
-                                        <span className="fw-bold">
-                                            {Math.trunc(plan.discount ? plan.price - plan.price / 100 * plan.discount : plan.price)}
+                                        <span className="price">
+                                            $
+                                            <span className="fw-bold">
+                                                {Math.trunc(plan.discount ? plan.price - plan.price / 100 * plan.discount : plan.price)}
+                                            </span>
                                         </span>
-                                    </span>
                                     </div>
                                 </div>
                                 {plan.saveText && (
