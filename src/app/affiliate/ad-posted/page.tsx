@@ -156,7 +156,30 @@ export default function MyAds() {
                                         <div className="image-wrapper position-relative">
                                             {ad.description && (
                                                 <div className="caption-overlay">
-                                                    <p className="caption-text">
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        {/* Profile Image */}
+                                                        <Image
+                                                            src={ad.user.profile_image_url || '/assets/img/profile-placeholder.webp'}
+                                                            className="worker-img rounded-circle"
+                                                            width={35}
+                                                            height={35}
+                                                            alt={`${ad.user.name}'s Profile`}
+                                                            style={{ objectFit: 'cover' }}
+                                                        />
+
+                                                        {/* Text block */}
+                                                        <div className="d-flex flex-column">
+                                                            <p className="mb-0 fw-bold text-white">
+                                                                {ad.user.company_name}
+                                                            </p>
+                                                            <p className="mb-0 text-white fs-13">
+                                                                {ad.user.name}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Caption */}
+                                                    <p className="caption-text mt-2">
                                                         {ad.description}
                                                     </p>
                                                 </div>
