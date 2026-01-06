@@ -133,44 +133,39 @@ export default function ProfilePage() {
 
     // 🔹 Set default card
     const handleSetDefaultCard = async (cardId: string) => {
+        // 🔹 UI pehle update (optimistic)
+        setCards(prev =>
+            prev.map(card => ({
+                ...card,
+                is_default: card.id === cardId,
+            }))
+        );
+
         try {
             const token = localStorage.getItem('token');
-            if (!token) {
-                router.push('/auth/login');
-                return;
-            }
 
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/cards/set-default`,
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/cards/${cardId}/default`,
                 {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` }),
                     },
-                    body: JSON.stringify({ card_id: cardId }),
                 }
             );
 
             const data = await res.json();
 
-            if (res.ok && data.success) {
-                // ✅ Optimistic update
-                setCards(prev =>
-                    prev.map(card =>
-                        card.id === cardId
-                            ? { ...card, is_default: true }
-                            : { ...card, is_default: false }
-                    )
-                );
-            } else {
-                throw new Error(data.message || 'Failed to set default card');
+            if (!res.ok || !data.success) {
+                throw new Error(data.message?.[0] || 'Failed to set default card');
             }
-        } catch (err: any) {
-            console.error('Set default card error:', err);
-            alert(err.message || 'Failed to set default card.');
-            // Revert checkbox (optional)
-            fetchSavedCards(); // refresh
+
+        } catch (err) {
+            console.error(err);
+
+            // ❌ rollback
+            fetchSavedCards();
         }
     };
 
@@ -348,6 +343,11 @@ export default function ProfilePage() {
                                         </button>
                                         <span className="fs-4 fw-semibold">Saved Cards</span>
                                     </div>
+                                    {cards.length !== 0 && (
+                                        <button onClick={() => setShowAddCardModal(true)} className="btn btn-primary rounded-3">
+                                            Add Card
+                                        </button>
+                                    )}
                                 </div>
 
                                 {cardsLoading ? (

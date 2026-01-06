@@ -169,15 +169,6 @@ export default function PostAnAd() {
         return finalUrl;
     };
 
-    const isValidUrl = (url: string) => {
-        try {
-            new URL(url);
-            return true;
-        } catch {
-            return false;
-        }
-    };
-
     // 🔹 Handle Post Ad button click
     const handlePostAd = async () => {
         if (!selectedAd) {
