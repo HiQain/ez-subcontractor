@@ -27,7 +27,7 @@ export default function RegisterPage() {
         password_confirmation: 'Password123!',
         license_number: '',
         zip: '10000',
-        work_radius: 0,
+        work_radius: 25,
         category: '',
     });
 
@@ -325,6 +325,8 @@ export default function RegisterPage() {
 
         // ✅ Build payload
         const role = localStorage.getItem('role') || accountType.replace('-', '_');
+        localStorage.setItem('userZip', formData.zip);
+        localStorage.setItem('userRadius', formData.work_radius.toString());
 
         const payload: Record<string, any> = {
             name: formData.name,
