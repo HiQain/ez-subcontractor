@@ -91,6 +91,7 @@ export default function DashboardSubContractor() {
     const [bannerImagesRightLoading, setBannerImagesRightLoading] = useState(true);
     const [bannerImagesError, setBannerImagesError] = useState<string | null>(null);
     const [bannerImagesRightError, setBannerRightImagesError] = useState<string | null>(null);
+    const [profileLoaded, setProfileLoaded] = useState(false);
 
     const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
 
@@ -157,6 +158,14 @@ export default function DashboardSubContractor() {
             if (toast.parentNode) toast.parentNode.removeChild(toast);
         });
     };
+
+    useEffect(() => {
+        const zip = localStorage.getItem('userZip');
+        const radius = localStorage.getItem('userRadius');
+
+        setWorkRadius(radius ? parseInt(radius) : 2);
+        setZipCode(zip)
+    }, [])
 
     // 🔹 Format time ago (unchanged)
     const formatTimeAgo = (dateString: string): string => {
@@ -310,9 +319,12 @@ export default function DashboardSubContractor() {
                     setSubscriptionId(subscriptionId); // assuming you have useState
                 }
 
+                setProfileLoaded(true);
+
             } catch (error) {
                 console.error('Profile fetch error:', error);
                 // handle error (e.g., redirect to login, clear storage)
+                setProfileLoaded(true);
             }
         };
 
@@ -528,14 +540,11 @@ export default function DashboardSubContractor() {
 
     // 🔹 Initial load: Banner images + saved + projects
     useEffect(() => {
+        if (!profileLoaded) return;
         fetchBannerImages();
         fetchBannerImages_right();
         fetchBannerImagesSidebar();
-        Promise.all([
-            fetchSavedproject(),
-            fetchprojects(true),
-        ]);
-    }, []);
+    }, [profileLoaded]);
 
     // 🔹 Truncation check (unchanged)
     useEffect(() => {
@@ -653,9 +662,9 @@ export default function DashboardSubContractor() {
                                                 />
                                             ))}
                                         </Slider>
-                                        <div className="d-flex align-items-center gap-3 position-absolute z-3" style={{bottom: 20, left: 20}}>
+                                        <div className="d-flex align-items-center gap-3 position-absolute z-3" style={{ bottom: 20, left: 20 }}>
                                             <div className="bg-white rounded-circle p-2 shadow">
-                                                <Image className="img-fluid" src={'/assets/img/icons/fav.png'} width={50} height={50} alt={'icon'}/>
+                                                <Image className="img-fluid" src={'/assets/img/icons/fav.png'} width={50} height={50} alt={'icon'} />
                                             </div>
                                             <div>
                                                 <h6 className="fw-bold mb-0 text-white">ABC Corporation</h6>
@@ -746,7 +755,7 @@ export default function DashboardSubContractor() {
                                     className="btn btn-outline-dark text-center justify-content-center btn-sm w-100 mb-4"
                                     onClick={handleResetFilters}
                                 >
-                                    Reset Filters
+                                    Clear
                                 </button>
 
                                 <div className="slider rounded overflow-hidden">
@@ -759,7 +768,7 @@ export default function DashboardSubContractor() {
                                                     height={230}
                                                     alt={img.alt}
                                                     className="img-fluid w-100 h-100 rounded-4 object-fit-cover "
-                                                    // Optional: add loading="lazy" later
+                                                // Optional: add loading="lazy" later
                                                 />
                                             </div>
                                         ))}
@@ -811,7 +820,7 @@ export default function DashboardSubContractor() {
                                             className="btn btn-outline-primary mt-2"
                                             onClick={handleResetFilters}
                                         >
-                                            Reset Filters
+                                            Clear
                                         </button>
                                     </div>
                                 ) : (
@@ -831,7 +840,7 @@ export default function DashboardSubContractor() {
                                                         </button>
                                                     ) : (
                                                         <div className="title text-capitalize">{project.city}, {project.state}</div>
-                                                    ) }
+                                                    )}
                                                     <div className="d-flex align-items-center gap-2">
                                                         <div className="date">{formatTimeAgo(project.created_at)}</div>
                                                         <button
@@ -855,9 +864,8 @@ export default function DashboardSubContractor() {
 
                                                 <div className="description-wrapper mb-2 position-relative">
                                                     <p
-                                                        className={`description mb-0 ${
-                                                            expanded.includes(index) ? 'expanded' : 'collapsed'
-                                                        }`}
+                                                        className={`description mb-0 ${expanded.includes(index) ? 'expanded' : 'collapsed'
+                                                            }`}
                                                         style={{
                                                             display: '-webkit-box',
                                                             WebkitLineClamp: expanded.includes(index) ? 'unset' : 3,
@@ -882,88 +890,88 @@ export default function DashboardSubContractor() {
                                                     </button>
                                                 )}
                                                 {subscriptionId &&
-                                                (
-                                                    <div className="bottom-bar">
-                                                        <div className="left">
-                                                            {project.user?.profile_image_url ? (
-                                                                <Image
-                                                                    src={project.user?.profile_image_url}
-                                                                    width={40}
-                                                                    height={40}
-                                                                    alt="P Icon"
-                                                                    loading="lazy"
-                                                                    className="rounded-circle"
-                                                                />
-                                                            ) : (
-                                                                <Image
-                                                                    src="/assets/img/placeholder-round.png"
-                                                                    width={40}
-                                                                    height={40}
-                                                                    alt="P Icon"
-                                                                    loading="lazy"
-                                                                    className="rounded-circle"
-                                                                />
-                                                            )}
-                                                            <p className="mb-0 fw-semibold">{project.user?.company_name || ''}</p>
-                                                        </div>
-                                                        <div className="d-flex gap-2">
-                                                            <button onClick={() => {
-                                                                localStorage.setItem('project-id', String(project.id));
-                                                                router.push('/subcontractor/project-details');
-                                                            }} className="btn btn-primary me-2 btn-sm py-1 px-4">
-                                                                View More
-                                                            </button>
-                                                            {
-                                                                project.user && (
-                                                                    <div className="social-icons">
-                                                                        {project.user?.email && (
-                                                                            <Link href={'mailto:'+ project.user?.email} className="icon">
+                                                    (
+                                                        <div className="bottom-bar">
+                                                            <div className="left">
+                                                                {project.user?.profile_image_url ? (
+                                                                    <Image
+                                                                        src={project.user?.profile_image_url}
+                                                                        width={40}
+                                                                        height={40}
+                                                                        alt="P Icon"
+                                                                        loading="lazy"
+                                                                        className="rounded-circle"
+                                                                    />
+                                                                ) : (
+                                                                    <Image
+                                                                        src="/assets/img/placeholder-round.png"
+                                                                        width={40}
+                                                                        height={40}
+                                                                        alt="P Icon"
+                                                                        loading="lazy"
+                                                                        className="rounded-circle"
+                                                                    />
+                                                                )}
+                                                                <p className="mb-0 fw-semibold">{project.user?.company_name || ''}</p>
+                                                            </div>
+                                                            <div className="d-flex gap-2">
+                                                                <button onClick={() => {
+                                                                    localStorage.setItem('project-id', String(project.id));
+                                                                    router.push('/subcontractor/project-details');
+                                                                }} className="btn btn-primary me-2 btn-sm py-1 px-4">
+                                                                    View More
+                                                                </button>
+                                                                {
+                                                                    project.user && (
+                                                                        <div className="social-icons">
+                                                                            {project.user?.email && (
+                                                                                <Link href={'mailto:' + project.user?.email} className="icon">
+                                                                                    <Image
+                                                                                        src={`/assets/img/icons/message-white.svg`}
+                                                                                        width={20}
+                                                                                        height={20}
+                                                                                        alt="Social Icon"
+                                                                                        loading="lazy"
+                                                                                    />
+                                                                                </Link>
+                                                                            )}
+
+                                                                            <Link href={{
+                                                                                pathname: '/messages',
+                                                                                query: {
+                                                                                    userId: project.user.id,
+                                                                                    name: project.user.name,
+                                                                                    email: project.user.email,
+                                                                                    phone: project.user.phone,
+                                                                                    companyName: project.user.company_name,
+                                                                                },
+                                                                            }} className="icon">
                                                                                 <Image
-                                                                                    src={`/assets/img/icons/message-white.svg`}
+                                                                                    src={`/assets/img/icons/chat.svg`}
                                                                                     width={20}
                                                                                     height={20}
                                                                                     alt="Social Icon"
                                                                                     loading="lazy"
                                                                                 />
                                                                             </Link>
-                                                                        )}
 
-                                                                        <Link href={{
-                                                                            pathname: '/messages',
-                                                                            query: {
-                                                                                userId: project.user.id,
-                                                                                name: project.user.name,
-                                                                                email: project.user.email,
-                                                                                phone: project.user.phone,
-                                                                                companyName: project.user.company_name,
-                                                                            },
-                                                                        }} className="icon">
-                                                                            <Image
-                                                                                src={`/assets/img/icons/chat.svg`}
-                                                                                width={20}
-                                                                                height={20}
-                                                                                alt="Social Icon"
-                                                                                loading="lazy"
-                                                                            />
-                                                                        </Link>
-
-                                                                        {project.user?.phone && (
-                                                                            <Link href={'mailto:'+ project.user?.phone} className="icon">
-                                                                                <Image
-                                                                                    src={`/assets/img/icons/call-white.svg`}
-                                                                                    width={20}
-                                                                                    height={20}
-                                                                                    alt="Social Icon"
-                                                                                    loading="lazy"
-                                                                                />
-                                                                            </Link>
-                                                                        )}
-                                                                    </div>
-                                                                )
-                                                            }
+                                                                            {project.user?.phone && (
+                                                                                <Link href={'mailto:' + project.user?.phone} className="icon">
+                                                                                    <Image
+                                                                                        src={`/assets/img/icons/call-white.svg`}
+                                                                                        width={20}
+                                                                                        height={20}
+                                                                                        alt="Social Icon"
+                                                                                        loading="lazy"
+                                                                                    />
+                                                                                </Link>
+                                                                            )}
+                                                                        </div>
+                                                                    )
+                                                                }
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )
+                                                    )
                                                 }
                                             </div>
                                         ))}

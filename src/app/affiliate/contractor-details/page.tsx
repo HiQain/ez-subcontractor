@@ -111,10 +111,11 @@ export default function ContractorDetails() {
         const saved = localStorage.getItem('selectedContractor');
         if (saved) {
             try {
-                const parsed = JSON.parse(saved) as Contractor;
+                const parsed = JSON.parse(saved) as any;
                 setContractor(parsed);
                 setLoading(false);
 
+                setIsSaved(Boolean(parsed.is_saved));
             } catch (e) {
                 console.warn('Invalid contractor in localStorage', e);
                 localStorage.removeItem('selectedContractor');
@@ -258,7 +259,7 @@ export default function ContractorDetails() {
                                     <button
                                         type="button"
                                         className="icon"
-                                        onClick={() => router.push('/affiliate/dashboard')}
+                                        onClick={() => router.back()}
                                         aria-label="Go back"
                                     >
                                         <Image
@@ -272,9 +273,15 @@ export default function ContractorDetails() {
                                 </div>
                                 <button
                                     type="button"
-                                    className={`icon1 ${isSaved ? 'saved' : 'save'}`}
                                     onClick={toggleSave}
                                     aria-label={isSaved ? 'Unsave' : 'Save'}
+                                    style={{
+                                        border: 'none',
+                                        backgroundColor: isSaved ? '#C9DA2B' : '#EFEFEF',
+                                        borderRadius: '100px',
+                                        width: '40px',
+                                        height: '40px',
+                                    }}
                                 >
                                     <Image
                                         src={
@@ -282,8 +289,8 @@ export default function ContractorDetails() {
                                                 ? '/assets/img/bookmark-filled.svg'
                                                 : '/assets/img/bookmark-outline.svg'
                                         }
-                                        width={24}
-                                        height={24}
+                                        width={20}
+                                        height={20}
                                         alt="Save"
                                     />
                                 </button>
@@ -303,13 +310,8 @@ export default function ContractorDetails() {
                                     <div className="content">
                                         <div className="title fw-semibold fs-4 mb-2">{contractor.name}</div>
                                         <span className="btn btn-primary p-1 ps-3 pe-3 mb-3 text-capitalize">
-                                            {contractor.role}
+                                            {contractor.role === 'general_contractor' ? 'General Contractor' : contractor.role}
                                         </span>
-                                        <p className="text-gray-light fw-medium">{
-                                            contractor.address ?
-                                                contractor.address :
-                                                (contractor.city, + ' ' + contractor.state, + ' ' + contractor.zip)
-                                        }</p>
                                     </div>
                                 </div>
 
@@ -330,7 +332,7 @@ export default function ContractorDetails() {
 
                             {/* Company Info */}
                             <div className="review-bar mb-5">
-                                <div className="icon-wrapper d-flex flex-column gap-4 mb-4">
+                                <div className="icon-wrapper d-flex flex-column gap-4">
                                     <div className="icon-box">
                                         <div className="icon1">
                                             <Image
@@ -385,30 +387,6 @@ export default function ContractorDetails() {
                                             </a>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="content-wrapper d-flex align-items-center flex-wrap" style={{ gap: 'clamp(20px,7vw,80px)' }}>
-                                    {contractor.work_radius && (
-                                        <div className="content">
-                                            <div className="fs-14 text-gray-light fw-medium mb-1">
-                                                Work Radius
-                                            </div>
-                                            <div className="fw-semibold">{contractor.work_radius} miles</div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="text-gray-light fw-medium mb-2 mt-4">Categories</div>
-                                <div className="d-flex align-items-center gap-2 flex-wrap">
-                                    {contractor.specialization?.length ? (
-                                        <span
-                                            className="btn bg-dark text-white rounded-3 p-2 fs-14 fw-semibold"
-                                        >
-                                            {contractor.specialization}
-                                        </span>
-                                    ) : (
-                                        <span className="text-muted">—</span>
-                                    )}
                                 </div>
                             </div>
 

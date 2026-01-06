@@ -133,217 +133,217 @@ export default function Header() {
                         pathname.startsWith('/general-contractor') ||
                         (pathname === '/messages' && role === 'general-contractor')
                     ) && (
-                        <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
-                            <li className="nav-item">
-                                <Link className="nav-link" href="/general-contractor/dashboard">
-                                    Dashboard
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" href="/messages">
-                                    Messages
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" href="/general-contractor/my-projects">
-                                    My Projects
-                                </Link>
-                            </li>
-                        </ul>
-                    )}
+                            <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
+                                <li className="nav-item">
+                                    <Link className="nav-link" href="/general-contractor/dashboard">
+                                        Dashboard
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" href="/messages">
+                                        Messages
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" href="/general-contractor/my-projects">
+                                        My Projects
+                                    </Link>
+                                </li>
+                            </ul>
+                        )}
 
                     {(
                         pathname.startsWith('/subcontractor') ||
                         (pathname === '/messages' && role === 'subcontractor') ||
                         (pathname === '/subscription-list' && role === 'subcontractor')
                     ) && (
-                        <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
-                            <li className="nav-item">
-                                <Link className="nav-link" href="/subcontractor/dashboard">
-                                    Dashboard
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" href="/messages">
-                                    Messages
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" href="/subcontractor/rating">
-                                    Ratings
-                                </Link>
-                            </li>
-                        </ul>
-                    )}
+                            <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
+                                <li className="nav-item">
+                                    <Link className="nav-link" href="/subcontractor/dashboard">
+                                        Dashboard
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" href="/messages">
+                                        Messages
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" href="/subcontractor/rating">
+                                        Ratings
+                                    </Link>
+                                </li>
+                            </ul>
+                        )}
 
                     {(
                         pathname.startsWith('/affiliate') ||
                         (pathname === '/messages' && role === 'affiliate') ||
                         (pathname === '/subscription-list' && role === 'affiliate')
                     ) && (
-                        <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
-                            <li className="nav-item">
-                                <Link className="nav-link" href="/affiliate/dashboard">
-                                    Dashboard
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" href="/messages">
-                                    Messages
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" href="/affiliate/ad-posted">
-                                    My Ads
-                                </Link>
-                            </li>
-                        </ul>
-                    )}
+                            <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
+                                <li className="nav-item">
+                                    <Link className="nav-link" href="/affiliate/dashboard">
+                                        Dashboard
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" href="/messages">
+                                        Messages
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" href="/affiliate/ad-posted">
+                                        My Ads
+                                    </Link>
+                                </li>
+                            </ul>
+                        )}
 
                     {[
                         '/', '/home-general-contractor', '/home-subcontractor', '/home-affiliate'
                     ].includes(pathname) && (
-                        <ul className="navbar-nav ms-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
-                            <li className="nav-item">
-                                <Link className="nav-link" href="/">Home</Link>
-                            </li>
-                            <li className="nav-item dropdown">
-                                <Link
-                                    className="nav-link dropdown-toggle" role="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false" href={'#'}>Free Trial</Link>
-                                <ul className="dropdown-menu">
-                                    <li>
-                                        <Link
-                                            href={'/home-subcontractor'}
-                                            className={`dropdown-item d-flex align-items-center`}>
-                                            Subcontractor
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href={'/home-affiliate'}
-                                            className={`dropdown-item d-flex align-items-center`}>
-                                            Affiliate
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li className="nav-item dropdown">
-                                <Link
-                                    className="nav-link dropdown-toggle"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false" href={'#'}>How It Works</Link>
-                                <ul className="dropdown-menu">
-                                    <li>
-                                        <Link
-                                            href={'/home-subcontractor'}
-                                            className={`dropdown-item d-flex align-items-center`}>
-                                            General Contractor
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href={'/home-subcontractor'}
-                                            className={`dropdown-item d-flex align-items-center`}>
-                                            Subcontractor
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href={'/home-affiliate'}
-                                            className={`dropdown-item d-flex align-items-center`}>
-                                            Affiliate
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li className="nav-item dropdown">
-                                <Link
-                                    className="nav-link dropdown-toggle"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false" href={'#'}>Blogs</Link>
-                                <ul className="dropdown-menu">
-                                    <li>
-                                        <Link
-                                            href={'/home-subcontractor'}
-                                            className={`dropdown-item d-flex align-items-center`}>
-                                            General Contractor
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href={'/home-subcontractor'}
-                                            className={`dropdown-item d-flex align-items-center`}>
-                                            Subcontractor
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href={'/home-affiliate'}
-                                            className={`dropdown-item d-flex align-items-center `}>
-                                            Affiliate
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li className="nav-item dropdown">
-                                <Link
-                                    className="nav-link dropdown-toggle"
-                                    href="#"
-                                    role="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    Contractor
-                                </Link>
-                                <ul className="dropdown-menu">
-                                    <li>
-                                        <button
-                                            type="button"
-                                            className={`dropdown-item ${role === 'general-contractor' ? 'bg-primary text-white' : ''}`}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                localStorage.setItem('role', 'general-contractor');
-                                                setAuthState({ role: 'general-contractor', resolved: true });
-                                                router.push('/home-general-contractor');
-                                            }}
-                                        >
-                                            General Contractor ddd
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button
-                                            type="button"
-                                            className={`dropdown-item ${role === 'subcontractor' ? 'bg-primary text-white' : ''}`}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                localStorage.setItem('role', 'subcontractor');
-                                                setAuthState({ role: 'subcontractor', resolved: true });
-                                                router.push('/home-subcontractor');
-                                            }}
-                                        >
-                                            Subcontractor
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button
-                                            type="button"
-                                            className={`dropdown-item ${role === 'affiliate' ? 'bg-primary text-white' : ''}`}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                localStorage.setItem('role', 'affiliate');
-                                                setAuthState({ role: 'affiliate', resolved: true });
-                                                router.push('/home-affiliate');
-                                            }}
-                                        >
-                                            Affiliate
-                                        </button>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    )}
+                            <ul className="navbar-nav ms-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
+                                <li className="nav-item">
+                                    <Link className="nav-link" href="/">Home</Link>
+                                </li>
+                                <li className="nav-item dropdown">
+                                    <Link
+                                        className="nav-link dropdown-toggle" role="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false" href={'#'}>Free Trial</Link>
+                                    <ul className="dropdown-menu">
+                                        <li>
+                                            <Link
+                                                href={'/home-subcontractor'}
+                                                className={`dropdown-item d-flex align-items-center`}>
+                                                Subcontractor
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href={'/home-affiliate'}
+                                                className={`dropdown-item d-flex align-items-center`}>
+                                                Affiliate
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li className="nav-item dropdown">
+                                    <Link
+                                        className="nav-link dropdown-toggle"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false" href={'#'}>How It Works</Link>
+                                    <ul className="dropdown-menu">
+                                        <li>
+                                            <Link
+                                                href={'/home-subcontractor'}
+                                                className={`dropdown-item d-flex align-items-center`}>
+                                                General Contractor
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href={'/home-subcontractor'}
+                                                className={`dropdown-item d-flex align-items-center`}>
+                                                Subcontractor
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href={'/home-affiliate'}
+                                                className={`dropdown-item d-flex align-items-center`}>
+                                                Affiliate
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li className="nav-item dropdown">
+                                    <Link
+                                        className="nav-link dropdown-toggle"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false" href={'#'}>Blogs</Link>
+                                    <ul className="dropdown-menu">
+                                        <li>
+                                            <Link
+                                                href={'/home-subcontractor'}
+                                                className={`dropdown-item d-flex align-items-center`}>
+                                                General Contractor
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href={'/home-subcontractor'}
+                                                className={`dropdown-item d-flex align-items-center`}>
+                                                Subcontractor
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href={'/home-affiliate'}
+                                                className={`dropdown-item d-flex align-items-center `}>
+                                                Affiliate
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li className="nav-item dropdown">
+                                    <Link
+                                        className="nav-link dropdown-toggle"
+                                        href="#"
+                                        role="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                    >
+                                        Contractor
+                                    </Link>
+                                    <ul className="dropdown-menu">
+                                        <li>
+                                            <button
+                                                type="button"
+                                                className={`dropdown-item ${role === 'general-contractor' ? 'bg-primary text-white' : ''}`}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    localStorage.setItem('role', 'general-contractor');
+                                                    setAuthState({ role: 'general-contractor', resolved: true });
+                                                    router.push('/home-general-contractor');
+                                                }}
+                                            >
+                                                General Contractor
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button
+                                                type="button"
+                                                className={`dropdown-item ${role === 'subcontractor' ? 'bg-primary text-white' : ''}`}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    localStorage.setItem('role', 'subcontractor');
+                                                    setAuthState({ role: 'subcontractor', resolved: true });
+                                                    router.push('/home-subcontractor');
+                                                }}
+                                            >
+                                                Subcontractor
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button
+                                                type="button"
+                                                className={`dropdown-item ${role === 'affiliate' ? 'bg-primary text-white' : ''}`}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    localStorage.setItem('role', 'affiliate');
+                                                    setAuthState({ role: 'affiliate', resolved: true });
+                                                    router.push('/home-affiliate');
+                                                }}
+                                            >
+                                                Affiliate
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        )}
                 </div>
 
                 {/* ✅ Auth UI — no flicker because `resolved === true` */}

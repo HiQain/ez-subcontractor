@@ -189,8 +189,8 @@ export default function SavedContractors() {
                         isFull
                             ? '/assets/img/start1.svg'
                             : isHalf
-                            ? '/assets/img/star2.svg'
-                            : '/assets/img/star-empty.svg'
+                                ? '/assets/img/star2.svg'
+                                : '/assets/img/star-empty.svg'
                     }
                     width={16}
                     height={16}
@@ -362,21 +362,25 @@ export default function SavedContractors() {
                                                         </button>
 
                                                         <button className="btn border-0 mx-auto d-block"
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    localStorage.setItem('selectedContractor', JSON.stringify(contractor));
-                                                                    router.push('/affiliate/contractor-details');
-                                                                }}>
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                const contractorWithSaved = {
+                                                                    ...contractor,
+                                                                    is_saved: savedIds.has(contractor.id),
+                                                                };
+                                                                localStorage.setItem('selectedContractor', JSON.stringify(contractorWithSaved));
+                                                                router.push('/affiliate/contractor-details');
+                                                            }}>
                                                             <Image
                                                                 src={contractor.profile_image_url || '/assets/img/profile-placeholder.webp'}
                                                                 width={104}
                                                                 height={104}
                                                                 className="d-block mx-auto mb-3 rounded-circle"
                                                                 alt={`${contractor.name}'s Profile`}
-                                                                style={{objectFit: 'cover'}}
+                                                                style={{ objectFit: 'cover' }}
                                                             />
                                                             <div
-                                                                style={{color: '#333342'}}
+                                                                style={{ color: '#333342' }}
                                                                 className="title text-black fw-semibold text-center fs-5 mb-2 text-capitalize"
                                                             >
                                                                 {contractor.company_name || contractor.name}

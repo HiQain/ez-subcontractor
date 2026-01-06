@@ -8,6 +8,8 @@ import Footer from '../../components/Footer';
 import SidebarSubcontractor from '../../components/SidebarAffiliate';
 import '../../../styles/profile.css';
 import { useState, useEffect } from 'react';
+import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import AddCardModal from '../add-card/add-card-model';
 
 // 🔹 Define card type for safety
 interface Card {
@@ -22,11 +24,59 @@ interface Card {
 }
 
 export default function ProfilePage() {
+    const stripe = useStripe();
+    const elements = useElements();
     const router = useRouter(); // 🔹 Now defined
     const [logoutLoading, setLogoutLoading] = useState(false);
     const [cardsLoading, setCardsLoading] = useState(true); // true → show loader initially
     const [cards, setCards] = useState<Card[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [showAddCardModal, setShowAddCardModal] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    const showToast = (message: string, type: 'success' | 'error' = 'error') => {
+        const existing = document.querySelector('.checkout-toast');
+        if (existing) existing.remove();
+
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        const toast = document.createElement('div');
+        toast.className = 'checkout-toast';
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                max-width: 400px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+                font-size: 14px;
+            ">
+                <span>${icon} ${message}</span>
+<!--                <button type="button" class="btn-close" style="font-size: 12px; margin-left: auto; opacity: 0.7;" data-bs-dismiss="toast"></button>-->
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+    };
 
     // 🔹 Fetch saved cards
     const fetchSavedCards = async () => {
@@ -83,44 +133,39 @@ export default function ProfilePage() {
 
     // 🔹 Set default card
     const handleSetDefaultCard = async (cardId: string) => {
+        // 🔹 UI pehle update (optimistic)
+        setCards(prev =>
+            prev.map(card => ({
+                ...card,
+                is_default: card.id === cardId,
+            }))
+        );
+
         try {
             const token = localStorage.getItem('token');
-            if (!token) {
-                router.push('/auth/login');
-                return;
-            }
 
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/cards/set-default`,
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/cards/${cardId}/default`,
                 {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` }),
                     },
-                    body: JSON.stringify({ card_id: cardId }),
                 }
             );
 
             const data = await res.json();
 
-            if (res.ok && data.success) {
-                // ✅ Optimistic update
-                setCards(prev =>
-                    prev.map(card =>
-                        card.id === cardId
-                            ? { ...card, is_default: true }
-                            : { ...card, is_default: false }
-                    )
-                );
-            } else {
-                throw new Error(data.message || 'Failed to set default card');
+            if (!res.ok || !data.success) {
+                throw new Error(data.message?.[0] || 'Failed to set default card');
             }
-        } catch (err: any) {
-            console.error('Set default card error:', err);
-            alert(err.message || 'Failed to set default card.');
-            // Revert checkbox (optional)
-            fetchSavedCards(); // refresh
+
+        } catch (err) {
+            console.error(err);
+
+            // ❌ rollback
+            fetchSavedCards();
         }
     };
 
@@ -170,21 +215,103 @@ export default function ProfilePage() {
         }
     };
 
+    useEffect(() => {
+        const storedName = localStorage.getItem('userName');
+        const storedEmail = localStorage.getItem('userEmail');
+
+        if (storedName) setName(storedName);
+        if (storedEmail) setEmail(storedEmail);
+    }, []);
+
+    const handleAddCard = async () => {
+        // 🔹 Validate name & email
+        if (!name.trim() || !email.trim()) {
+            const msg = 'Please enter your name and email';
+            showToast(
+                msg,
+                'error'
+            );
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 500);
+            return;
+        }
+
+        if (!stripe || !elements) {
+            const msg = 'Stripe not loaded yet';
+            showToast(msg, 'error'); // ✅ Toast added
+            return;
+        }
+
+        const cardElement = elements.getElement(CardElement);
+        if (!cardElement) {
+            const msg = 'Card details missing';
+            showToast(msg, 'error'); // ✅ Toast added
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // 🔹 1. Create Stripe Payment Method
+            const { error: stripeError, paymentMethod } =
+                await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardElement,
+                    billing_details: { name, email },
+                });
+
+            if (stripeError || !paymentMethod) {
+                const msg = stripeError?.message || 'Payment method creation failed';
+                showToast(msg, 'error'); // ✅ Toast added
+                throw new Error(msg);
+            }
+
+            // 🔹 2. Call Backend Subscription API
+            const token = localStorage.getItem('token');
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/cards/add`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` }),
+                    },
+                    body: JSON.stringify({
+                        payment_method_id: paymentMethod.id,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                const msg = data.message?.[0] || 'Subscription creation failed';
+                showToast(msg, 'error'); // ✅ Toast added
+                throw new Error(msg);
+            }
+
+            // ✅ Success
+            showToast('Card added successfully!', 'success');
+
+            // 🔥 REFRESH SAVED CARDS
+            fetchSavedCards();
+        } catch (err: any) {
+            const msg = err.message || 'Something went wrong';
+            showToast(msg, 'error'); // ✅ Final catch-all toast
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 500);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // 🔹 Fetch on mount
     useEffect(() => {
         fetchSavedCards();
     }, []);
-
-    // 🔹 Get card icon by brand
-    const getCardIcon = (brand: string) => {
-        switch (brand) {
-            case 'visa': return '/assets/img/icons/visa-icon.svg';
-            case 'mastercard': return '/assets/img/icons/mastercard-icon.svg';
-            case 'amex': return '/assets/img/icons/amex-icon.svg';
-            case 'discover': return '/assets/img/icons/discover-icon.svg';
-            default: return '/assets/img/icons/card-generic.svg'; // add generic fallback
-        }
-    };
 
     return (
         <div className="sections overflow-hidden">
@@ -216,10 +343,11 @@ export default function ProfilePage() {
                                         </button>
                                         <span className="fs-4 fw-semibold">Saved Cards</span>
                                     </div>
-                                    {/* 🔹 Optional: Save Changes button (disabled if none changed) */}
-                                    <button className="btn btn-primary rounded-3" disabled>
-                                        Save Changes
-                                    </button>
+                                    {cards.length !== 0 && (
+                                        <button onClick={() => setShowAddCardModal(true)} className="btn btn-primary rounded-3">
+                                            Add Card
+                                        </button>
+                                    )}
                                 </div>
 
                                 {cardsLoading ? (
@@ -243,14 +371,17 @@ export default function ProfilePage() {
                                             className="mb-3"
                                         />
                                         <p className="text-muted">No saved cards found.</p>
-                                        <Link href="/affiliate/add-card" className="btn btn-primary mt-3">
+                                        <button
+                                            className="btn btn-primary mt-3"
+                                            onClick={() => setShowAddCardModal(true)}
+                                        >
                                             Add a Card
-                                        </Link>
+                                        </button>
                                     </div>
                                 ) : (
                                     <div className="row g-3">
                                         {cards.map((card) => (
-                                            <div key={card.id} className="col-xl-6">
+                                            <div key={card.id} className="col-xl-4">
                                                 <div className="credit-card mb-2 position-relative px-4">
                                                     <div className="checkbox-wrapper">
                                                         <input
@@ -279,15 +410,6 @@ export default function ProfilePage() {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div className="icon">
-                                                            <Image
-                                                                src={getCardIcon(card.brand)}
-                                                                width={28}
-                                                                height={9}
-                                                                alt={`${card.brand} icon`}
-                                                                loading="lazy"
-                                                            />
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -299,6 +421,19 @@ export default function ProfilePage() {
                     </div>
                 </div>
             </section>
+
+            {showAddCardModal && (
+                <AddCardModal
+                    name={name}
+                    email={email}
+                    loading={loading}
+                    onClose={() => setShowAddCardModal(false)}
+                    onConfirm={async () => {
+                        await handleAddCard();
+                        setShowAddCardModal(false);
+                    }}
+                />
+            )}
             <Footer />
         </div>
     );

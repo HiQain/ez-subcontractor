@@ -174,6 +174,8 @@ export default function LoginPage() {
                 localStorage.setItem('role', user.role);
                 localStorage.setItem('userName', user.name || '');
                 localStorage.setItem('userEmail', trimmedEmail);
+                localStorage.setItem('userZip', user.zip);
+                localStorage.setItem('userRadius', user.work_radius);
 
 
                 // Optional: persist email if "Remember me"
@@ -189,7 +191,7 @@ export default function LoginPage() {
                 // Delay for UX
                 setTimeout(() => {
                     switch (user.role) {
-                        case 'general-contractor':
+                        case 'general_contractor':
                             router.push('/general-contractor/dashboard');
                             break;
                         case 'subcontractor':

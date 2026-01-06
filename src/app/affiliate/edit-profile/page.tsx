@@ -78,12 +78,7 @@ export default function EditProfile() {
         profile_image: DEFAULT_PROFILE_IMAGE,
         company_name: '',
         license_number: '',
-        zip: '',
-        work_radius: '',
         category: '',
-        address: '',
-        city: '',
-        state: '',
         email: '',
     });
 
@@ -111,12 +106,7 @@ export default function EditProfile() {
                     profile_image: data.data.profile_image || DEFAULT_PROFILE_IMAGE,
                     company_name: data.data.company_name || '',
                     license_number: data.data.license_number || '',
-                    zip: data.data.zip || '',
-                    work_radius: data.data.work_radius || 0,
                     category: data.data.specialization || '',
-                    address: data.data.address || '',
-                    city: data.data.city || '',
-                    state: data.data.state || '',
                     email: data.data.email || '',
                 });
             }
@@ -148,12 +138,7 @@ export default function EditProfile() {
                         profile_image: data.data.profile_image || DEFAULT_PROFILE_IMAGE,
                         company_name: data.data.company_name || '',
                         license_number: data.data.license_number || '',
-                        zip: data.data.zip || '',
-                        work_radius: data.data.work_radius || 0,
                         category: data.data.specialization || '',
-                        address: data.data.address || '',
-                        city: data.data.city || '',
-                        state: data.data.state || '',
                         email: data.data.email || '',
                     });
                 }
@@ -342,12 +327,7 @@ export default function EditProfile() {
                     phone: formData.phone,
                     company_name: formData.company_name,
                     license_number: formData.license_number,
-                    zip: formData.zip,
-                    work_radius: formData.work_radius,
                     specialization: formData.category,
-                    address: formData.address,
-                    city: formData.city,
-                    state: formData.state,
                 }),
             });
 
@@ -479,7 +459,7 @@ export default function EditProfile() {
                                                 height={234}
                                                 alt="Worker Image"
                                                 className="d-block mb-4 img-fluid rounded-circle object-fit-cover"
-                                                style={{ width: '234px', height: '234px' }}
+                                                style={{ width: '234px', height: '234px', border: '1px, solid, black' }}
                                             />
                                             <button
                                                 type="button"
@@ -572,66 +552,6 @@ export default function EditProfile() {
                                                 </div>
 
                                                 <div className="input-wrapper d-flex flex-column">
-                                                    <label htmlFor="address" className="mb-1 fw-semibold">
-                                                        Address
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        id="address"
-                                                        name="address"
-                                                        className="form-control"
-                                                        placeholder="abc street"
-                                                        value={formData.address}
-                                                        onChange={handleChange}
-                                                    />
-                                                </div>
-
-                                                <div className="input-wrapper d-flex flex-column">
-                                                    <label htmlFor="city" className="mb-1 fw-semibold">
-                                                        City
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        id="city"
-                                                        name="city"
-                                                        className="form-control"
-                                                        placeholder="New York"
-                                                        value={formData.city}
-                                                        onChange={handleChange}
-                                                    />
-                                                </div>
-
-                                                <div className="input-wrapper d-flex flex-column">
-                                                    <label htmlFor="state" className="mb-1 fw-semibold">
-                                                        State
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        id="state"
-                                                        name="state"
-                                                        className="form-control"
-                                                        placeholder="Texas"
-                                                        value={formData.state}
-                                                        onChange={handleChange}
-                                                    />
-                                                </div>
-
-                                                <div className="input-wrapper d-flex flex-column">
-                                                    <label htmlFor="zip" className="mb-1 fw-semibold">
-                                                        ZIP Code
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        id="zip"
-                                                        name="zip"
-                                                        className="form-control"
-                                                        placeholder="12345"
-                                                        value={formData.zip}
-                                                        onChange={handleChange}
-                                                    />
-                                                </div>
-
-                                                <div className="input-wrapper d-flex flex-column">
                                                     <label htmlFor="license_number" className="mb-1 fw-semibold">
                                                         License Number
                                                     </label>
@@ -642,20 +562,6 @@ export default function EditProfile() {
                                                         className="form-control"
                                                         placeholder="223546"
                                                         value={formData.license_number}
-                                                        onChange={handleChange}
-                                                    />
-                                                </div>
-                                                <div className="input-wrapper d-flex flex-column">
-                                                    <label htmlFor="license_number" className="mb-1 fw-semibold">
-                                                        Work Radius
-                                                    </label>
-                                                    <input
-                                                        type="number"
-                                                        id="work_radius"
-                                                        name="work_radius"
-                                                        className="form-control"
-                                                        placeholder="223546"
-                                                        value={formData.work_radius}
                                                         onChange={handleChange}
                                                     />
                                                 </div>

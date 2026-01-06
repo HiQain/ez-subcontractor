@@ -306,6 +306,9 @@ export default function CheckoutPage() {
                             category_ids: selectedCategories.map(c => c.id),
                         }),
                         payment_method_id: paymentMethod.id,
+                        ...(promoCode?.trim() && {
+                            promo_code: promoCode.trim(),
+                        }),
                     }),
                 }
             );

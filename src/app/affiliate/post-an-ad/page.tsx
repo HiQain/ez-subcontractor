@@ -1,10 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import {
-    useRouter,
-    // useSearchParams
-} from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/post-detail.css';
@@ -15,8 +12,6 @@ export default function PostAnAd() {
     const router = useRouter();
     const stripe = useStripe();
     const elements = useElements();
-    // const searchParams = useSearchParams();
-    // const adId = searchParams.get('ad_id');
 
     // Tabs state
     const [activeTab, setActiveTab] = useState('saved-cards');
@@ -35,9 +30,10 @@ export default function PostAnAd() {
     const [adPlacements, setAdPlacements] = useState<any[]>([]);
     const [adLoading, setAdLoading] = useState(false);
     const [selectedAd, setSelectedAd] = useState<any | null>(null);
-    const durationWeeks = 7; // 7 weeks
+    const durationWeeks = 1;
     const [horizontalUrl, setHorizontalUrl] = useState('');
     const [verticalUrl, setVerticalUrl] = useState('');
+    const [description, setDescription] = useState('');
     const [adId, setAdId] = useState<string | null>(null);
     const isEditMode = !!adId;
 
@@ -174,15 +170,6 @@ export default function PostAnAd() {
         return finalUrl;
     };
 
-    const isValidUrl = (url: string) => {
-        try {
-            new URL(url);
-            return true;
-        } catch {
-            return false;
-        }
-    };
-
     // 🔹 Handle Post Ad button click
     const handlePostAd = async () => {
         if (!selectedAd) {
@@ -215,6 +202,11 @@ export default function PostAnAd() {
             return;
         }
 
+        if (!description.trim()) {
+            showToast('Please enter description', 'error');
+            return;
+        }
+
         // 🔹 Default card check
         const defaultCardId = cards.find(c => c.is_default)?.id;
         if (!defaultCardId) {
@@ -230,6 +222,7 @@ export default function PostAnAd() {
             formData.append('orientation', orientation.toLowerCase());
             formData.append('can_pause', '0');
             formData.append('card_id', defaultCardId);
+            formData.append('description', description);
 
             // 🔹 Dates (7 weeks)
             const today = new Date();
@@ -461,6 +454,7 @@ export default function PostAnAd() {
 
             // 🔹 Placement
             setSelectedAd(ad.placement);
+            setDescription(ad.description);
 
         } catch (err) {
             console.error(err);
@@ -490,6 +484,7 @@ export default function PostAnAd() {
             formData.append('ad_placement_id', selectedAd.id);
             formData.append('orientation', orientation.toLowerCase());
             formData.append('can_pause', '0');
+            formData.append('description', description);
 
             // 🔹 Images + URLs only for selected orientation
             if (orientation === 'Horizontal') {
@@ -598,6 +593,10 @@ export default function PostAnAd() {
                                         <input type="text" value={verticalUrl} onChange={e => setVerticalUrl(e.target.value)} placeholder="Enter Vertical URL" />
                                     </div>
                                 )}
+                                <div className="input-wrapper mb-4">
+                                    <label className="fw-semibold mb-1">Caption</label>
+                                    <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Enter Caption here." />
+                                </div>
                             </div>
 
                             <div className="fs-4 fw-semibold mb-3">Payment Details</div>
@@ -740,18 +739,6 @@ export default function PostAnAd() {
                             </div>
 
                             {/* Note + Summary */}
-                            <div className="note-card d-flex align-items-start gap-1 mb-4">
-                                <Image src="/assets/img/icons/note.webp" width={24} height={24} alt="Note" loading="lazy" className="d-block" />
-                                <div className="content">
-                                    <span className="d-block fw-semibold mb-1" style={{ fontSize: '14px' }}>Note</span>
-                                    <ul className="m-0 p-0">
-                                        <li className="fs-12">You can only post one ad at a time</li>
-                                        <li className="fs-12">You can only post one ad at a time</li>
-                                        <li className="fs-12">You can only post one ad at a time</li>
-                                    </ul>
-                                </div>
-                            </div>
-
                             <div className="summary-box mb-4">
                                 <div className="icon-box d-flex gap-2">
                                     <Image src="/assets/img/summary.svg" width={24} height={24} alt="Icon" loading="lazy" />
