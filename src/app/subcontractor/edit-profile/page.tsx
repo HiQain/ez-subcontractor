@@ -351,8 +351,6 @@ export default function EditProfile() {
                     license_number: formData.license_number,
                     zip: formData.zip,
                     work_radius: formData.work_radius,
-                    category: formData.category,
-                    specialization: formData.category.map(cat => cat.id),
                 }),
             });
 
