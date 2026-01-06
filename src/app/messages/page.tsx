@@ -8,27 +8,12 @@ import '../../styles/chat-2.css';
 import { useEffect, useRef, useState } from 'react';
 import { capitalizeEachWord, ChatMessage, clearChatAPI, Contractor, getContractors, getInitials, getMessages, sendMessageAPI } from '../api/chat';
 import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
-import {
-  // useSearchParams,
-  useRouter
-} from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function ChatPage() {
   const router = useRouter();
   const chatNowHandledRef = useRef(false);
-  // const searchParams = useSearchParams();
-
-  // const chatUserId = searchParams.get('userId');
-  // const chatUserName = searchParams.get('name');
-  // const chatUserEmail = searchParams.get('email');
-  // const chatUserPhone = searchParams.get('phone');
-  // const chatUserCompanyName = searchParams.get('companyName');
-
-  // const chatUserId = '';
-  // const chatUserName = '';
-  // const chatUserEmail = '';
-  // const chatUserPhone = '';
-  // const chatUserCompanyName = '';
 
   const [results, setResults] = useState<Contractor[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -365,9 +350,6 @@ export default function ChatPage() {
                   <div className="chat-header-left">
                     <div className="chat-header-info">
                       <div className="chat-name">{capitalizeEachWord(selectedUser.name)}</div>
-                      <div className="chat-time">
-                        {new Date(selectedUser.created_at).toLocaleString()}
-                      </div>
                     </div>
                   </div>
                 ) : (
@@ -523,14 +505,14 @@ export default function ChatPage() {
                         <div key={idx} className="preview-item d-flex align-items-center gap-2 mb-1">
                           <span>📎 {file.name}</span>
                           <button
-                            className="btn btn-sm btn-danger"
+                            className="remove-attachment"
                             onClick={() => {
                               setFiles(files.filter((_, i) => i !== idx));
                               const fileInput = document.getElementById("fileInput") as HTMLInputElement;
                               if (fileInput) fileInput.value = "";
                             }}
                           >
-                            x
+                            ✕
                           </button>
                         </div>
                       ))}
@@ -617,7 +599,7 @@ export default function ChatPage() {
                       alt="Email"
                       loading="lazy"
                     />
-                    <a href="mailto:hello@example.com" className="text-dark fw-medium">
+                    <a href={`mailto:${selectedUser.email}`} className="text-dark fw-medium">
                       {selectedUser.email}
                     </a>
                   </div>
@@ -629,12 +611,12 @@ export default function ChatPage() {
                       alt="Phone"
                       loading="lazy"
                     />
-                    <a href="tel:+10000000000" className="text-dark fw-medium">
+                    <a href={`tel:${selectedUser.phone}`} className="text-dark fw-medium">
                       {selectedUser.phone}
                     </a>
                   </div>
                   <div className="d-flex justify-content-center align-items-center gap-2 flex-wrap">
-                    <a href="#" className="btn btn-outline-dark rounded-3 fs-14 text-dark">
+                    <Link href={`mailto:${selectedUser.email}`} className="btn btn-outline-dark rounded-3 fs-14 text-dark">
                       <Image
                         src="/assets/img/icons/message-dark.svg"
                         width={20}
@@ -642,9 +624,9 @@ export default function ChatPage() {
                         alt="Chat Icon"
                         loading="lazy"
                       />
-                      <span>Email</span>
-                    </a>
-                    <a href="#" className="btn btn-outline-dark rounded-3 fs-14 text-dark">
+                      <span className='p-1'>Email</span>
+                    </Link>
+                    <Link href={`tel:${selectedUser.phone}`} className="btn btn-outline-dark rounded-3 fs-14 text-dark">
                       <Image
                         src="/assets/img/icons/call-dark.svg"
                         width={20}
@@ -652,8 +634,8 @@ export default function ChatPage() {
                         alt="Chat Icon"
                         loading="lazy"
                       />
-                      <span>Phone</span>
-                    </a>
+                      <span className='p-1'>Phone</span>
+                    </Link>
                   </div>
                 </div>
 
@@ -724,7 +706,7 @@ export default function ChatPage() {
 
           </div>
         </div>
-      </section>
-    </div>
+      </section >
+    </div >
   );
 }
