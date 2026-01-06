@@ -416,7 +416,11 @@ export default function AffiliateDashboard() {
 
                                                         <button className="btn border-0 mx-auto d-block" onClick={(e) => {
                                                             e.preventDefault();
-                                                            localStorage.setItem('selectedContractor', JSON.stringify(contractor));
+                                                            const contractorWithSaved = {
+                                                                ...contractor,
+                                                                is_saved: savedContractors.has(contractor.id),
+                                                            };
+                                                            localStorage.setItem('selectedContractor', JSON.stringify(contractorWithSaved));
                                                             router.push('/affiliate/contractor-details');
                                                         }}>
                                                             <Image

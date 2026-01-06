@@ -111,10 +111,11 @@ export default function ContractorDetails() {
         const saved = localStorage.getItem('selectedContractor');
         if (saved) {
             try {
-                const parsed = JSON.parse(saved) as Contractor;
+                const parsed = JSON.parse(saved) as any;
                 setContractor(parsed);
                 setLoading(false);
 
+                setIsSaved(Boolean(parsed.is_saved));
             } catch (e) {
                 console.warn('Invalid contractor in localStorage', e);
                 localStorage.removeItem('selectedContractor');
@@ -258,7 +259,7 @@ export default function ContractorDetails() {
                                     <button
                                         type="button"
                                         className="icon"
-                                        onClick={() => router.push('/affiliate/dashboard')}
+                                        onClick={() => router.back()}
                                         aria-label="Go back"
                                     >
                                         <Image
@@ -272,9 +273,15 @@ export default function ContractorDetails() {
                                 </div>
                                 <button
                                     type="button"
-                                    className={`icon1 ${isSaved ? 'saved' : 'save'}`}
                                     onClick={toggleSave}
                                     aria-label={isSaved ? 'Unsave' : 'Save'}
+                                    style={{
+                                        border: 'none',
+                                        backgroundColor: isSaved ? '#C9DA2B' : '#EFEFEF',
+                                        borderRadius: '100px',
+                                        width: '40px',
+                                        height: '40px',
+                                    }}
                                 >
                                     <Image
                                         src={
@@ -282,8 +289,8 @@ export default function ContractorDetails() {
                                                 ? '/assets/img/bookmark-filled.svg'
                                                 : '/assets/img/bookmark-outline.svg'
                                         }
-                                        width={24}
-                                        height={24}
+                                        width={20}
+                                        height={20}
                                         alt="Save"
                                     />
                                 </button>
