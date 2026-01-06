@@ -154,6 +154,13 @@ export default function MyAds() {
                                         className={isHorizontal ? 'col-xl-6' : 'col-xl-3'}
                                     >
                                         <div className="image-wrapper position-relative">
+                                            {ad.description && (
+                                                <div className="caption-overlay">
+                                                    <p className="caption-text">
+                                                        {ad.description}
+                                                    </p>
+                                                </div>
+                                            )}
                                             <div style={{
                                                 maxWidth: isHorizontal ? '650px' : '371px',
                                                 height: '426px',

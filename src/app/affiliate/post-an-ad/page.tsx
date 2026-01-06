@@ -33,6 +33,7 @@ export default function PostAnAd() {
     const durationWeeks = 1;
     const [horizontalUrl, setHorizontalUrl] = useState('');
     const [verticalUrl, setVerticalUrl] = useState('');
+    const [description, setDescription] = useState('');
     const [adId, setAdId] = useState<string | null>(null);
     const isEditMode = !!adId;
 
@@ -201,6 +202,11 @@ export default function PostAnAd() {
             return;
         }
 
+        if (!description.trim()) {
+            showToast('Please enter description', 'error');
+            return;
+        }
+
         // 🔹 Default card check
         const defaultCardId = cards.find(c => c.is_default)?.id;
         if (!defaultCardId) {
@@ -216,6 +222,7 @@ export default function PostAnAd() {
             formData.append('orientation', orientation.toLowerCase());
             formData.append('can_pause', '0');
             formData.append('card_id', defaultCardId);
+            formData.append('description', description);
 
             // 🔹 Dates (7 weeks)
             const today = new Date();
@@ -447,6 +454,7 @@ export default function PostAnAd() {
 
             // 🔹 Placement
             setSelectedAd(ad.placement);
+            setDescription(ad.description);
 
         } catch (err) {
             console.error(err);
@@ -476,6 +484,7 @@ export default function PostAnAd() {
             formData.append('ad_placement_id', selectedAd.id);
             formData.append('orientation', orientation.toLowerCase());
             formData.append('can_pause', '0');
+            formData.append('description', description);
 
             // 🔹 Images + URLs only for selected orientation
             if (orientation === 'Horizontal') {
@@ -584,6 +593,10 @@ export default function PostAnAd() {
                                         <input type="text" value={verticalUrl} onChange={e => setVerticalUrl(e.target.value)} placeholder="Enter Vertical URL" />
                                     </div>
                                 )}
+                                <div className="input-wrapper mb-4">
+                                    <label className="fw-semibold mb-1">Caption</label>
+                                    <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Enter Caption here." />
+                                </div>
                             </div>
 
                             <div className="fs-4 fw-semibold mb-3">Payment Details</div>
