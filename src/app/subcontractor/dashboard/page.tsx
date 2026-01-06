@@ -755,7 +755,7 @@ export default function DashboardSubContractor() {
                                     className="btn btn-outline-dark text-center justify-content-center btn-sm w-100 mb-4"
                                     onClick={handleResetFilters}
                                 >
-                                    Reset Filters
+                                    Clear
                                 </button>
 
                                 <div className="slider rounded overflow-hidden">
@@ -820,7 +820,7 @@ export default function DashboardSubContractor() {
                                             className="btn btn-outline-primary mt-2"
                                             onClick={handleResetFilters}
                                         >
-                                            Reset Filters
+                                            Clear
                                         </button>
                                     </div>
                                 ) : (
