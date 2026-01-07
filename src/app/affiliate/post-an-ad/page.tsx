@@ -26,7 +26,7 @@ export default function PostAnAd() {
     const [loading, setLoading] = useState(false);
     const [cards, setCards] = useState<any[]>([]);
     const [cardsLoading, setCardsLoading] = useState(false);
-    const [orientation, setOrientation] = useState<'Horizontal' | 'Vertical' | 'Both'>('Horizontal');
+    const [orientation, setOrientation] = useState<'Horizontal' | 'Vertical'>('Horizontal');
     const [adPlacements, setAdPlacements] = useState<any[]>([]);
     const [adLoading, setAdLoading] = useState(false);
     const [selectedAd, setSelectedAd] = useState<any | null>(null);
@@ -184,21 +184,24 @@ export default function PostAnAd() {
         }
 
         // 🔹 URL validation
-        if ((orientation === 'Horizontal' || orientation === 'Both') && !horizontalUrl.trim()) {
+        if ((orientation === 'Horizontal') && !horizontalUrl.trim()) {
             showToast('Please enter Horizontal URL', 'error');
             return;
         }
 
-        if ((orientation === 'Vertical' || orientation === 'Both') && !verticalUrl.trim()) {
+        if ((orientation === 'Vertical') && !verticalUrl.trim()) {
             showToast('Please enter Vertical URL', 'error');
             return;
         }
 
-        // 🔹 Image validation
-        if ((orientation === 'Horizontal' && !mainFileRef.current?.files?.[0]) ||
-            (orientation === 'Vertical' && !smallFileRef.current?.files?.[0]) ||
-            (orientation === 'Both' && (!mainFileRef.current?.files?.[0] || !smallFileRef.current?.files?.[0]))) {
-            showToast('Please upload the required image(s)', 'error');
+        // ✅ Image validation (orientation based)
+        if (orientation === 'Horizontal' && !mainFileRef.current?.files?.[0] && !mainImage) {
+            showToast('Please upload horizontal image', 'error');
+            return;
+        }
+
+        if (orientation === 'Vertical' && !smallFileRef.current?.files?.[0] && !smallImage) {
+            showToast('Please upload vertical image', 'error');
             return;
         }
 
@@ -232,12 +235,12 @@ export default function PostAnAd() {
             formData.append('end_date', endDate.toISOString().split('T')[0]);
 
             // 🔹 Images + URLs based on orientation
-            if (orientation === 'Horizontal' || orientation === 'Both') {
+            if (orientation === 'Horizontal') {
                 formData.append('horizontal_image', mainFileRef.current!.files![0]);
                 formData.append('horizontal_url', normalizeUrl(horizontalUrl));
             }
 
-            if (orientation === 'Vertical' || orientation === 'Both') {
+            if (orientation === 'Vertical') {
                 formData.append('vertical_image', smallFileRef.current!.files![0]);
                 formData.append('vertical_url', normalizeUrl(verticalUrl));
             }
@@ -497,13 +500,6 @@ export default function PostAnAd() {
                 if (verticalUrl?.trim()) formData.append('vertical_url', normalizeUrl(verticalUrl));
             }
 
-            if (orientation === 'Both') {
-                if (mainFileRef.current?.files?.[0]) formData.append('horizontal_image', mainFileRef.current.files[0]);
-                if (horizontalUrl?.trim()) formData.append('horizontal_url', normalizeUrl(horizontalUrl));
-                if (smallFileRef.current?.files?.[0]) formData.append('vertical_image', smallFileRef.current.files[0]);
-                if (verticalUrl?.trim()) formData.append('vertical_url', normalizeUrl(verticalUrl));
-            }
-
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/${adId}/update`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
@@ -568,9 +564,19 @@ export default function PostAnAd() {
                                             name="orientation"
                                             checked={orientation.toLowerCase() === ad.orientation_type}
                                             onChange={() => {
-                                                setOrientation(ad.name as 'Horizontal' | 'Vertical' | 'Both');
-                                                setSelectedAd(ad); // 🔹 update selected ad
+                                                setOrientation(ad.name as 'Horizontal' | 'Vertical');
+                                                setSelectedAd(ad);
+                                                if (ad.name === 'Horizontal') {
+                                                    setVerticalUrl('');
+                                                    setSmallImage(null);
+                                                    if (smallFileRef.current) smallFileRef.current.value = '';
+                                                } else {
+                                                    setHorizontalUrl('');
+                                                    setMainImage(null);
+                                                    if (mainFileRef.current) mainFileRef.current.value = '';
+                                                }
                                             }}
+
                                         />
                                         <label htmlFor={`radio-${ad.id}`} className="fw-medium">
                                             {ad.name} (${ad.price} / {ad.price_type})
@@ -580,14 +586,14 @@ export default function PostAnAd() {
                             </div>
 
                             <div className="input-wrapper mb-4">
-                                {(orientation === 'Horizontal' || orientation === 'Both') && (
+                                {(orientation === 'Horizontal') && (
                                     <div className="input-wrapper mb-4">
                                         <label className="fw-semibold mb-1">Horizontal URL</label>
                                         <input type="text" value={horizontalUrl} onChange={e => setHorizontalUrl(e.target.value)} placeholder="Enter Horizontal URL" />
                                     </div>
                                 )}
 
-                                {(orientation === 'Vertical' || orientation === 'Both') && (
+                                {(orientation === 'Vertical') && (
                                     <div className="input-wrapper mb-4">
                                         <label className="fw-semibold mb-1">Vertical URL</label>
                                         <input type="text" value={verticalUrl} onChange={e => setVerticalUrl(e.target.value)} placeholder="Enter Vertical URL" />
@@ -785,7 +791,7 @@ export default function PostAnAd() {
 
                         {/* Right Side Upload Boxes */}
                         <div className="right-side align-lg-end">
-                            {(orientation === 'Horizontal' || orientation === 'Both') && (
+                            {(orientation === 'Horizontal') && (
                                 <div
                                     className="image-box"
                                     onClick={() => mainFileRef.current?.click()}
@@ -823,7 +829,7 @@ export default function PostAnAd() {
                                 </div>
                             )}
 
-                            {(orientation === 'Vertical' || orientation === 'Both') && (
+                            {(orientation === 'Vertical') && (
                                 <div
                                     className="image-box small margin-right"
                                     style={{
