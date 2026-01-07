@@ -169,7 +169,7 @@ export default function TransactionsPage() {
                                                             <th>Transaction ID</th>
                                                             <th>Subscription</th>
                                                             <th>Card</th>
-                                                            <th>Date and Time</th>
+                                                            <th>Date</th>
                                                             <th>Amount</th>
                                                         </tr>
                                                     </thead>
@@ -182,10 +182,10 @@ export default function TransactionsPage() {
                                                             filteredTransactions.map((tx, index) => (
                                                                 <tr key={tx.id}>
                                                                     <td>{index + 1}</td>
-                                                                    <td>{tx.transaction_id}</td>
+                                                                    <td>{`${tx.transaction_id.slice(0, 6)}...`}</td>
                                                                     <td>{tx.plan.name}</td>
-                                                                    <td>{tx.card_brand} ****{tx.card_last4} ({tx.card_holder})</td>
-                                                                    <td>{new Date(tx.created_at).toLocaleString()}</td>
+                                                                    <td>****{tx.card_last4}</td>
+                                                                    <td>{new Date(tx.created_at).toLocaleDateString()}</td>
                                                                     <td>${tx.amount}</td>
                                                                 </tr>
                                                             ))

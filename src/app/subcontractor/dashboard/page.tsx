@@ -367,50 +367,6 @@ export default function DashboardSubContractor() {
         fetchCategories();
     }, []);
 
-    // 🔹 Fetch saved projects (unchanged)
-    const fetchSavedproject = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                router.push('/auth/login');
-                return;
-            }
-
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects/my-saved`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Accept': 'application/json',
-                    },
-                }
-            );
-            if (response.status === 401) {
-                localStorage.removeItem('token');
-                router.push('/auth/login');
-                return;
-            }
-
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message?.[0] || 'Failed to load saved projects');
-            }
-
-            let savedIds: number[] = [];
-            if (data?.data?.projects && Array.isArray(data.data.projects)) {
-                savedIds = data.data.projects.map((item: any) => Number(item.id));
-            } else if (Array.isArray(data?.data)) {
-                savedIds = data.data.map((item: any) => Number(item.id));
-            } else if (Array.isArray(data)) {
-                savedIds = data.map(id => Number(id));
-            }
-
-            setSavedproject(new Set(savedIds));
-        } catch (err: any) {
-            console.error('Fetch saved projects error:', err);
-        }
-    };
-
     // 🔹 Fetch projects (unchanged)
     const fetchprojects = async (resetPage = false) => {
         const currentPage = resetPage ? 1 : page;
