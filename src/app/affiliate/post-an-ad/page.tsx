@@ -34,7 +34,9 @@ export default function PostAnAd() {
     const [horizontalUrl, setHorizontalUrl] = useState('');
     const [verticalUrl, setVerticalUrl] = useState('');
     const [description, setDescription] = useState('');
+    const [canPause, setCanPause] = useState<boolean>(false);
     const [adId, setAdId] = useState<string | null>(null);
+    const [editLoading, setEditLoading] = useState(false);
     const isEditMode = !!adId;
 
     useEffect(() => {
@@ -407,6 +409,8 @@ export default function PostAnAd() {
     const fetchAdFromMyAds = async () => {
         if (!adId) return;
 
+        setEditLoading(true);
+
         try {
             const token = localStorage.getItem('token');
 
@@ -458,10 +462,13 @@ export default function PostAnAd() {
             // 🔹 Placement
             setSelectedAd(ad.placement);
             setDescription(ad.description);
+            setCanPause(ad.can_pause === 1);
 
         } catch (err) {
             console.error(err);
             showToast('Something went wrong', 'error');
+        } finally {
+            setEditLoading(false);
         }
     };
 
@@ -486,7 +493,7 @@ export default function PostAnAd() {
             const formData = new FormData();
             formData.append('ad_placement_id', selectedAd.id);
             formData.append('orientation', orientation.toLowerCase());
-            formData.append('can_pause', '0');
+            formData.append('can_pause', canPause ? '1' : '0');
             formData.append('description', description);
 
             // 🔹 Images + URLs only for selected orientation
@@ -530,346 +537,390 @@ export default function PostAnAd() {
             <Header />
 
             <div className="banner-sec post profile">
-                <div className="container">
-                    <div className="right-bar mb-5">
-                        <div className="icon-wrapper d-flex align-items-center gap-3">
-                            <div className="icon" onClick={() => router.back()}>
-                                <Image
-                                    src="/assets/img/button-angle.svg"
-                                    width={10}
-                                    height={15}
-                                    alt="Icon"
-                                    loading="lazy"
-                                />
-                            </div>
-                            <span className="fs-4 fw-semibold">
-                                {isEditMode ? 'Edit Ad' : 'Post an Ad'}
-                            </span>
+                {isEditMode && editLoading ? (
+                    <div
+                        className="d-flex align-items-center justify-content-center"
+                        style={{ minHeight: '400px' }}
+                    >
+                        <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
                         </div>
                     </div>
+                ) : (
+                    <div className="container">
+                        <div className="right-bar mb-5 d-flex justify-content-between">
+                            <div className="icon-wrapper d-flex align-items-center gap-3">
+                                <div className="icon" onClick={() => router.back()}>
+                                    <Image
+                                        src="/assets/img/button-angle.svg"
+                                        width={10}
+                                        height={15}
+                                        alt="Icon"
+                                        loading="lazy"
+                                    />
+                                </div>
+                                <span className="fs-4 fw-semibold">
+                                    {isEditMode ? 'Edit Ad' : 'Post an Ad'}
+                                </span>
+                            </div>
+                            {isEditMode && (
+                                <button
+                                    className={'btn btn-primary'}
+                                    onClick={async () => {
+                                        setCanPause(!canPause)
+                                    }}
+                                >
+                                    {canPause ? 'Resume Ad' : 'Pause Ad'}
+                                </button>
+                            )}
+                        </div>
 
-                    <div className="form-section">
-                        {/* Left Side */}
-                        <div className="left-side">
-                            <div className="fw-semibold fs-18 mb-3">Select Orientation</div>
-                            {adLoading && <p>Loading orientation...</p>}
-
-                            <div className="radio-group mb-4">
-                                {adPlacements.map((ad) => (
-                                    <div key={ad.id} className="radio-wrapper mb-3">
-                                        <input
-                                            type="radio"
-                                            id={`radio-${ad.id}`}
-                                            className="radio"
-                                            name="orientation"
-                                            checked={orientation.toLowerCase() === ad.orientation_type}
-                                            onChange={() => {
-                                                setOrientation(ad.name as 'Horizontal' | 'Vertical');
-                                                setSelectedAd(ad);
-                                                if (ad.name === 'Horizontal') {
-                                                    setVerticalUrl('');
-                                                    setSmallImage(null);
-                                                    if (smallFileRef.current) smallFileRef.current.value = '';
-                                                } else {
-                                                    setHorizontalUrl('');
-                                                    setMainImage(null);
-                                                    if (mainFileRef.current) mainFileRef.current.value = '';
-                                                }
-                                            }}
-
-                                        />
-                                        <label htmlFor={`radio-${ad.id}`} className="fw-medium">
-                                            {ad.name} (${ad.price} / {ad.price_type})
-                                        </label>
+                        <div className="form-section">
+                            {/* Left Side */}
+                            <div className="left-side">
+                                {isEditMode ? (
+                                    <div>
+                                        <div className="fw-semibold fs-18 mb-2">Selected Orientation</div>
+                                        <div className="radio-wrapper mb-4">
+                                            <input
+                                                type="radio"
+                                                className="radio"
+                                                name="orientation"
+                                                checked={true}
+                                            />
+                                            <label className="fw-medium">
+                                                {orientation}
+                                            </label>
+                                        </div>
                                     </div>
-                                ))}
+                                ) : (
+                                    <div>
+                                        <div className="fw-semibold fs-18 mb-3">Select Orientation</div>
+                                        {adLoading && <p>Loading orientation...</p>}
+
+                                        <div className="radio-group mb-4">
+                                            {adPlacements.map((ad) => (
+                                                <div key={ad.id} className="radio-wrapper mb-3">
+                                                    <input
+                                                        type="radio"
+                                                        id={`radio-${ad.id}`}
+                                                        className="radio"
+                                                        name="orientation"
+                                                        checked={orientation.toLowerCase() === ad.orientation_type}
+                                                        onChange={() => {
+                                                            setOrientation(ad.name as 'Horizontal' | 'Vertical');
+                                                            setSelectedAd(ad);
+                                                            if (ad.name === 'Horizontal') {
+                                                                setVerticalUrl('');
+                                                                setSmallImage(null);
+                                                                if (smallFileRef.current) smallFileRef.current.value = '';
+                                                            } else {
+                                                                setHorizontalUrl('');
+                                                                setMainImage(null);
+                                                                if (mainFileRef.current) mainFileRef.current.value = '';
+                                                            }
+                                                        }}
+
+                                                    />
+                                                    <label htmlFor={`radio-${ad.id}`} className="fw-medium">
+                                                        {ad.name} (${ad.price} / {ad.price_type})
+                                                    </label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="input-wrapper mb-4">
+                                    {(orientation === 'Horizontal') && (
+                                        <div className="input-wrapper mb-4">
+                                            <label className="fw-semibold mb-1">Horizontal URL</label>
+                                            <input type="text" value={horizontalUrl} onChange={e => setHorizontalUrl(e.target.value)} placeholder="Enter Horizontal URL" />
+                                        </div>
+                                    )}
+
+                                    {(orientation === 'Vertical') && (
+                                        <div className="input-wrapper mb-4">
+                                            <label className="fw-semibold mb-1">Vertical URL</label>
+                                            <input type="text" value={verticalUrl} onChange={e => setVerticalUrl(e.target.value)} placeholder="Enter Vertical URL" />
+                                        </div>
+                                    )}
+                                    <div className="input-wrapper mb-4">
+                                        <label className="fw-semibold mb-1">Caption</label>
+                                        <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Enter Caption here." />
+                                    </div>
+                                </div>
+                                {
+                                    !isEditMode && (
+                                        <div>
+                                            <div className="fs-4 fw-semibold mb-3">Payment Details</div>
+
+                                            {/* Tabs */}
+                                            <div className="tab mb-4">
+                                                <ul className="nav nav-tabs mb-5" role="tablist">
+                                                    <li className="nav-item" role="presentation">
+                                                        <button
+                                                            className={`nav-link ${activeTab === 'saved-cards' ? 'active' : ''}`}
+                                                            onClick={() => setActiveTab('saved-cards')}
+                                                        >
+                                                            Saved Cards
+                                                        </button>
+                                                    </li>
+                                                    <li className="nav-item" role="presentation">
+                                                        <button
+                                                            className={`nav-link ${activeTab === 'add-card' ? 'active' : ''}`}
+                                                            onClick={() => setActiveTab('add-card')}
+                                                        >
+                                                            Add a New Card
+                                                        </button>
+                                                    </li>
+                                                </ul>
+
+                                                <div className="tab-content">
+                                                    {activeTab === 'saved-cards' && (
+                                                        <div className="tab-pane fade show active">
+                                                            <div className="cards-wrapper">
+                                                                <div className="row g-3">
+                                                                    {cardsLoading && <p>Loading cards...</p>}
+
+                                                                    {!cardsLoading && cards.length === 0 && (
+                                                                        <p>No saved cards found</p>
+                                                                    )}
+
+                                                                    {cards.map((card) => (
+                                                                        <div key={card.id} className="col-xl-6">
+                                                                            <div className="credit-card mb-2 position-relative">
+                                                                                <div key={card.id} className="checkbox-wrapper">
+                                                                                    <input
+                                                                                        type="checkbox"
+                                                                                        className="checkbox checkbox1"
+                                                                                        checked={card.is_default === true}
+                                                                                        onChange={() => handleSetDefaultCard(card.id)}
+                                                                                    />
+                                                                                </div>
+
+                                                                                <div className="numbers fs-4 fw-semibold mb-4">
+                                                                                    **** **** **** {card.card.last4}
+                                                                                </div>
+
+                                                                                <div className="content-wrapper d-flex align-items-center gap-2 flex-wrap justify-content-between">
+                                                                                    <div className="left d-flex align-items-center gap-4 flex-wrap">
+                                                                                        <div>
+                                                                                            <div className="fs-12 mb-1">Card Holder Name</div>
+                                                                                            <div className="fs-14 fw-semibold">{card.billing_details.name}</div>
+                                                                                        </div>
+
+                                                                                        <div>
+                                                                                            <div className="fs-12 mb-1">Expiry Date</div>
+                                                                                            <div className="fs-14 fw-semibold">
+                                                                                                {card.card.exp_month}/{card.card.exp_year}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {activeTab === 'add-card' && (
+                                                        <div className="tab-pane fade show active">
+                                                            <div className="form">
+                                                                <div className="input-wrapper">
+                                                                    <label className="mb-1 fw-semibold">Full Name *</label>
+                                                                    <input type="text" placeholder="Jason Doe"
+                                                                        value={name}
+                                                                        onChange={(e) => setName(e.target.value)}
+                                                                        disabled
+                                                                    />
+                                                                </div>
+                                                                <div className="input-wrapper">
+                                                                    <label className="mb-1 fw-semibold">Email Address *</label>
+                                                                    <input type="email" placeholder="hello@example.com"
+                                                                        value={email}
+                                                                        onChange={(e) => setEmail(e.target.value)}
+                                                                        disabled
+                                                                    />
+                                                                </div>
+                                                                {/* STRIPE CARD FORM */}
+                                                                <div className="input-wrapper d-flex flex-column">
+                                                                    <label className="mb-1 fw-semibold">Card Details *</label>
+
+                                                                    <div
+                                                                        style={{
+                                                                            border: '1px solid #ddd',
+                                                                            borderRadius: '8px',
+                                                                            padding: '12px',
+                                                                            background: '#fff',
+                                                                        }}
+                                                                    >
+                                                                        <CardElement
+                                                                            options={{
+                                                                                style: {
+                                                                                    base: {
+                                                                                        fontSize: '16px',
+                                                                                        color: '#000',
+                                                                                        '::placeholder': { color: '#999' },
+                                                                                    },
+                                                                                },
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                style={{ marginTop: '20px' }}
+                                                                className="btn btn-primary w-100 rounded-3 d-flex align-items-center justify-content-center gap-2"
+                                                                onClick={handleAddCard}
+                                                                disabled={loading}
+                                                            >
+                                                                {loading && (
+                                                                    <span
+                                                                        className="spinner-border spinner-border-sm"
+                                                                        role="status"
+                                                                        aria-hidden="true"
+                                                                    ></span>
+                                                                )}
+
+                                                                {loading ? 'Adding Card...' : 'Add Card'}
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Note + Summary */}
+                                            <div className="summary-box mb-4">
+                                                <div className="icon-box d-flex gap-2">
+                                                    <Image src="/assets/img/summary.svg" width={24} height={24} alt="Icon" loading="lazy" />
+                                                    <div className="content w-100">
+                                                        <div className="fs-14 fw-semibold mb-2">Summary</div>
+
+                                                        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap w-100 mb-1">
+                                                            <div className="fs-14 text-gray-light fw-medium">Orientation</div>
+                                                            <div className="fs-14 fw-semibold">{selectedAd?.name || '-'}</div>
+                                                        </div>
+
+                                                        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap w-100 mb-1">
+                                                            <div className="fs-14 text-gray-light fw-medium">
+                                                                Duration ({durationWeeks} Week X ${selectedAd?.price || '0'})
+                                                            </div>
+                                                            <div className="fs-14 fw-semibold">
+                                                                ${selectedAd ? (Number(selectedAd.price) * durationWeeks).toFixed(2) : '0.00'}
+                                                            </div>
+                                                        </div>
+
+                                                        <hr className="mb-2 mt-2" />
+
+                                                        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap w-100">
+                                                            <div className="fs-14 text-gray-light fw-medium">Total</div>
+                                                            <div className="fs-14 fw-semibold">
+                                                                ${selectedAd ? (Number(selectedAd.price) * durationWeeks).toFixed(2) : '0.00'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                }
+
+                                <button
+                                    className="btn btn-primary w-100 rounded-3 d-flex align-items-center justify-content-center gap-2"
+                                    onClick={isEditMode ? handleUpdateAd : handlePostAd}
+                                    disabled={loading}
+                                >
+                                    {loading && <span className="spinner-border spinner-border-sm" />}
+                                    {loading
+                                        ? isEditMode ? 'Updating...' : 'Posting...'
+                                        : isEditMode ? 'Update Ad' : 'Post an Ad'}
+                                </button>
                             </div>
 
-                            <div className="input-wrapper mb-4">
+                            {/* Right Side Upload Boxes */}
+                            <div className="right-side align-lg-end">
                                 {(orientation === 'Horizontal') && (
-                                    <div className="input-wrapper mb-4">
-                                        <label className="fw-semibold mb-1">Horizontal URL</label>
-                                        <input type="text" value={horizontalUrl} onChange={e => setHorizontalUrl(e.target.value)} placeholder="Enter Horizontal URL" />
+                                    <div
+                                        className="image-box"
+                                        onClick={() => mainFileRef.current?.click()}
+                                        style={{
+                                            cursor: 'pointer',
+                                            width: '650px',
+                                            height: '426px',
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            borderRadius: '8px',
+                                            border: '1px dashed #ccc',
+                                        }}
+                                    >
+                                        {mainImage ? (
+                                            <Image src={mainImage} alt="Upload"
+                                                fill
+                                                style={{ objectFit: 'cover' }}
+                                            />
+                                        ) : (
+                                            <>
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                                                </svg>
+                                                <p>Drag and drop image here<br />or click to upload</p>
+                                                <small>Resolution: 760x246 | 200 MB Max</small>
+                                            </>
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept="image/*,application/pdf"
+                                            ref={mainFileRef}
+                                            style={{ display: 'none' }}
+                                            onChange={(e) => handleFileChange(e, setMainImage)}
+                                        />
                                     </div>
                                 )}
 
                                 {(orientation === 'Vertical') && (
-                                    <div className="input-wrapper mb-4">
-                                        <label className="fw-semibold mb-1">Vertical URL</label>
-                                        <input type="text" value={verticalUrl} onChange={e => setVerticalUrl(e.target.value)} placeholder="Enter Vertical URL" />
+                                    <div
+                                        className="image-box small margin-right"
+                                        style={{
+                                            maxWidth: '371px',
+                                            height: '426px',
+                                            cursor: 'pointer',
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            borderRadius: '8px',
+                                            border: '1px dashed #ccc',
+                                        }}
+                                        onClick={() => smallFileRef.current?.click()}
+                                    >
+                                        {smallImage ? (
+                                            <Image src={smallImage}
+                                                alt="Upload"
+                                                fill
+                                                style={{ objectFit: 'cover' }}
+                                            />
+                                        ) : (
+                                            <>
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                                                </svg>
+                                                <p>Drag and drop image here<br />or click to upload</p>
+                                                <small>Resolution: 571x426 | 200 MB Max</small>
+                                            </>
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept="image/*,application/pdf"
+                                            ref={smallFileRef}
+                                            style={{ display: 'none' }}
+                                            onChange={(e) => handleFileChange(e, setSmallImage)}
+                                        />
                                     </div>
                                 )}
-                                <div className="input-wrapper mb-4">
-                                    <label className="fw-semibold mb-1">Caption</label>
-                                    <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Enter Caption here." />
-                                </div>
                             </div>
-
-                            <div className="fs-4 fw-semibold mb-3">Payment Details</div>
-
-                            {/* Tabs */}
-                            <div className="tab mb-4">
-                                <ul className="nav nav-tabs mb-5" role="tablist">
-                                    <li className="nav-item" role="presentation">
-                                        <button
-                                            className={`nav-link ${activeTab === 'saved-cards' ? 'active' : ''}`}
-                                            onClick={() => setActiveTab('saved-cards')}
-                                        >
-                                            Saved Cards
-                                        </button>
-                                    </li>
-                                    <li className="nav-item" role="presentation">
-                                        <button
-                                            className={`nav-link ${activeTab === 'add-card' ? 'active' : ''}`}
-                                            onClick={() => setActiveTab('add-card')}
-                                        >
-                                            Add a New Card
-                                        </button>
-                                    </li>
-                                </ul>
-
-                                <div className="tab-content">
-                                    {activeTab === 'saved-cards' && (
-                                        <div className="tab-pane fade show active">
-                                            <div className="cards-wrapper">
-                                                <div className="row g-3">
-                                                    {cardsLoading && <p>Loading cards...</p>}
-
-                                                    {!cardsLoading && cards.length === 0 && (
-                                                        <p>No saved cards found</p>
-                                                    )}
-
-                                                    {cards.map((card) => (
-                                                        <div key={card.id} className="col-xl-6">
-                                                            <div className="credit-card mb-2 position-relative">
-                                                                <div key={card.id} className="checkbox-wrapper">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        className="checkbox checkbox1"
-                                                                        checked={card.is_default === true}
-                                                                        onChange={() => handleSetDefaultCard(card.id)}
-                                                                    />
-                                                                </div>
-
-                                                                <div className="numbers fs-4 fw-semibold mb-4">
-                                                                    **** **** **** {card.card.last4}
-                                                                </div>
-
-                                                                <div className="content-wrapper d-flex align-items-center gap-2 flex-wrap justify-content-between">
-                                                                    <div className="left d-flex align-items-center gap-4 flex-wrap">
-                                                                        <div>
-                                                                            <div className="fs-12 mb-1">Card Holder Name</div>
-                                                                            <div className="fs-14 fw-semibold">{card.billing_details.name}</div>
-                                                                        </div>
-
-                                                                        <div>
-                                                                            <div className="fs-12 mb-1">Expiry Date</div>
-                                                                            <div className="fs-14 fw-semibold">
-                                                                                {card.card.exp_month}/{card.card.exp_year}
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {activeTab === 'add-card' && (
-                                        <div className="tab-pane fade show active">
-                                            <div className="form">
-                                                <div className="input-wrapper">
-                                                    <label className="mb-1 fw-semibold">Full Name *</label>
-                                                    <input type="text" placeholder="Jason Doe"
-                                                        value={name}
-                                                        onChange={(e) => setName(e.target.value)}
-                                                        disabled
-                                                    />
-                                                </div>
-                                                <div className="input-wrapper">
-                                                    <label className="mb-1 fw-semibold">Email Address *</label>
-                                                    <input type="email" placeholder="hello@example.com"
-                                                        value={email}
-                                                        onChange={(e) => setEmail(e.target.value)}
-                                                        disabled
-                                                    />
-                                                </div>
-                                                {/* STRIPE CARD FORM */}
-                                                <div className="input-wrapper d-flex flex-column">
-                                                    <label className="mb-1 fw-semibold">Card Details *</label>
-
-                                                    <div
-                                                        style={{
-                                                            border: '1px solid #ddd',
-                                                            borderRadius: '8px',
-                                                            padding: '12px',
-                                                            background: '#fff',
-                                                        }}
-                                                    >
-                                                        <CardElement
-                                                            options={{
-                                                                style: {
-                                                                    base: {
-                                                                        fontSize: '16px',
-                                                                        color: '#000',
-                                                                        '::placeholder': { color: '#999' },
-                                                                    },
-                                                                },
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <button
-                                                style={{ marginTop: '20px' }}
-                                                className="btn btn-primary w-100 rounded-3 d-flex align-items-center justify-content-center gap-2"
-                                                onClick={handleAddCard}
-                                                disabled={loading}
-                                            >
-                                                {loading && (
-                                                    <span
-                                                        className="spinner-border spinner-border-sm"
-                                                        role="status"
-                                                        aria-hidden="true"
-                                                    ></span>
-                                                )}
-
-                                                {loading ? 'Adding Card...' : 'Add Card'}
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Note + Summary */}
-                            <div className="summary-box mb-4">
-                                <div className="icon-box d-flex gap-2">
-                                    <Image src="/assets/img/summary.svg" width={24} height={24} alt="Icon" loading="lazy" />
-                                    <div className="content w-100">
-                                        <div className="fs-14 fw-semibold mb-2">Summary</div>
-
-                                        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap w-100 mb-1">
-                                            <div className="fs-14 text-gray-light fw-medium">Orientation</div>
-                                            <div className="fs-14 fw-semibold">{selectedAd?.name || '-'}</div>
-                                        </div>
-
-                                        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap w-100 mb-1">
-                                            <div className="fs-14 text-gray-light fw-medium">
-                                                Duration ({durationWeeks} Weeks X ${selectedAd?.price || '0'})
-                                            </div>
-                                            <div className="fs-14 fw-semibold">
-                                                ${selectedAd ? (Number(selectedAd.price) * durationWeeks).toFixed(2) : '0.00'}
-                                            </div>
-                                        </div>
-
-                                        <hr className="mb-2 mt-2" />
-
-                                        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap w-100">
-                                            <div className="fs-14 text-gray-light fw-medium">Total</div>
-                                            <div className="fs-14 fw-semibold">
-                                                ${selectedAd ? (Number(selectedAd.price) * durationWeeks).toFixed(2) : '0.00'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button
-                                className="btn btn-primary w-100 rounded-3 d-flex align-items-center justify-content-center gap-2"
-                                onClick={isEditMode ? handleUpdateAd : handlePostAd}
-                                disabled={loading}
-                            >
-                                {loading && <span className="spinner-border spinner-border-sm" />}
-                                {loading
-                                    ? isEditMode ? 'Updating...' : 'Posting...'
-                                    : isEditMode ? 'Update Ad' : 'Post an Ad'}
-                            </button>
-                        </div>
-
-                        {/* Right Side Upload Boxes */}
-                        <div className="right-side align-lg-end">
-                            {(orientation === 'Horizontal') && (
-                                <div
-                                    className="image-box"
-                                    onClick={() => mainFileRef.current?.click()}
-                                    style={{
-                                        cursor: 'pointer',
-                                        width: '650px',
-                                        height: '426px',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        borderRadius: '8px',
-                                        border: '1px dashed #ccc',
-                                    }}
-                                >
-                                    {mainImage ? (
-                                        <Image src={mainImage} alt="Upload"
-                                            fill
-                                            style={{ objectFit: 'cover' }}
-                                        />
-                                    ) : (
-                                        <>
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-                                            </svg>
-                                            <p>Drag and drop image here<br />or click to upload</p>
-                                            <small>Resolution: 760x246 | 200 MB Max</small>
-                                        </>
-                                    )}
-                                    <input
-                                        type="file"
-                                        accept="image/*,application/pdf"
-                                        ref={mainFileRef}
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => handleFileChange(e, setMainImage)}
-                                    />
-                                </div>
-                            )}
-
-                            {(orientation === 'Vertical') && (
-                                <div
-                                    className="image-box small margin-right"
-                                    style={{
-                                        maxWidth: '371px',
-                                        height: '426px',
-                                        cursor: 'pointer',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        borderRadius: '8px',
-                                        border: '1px dashed #ccc',
-                                    }}
-                                    onClick={() => smallFileRef.current?.click()}
-                                >
-                                    {smallImage ? (
-                                        <Image src={smallImage}
-                                            alt="Upload"
-                                            fill
-                                            style={{ objectFit: 'cover' }}
-                                        />
-                                    ) : (
-                                        <>
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-                                            </svg>
-                                            <p>Drag and drop image here<br />or click to upload</p>
-                                            <small>Resolution: 571x426 | 200 MB Max</small>
-                                        </>
-                                    )}
-                                    <input
-                                        type="file"
-                                        accept="image/*,application/pdf"
-                                        ref={smallFileRef}
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => handleFileChange(e, setSmallImage)}
-                                    />
-                                </div>
-                            )}
                         </div>
                     </div>
-                </div>
+                )}
             </div>
 
             <Footer />
