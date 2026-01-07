@@ -5,12 +5,68 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
+import { useEffect, useState } from 'react';
 import '../../styles/blog.css';
 
+const stripHtml = (html: string): string => {
+    if (typeof window === 'undefined') {
+        return html.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
+    }
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return (div.textContent || '').replace(/\s+/g, ' ').trim();
+};
 
+const getExcerpt = (html: string, limit = 140) => {
+    const text = stripHtml(html);
+    return text.length > limit ? text.slice(0, limit) + '...' : text;
+};
+
+const formatBlogDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric',
+    });
+};
 
 export default function PricingPage() {
+    const [blogs, setBlogs] = useState<any[]>([]);
+    const [featuredBlogs, setFeaturedBlogs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            try {
+                setLoading(true);
+
+                const [latestRes, featuredRes] = await Promise.all([
+                    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/latest`),
+                    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/featured`)
+                ]);
+
+                const latestJson = await latestRes.json();
+                const featuredJson = await featuredRes.json();
+
+                if (latestJson.success) {
+                    setBlogs(latestJson.data || []);
+                }
+
+                if (featuredJson.success) {
+                    setFeaturedBlogs(featuredJson.data || []);
+                }
+            } catch (err) {
+                console.error('Blogs fetch error:', err);
+                setBlogs([]);
+                setFeaturedBlogs([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBlogs();
+    }, []);
+
     return (
         <div>
             <Header />
@@ -52,96 +108,87 @@ export default function PricingPage() {
                     <div className="container">
                         <div className="row g-4">
                             <div className="col-lg-9">
-                                <div className="row g-4">
-                                    {[1, 2, 3, 4].map((item) => (
-                                        <div key={item} className="col-md-6">
-                                            <Link
-                                                href="#"
-                                                style={{
-                                                    background: `url('/assets/img/blog-img1.webp')`,
-                                                    backgroundSize: 'cover',
-                                                    backgroundPosition: 'center',
-                                                    backgroundRepeat: 'no-repeat',
-                                                    display: 'block',
-                                                }}
-                                                className="blog-wrapper"
-                                            >
-                                                <div className="blog-content d-flex h-100 justify-content-end flex-column">
-                                                    <div className="description text-white fw-medium mb-2">
-                                                        The residential construction industry is evolving fast, with homeowners demanding smarter,
-                                                        greener, and more efficient spaces
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-1 justify-content-between">
-                                                        <div className="blog-icon d-flex align-items-center gap-2">
-                                                            <Image
-                                                                src="/assets/img/blog-icon1.svg"
-                                                                width={40}
-                                                                height={40}
-                                                                alt="Blog Icon"
-                                                                loading="lazy"
-                                                            />
-                                                            <span className="d-block fw-semibold text-white">Jonathan Louis</span>
+                                {loading ? (
+                                    <div className="text-center py-5">
+                                        <div className="spinner-border text-primary" />
+                                        <p className="mt-3 text-muted">Loading blogs...</p>
+                                    </div>
+                                ) : blogs.length === 0 ? (
+                                    <p className="text-muted text-center">No blogs found.</p>
+                                ) : (
+                                    <div className="row g-4">
+                                        {blogs.map((blog) => (
+                                            <div key={blog.id} className="col-md-6">
+                                                <Link
+                                                    href={''}
+                                                    className="blog-wrapper"
+                                                    style={{
+                                                        background: `url('${blog.featured_image}')`,
+                                                        backgroundSize: 'cover',
+                                                        backgroundPosition: 'center',
+                                                        backgroundRepeat: 'no-repeat',
+                                                        display: 'block',
+                                                    }}
+                                                >
+                                                    <div className="blog-content d-flex h-100 justify-content-end flex-column">
+                                                        <div className="description text-white fw-medium mb-2">
+                                                            {getExcerpt(blog.content)}
                                                         </div>
-                                                        <div style={{ fontSize: '14px' }} className="date text-white">
-                                                            Aug 02, 2025
+
+                                                        <div className="d-flex align-items-center justify-content-between">
+                                                            <div className="blog-icon d-flex align-items-center gap-2">
+                                                                <Image
+                                                                    src={blog.author.profile_image}
+                                                                    width={40}
+                                                                    height={40}
+                                                                    alt={blog.author.name}
+                                                                />
+                                                                <span className="fw-semibold text-white">
+                                                                    {blog.author.name}
+                                                                </span>
+                                                            </div>
+                                                            <div className="date text-white fs-14">
+                                                                {formatBlogDate(blog.created_at)}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </Link>
-                                        </div>
-                                    ))}
-                                </div>
+                                                </Link>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="col-lg-3">
-                                {/* Featured Posts */}
                                 <div className="featured-post mb-5">
                                     <div className="feature-title">Featured</div>
-                                    {[1, 2, 3].map((item) => (
-                                        <div key={`feat-${item}`} className="feature-post">
-                                            <Link href="#">
-                                                <Image
-                                                    src="/assets/img/feature-img1.webp"
-                                                    width={124}
-                                                    height={107}
-                                                    alt="Featured Image"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-                                            <div className="content">
-                                                <div className="date">Jan 12, 2025</div>
-                                                <Link href="#" className="description">
-                                                    From supply chain issues to labor shortages, residential contractors face unique challenges every
-                                                    day.
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
 
-                                {/* Latest Posts */}
-                                <div className="latest-post">
-                                    <div className="feature-title">Latest</div>
-                                    {[1, 2, 3].map((item) => (
-                                        <div key={`latest-${item}`} className="feature-post">
-                                            <Link href="#">
-                                                <Image
-                                                    src="/assets/img/feature-img1.webp"
-                                                    width={124}
-                                                    height={107}
-                                                    alt="Featured Image"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-                                            <div className="content">
-                                                <div className="date">Jan 12, 2025</div>
-                                                <Link href="#" className="description">
-                                                    From supply chain issues to labor shortages, residential contractors face unique challenges every
-                                                    day.
+                                    {featuredBlogs.length === 0 ? (
+                                        <p className="text-muted mt-3">No featured blogs</p>
+                                    ) : (
+                                        featuredBlogs.map((blog) => (
+                                            <div key={blog.id} className="feature-post">
+                                                <Link href={''}>
+                                                    <Image
+                                                        style={{ borderRadius: '10px' }}
+                                                        src={blog.featured_image}
+                                                        width={124}
+                                                        height={107}
+                                                        alt={blog.title}
+                                                    />
                                                 </Link>
+
+                                                <div className="content">
+                                                    <div className="date">
+                                                        {formatBlogDate(blog.created_at)}
+                                                    </div>
+                                                    <Link href={`/blogs/${blog.slug}`} className="description">
+                                                        {getExcerpt(blog.content, 80)}
+                                                    </Link>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -215,6 +215,13 @@ export default function Header() {
                                     <ul className="dropdown-menu">
                                         <li>
                                             <Link
+                                                href={'/home-general-contractor'}
+                                                className={`dropdown-item d-flex align-items-center`}>
+                                                General Contractor
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
                                                 href={'/home-subcontractor'}
                                                 className={`dropdown-item d-flex align-items-center`}>
                                                 Subcontractor
@@ -237,7 +244,7 @@ export default function Header() {
                                     <ul className="dropdown-menu">
                                         <li>
                                             <Link
-                                                href={'/home-subcontractor'}
+                                                href={'/home-general-contractor'}
                                                 className={`dropdown-item d-flex align-items-center`}>
                                                 General Contractor
                                             </Link>
@@ -266,7 +273,7 @@ export default function Header() {
                                     <ul className="dropdown-menu">
                                         <li>
                                             <Link
-                                                href={'/home-subcontractor'}
+                                                href={'/home-general-contractor'}
                                                 className={`dropdown-item d-flex align-items-center`}>
                                                 General Contractor
                                             </Link>

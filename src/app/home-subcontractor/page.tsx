@@ -4,7 +4,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import Slider from "react-slick";
-import React, {useRef, useState, useEffect} from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -19,10 +19,10 @@ import '../../styles/testimonial.css';
 import '../../styles/faqs.css';
 import '../../styles/pricing.css';
 
-import {generateToken, messaging} from "../notification/firebase";
-import {onMessage} from "firebase/messaging";
-import {showNotificationToast} from "../notification/toast";
-import {useRouter} from "next/navigation";
+import { generateToken, messaging } from "../notification/firebase";
+import { onMessage } from "firebase/messaging";
+import { showNotificationToast } from "../notification/toast";
+import { useRouter } from "next/navigation";
 
 interface Project {
     id: number;
@@ -73,6 +73,52 @@ export default function HomePage() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [plans, setPlans] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [blogs, setBlogs] = useState([]);
+    const [blogsLoading, setBlogsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            try {
+                setBlogsLoading(true);
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/latest`,
+                    {
+                        method: 'GET',
+                        headers: { Accept: 'application/json' },
+                    }
+                );
+
+                const json = await res.json();
+
+                if (json.success && Array.isArray(json.data)) {
+                    setBlogs(json.data.slice(0, 3)); // sirf latest 3
+                } else {
+                    setBlogs([]);
+                }
+            } catch (error) {
+                console.error('Failed to load blogs:', error);
+                setBlogs([]);
+            } finally {
+                setBlogsLoading(false);
+            }
+        };
+
+        fetchBlogs();
+    }, []);
+
+    const formatBlogDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+        });
+    };
+
+    const getExcerpt = (html, limit = 140) => {
+        const text = stripHtml(html);
+        return text.length > limit ? text.slice(0, limit) + '...' : text;
+    };
 
     const sliderSettings = {
         slidesToShow: 3,
@@ -179,8 +225,8 @@ export default function HomePage() {
                     // (optional UX enhancement)
                 });
             };
-            document.addEventListener('click', attemptPlay, {once: true});
-            document.addEventListener('touchstart', attemptPlay, {once: true});
+            document.addEventListener('click', attemptPlay, { once: true });
+            document.addEventListener('touchstart', attemptPlay, { once: true });
         }
 
         generateToken();
@@ -354,7 +400,7 @@ export default function HomePage() {
         };
 
         fetchPlans();
-    }, );
+    },);
 
     const renderNoteCard = () => (
         <div className="note-card d-flex align-items-start gap-1">
@@ -403,12 +449,12 @@ export default function HomePage() {
                                 <div className="d-flex align-items-center gap-2">
                                     <del className="fs-18 fw-medium text-black">$ {Math.trunc(plan.price)}</del>
                                     <div className="d-flex align-items-center gap-2 justify-content-between">
-                                    <span className="price">
-                                        $
-                                        <span className="fw-bold">
-                                            {Math.trunc(plan.discount ? plan.price - plan.price / 100 * plan.discount : plan.price)}
+                                        <span className="price">
+                                            $
+                                            <span className="fw-bold">
+                                                {Math.trunc(plan.discount ? plan.price - plan.price / 100 * plan.discount : plan.price)}
+                                            </span>
                                         </span>
-                                    </span>
                                     </div>
                                 </div>
                                 {plan.saveText && (
@@ -539,7 +585,7 @@ export default function HomePage() {
 
     return (
         <div>
-            <Header/>
+            <Header />
 
             <section className="home-banner-sec page-banner">
                 <Slider ref={sliderRef} {...bannerSettings}>
@@ -566,7 +612,7 @@ export default function HomePage() {
                                         zIndex: -1,
                                     }}
                                 >
-                                    <source src={banner.video} type="video/mp4"/>
+                                    <source src={banner.video} type="video/mp4" />
                                 </video>
                                 <div className="content-wrapper text-center text-white px-3">
                                     {/* ✅ First slide <h1>, others <h2> */}
@@ -625,7 +671,7 @@ export default function HomePage() {
                 <div className="container">
                     <div className="content-wrapper mb-4 text-center">
                         <h2 className="main-title text-capitalize">
-                            Explore real projects <br/>posted by top general contractors
+                            Explore real projects <br />posted by top general contractors
                         </h2>
                     </div>
 
@@ -650,14 +696,14 @@ export default function HomePage() {
                                 <Slider {...sliderSettingsDesktop}>
                                     {projects.map((project) => (
                                         <div key={project.id} className="px-2">
-                                            <div className="custom-card p-4 h-100" style={{minHeight: '244px'}}>
+                                            <div className="custom-card p-4 h-100" style={{ minHeight: '244px' }}>
                                                 <div className="topbar d-flex align-items-center justify-content-between gap-1 mb-3">
                                                     <div
                                                         className="btn btn-primary btn-sm text-truncate fs-14"
                                                     >
                                                         {project.category.name}
                                                     </div>
-                                                    <div className="date text-primary-gray-light fs-12 text-end" style={{minWidth: '100px'}}>
+                                                    <div className="date text-primary-gray-light fs-12 text-end" style={{ minWidth: '100px' }}>
                                                         {formatTimeAgo(project.created_at)}
                                                     </div>
                                                 </div>
@@ -731,54 +777,61 @@ export default function HomePage() {
             <section className="blog-sec">
                 <div className="container">
                     <h2 className="main-title text-center fw-bold mb-3">Our Blogs</h2>
-                    <p className="text-center mb-5">Insights, ideas, and updates to help you stay informed and
-                        inspired.</p>
-                    <div className="row g-4">
-                        <div className="col-12">
-                            <div className="row g-4">
-                                {[1, 2, 3].map((item) => (
-                                    <div key={item} className="col-lg-4 col-md-6">
-                                        <Link
-                                            href="#"
-                                            style={{
-                                                background: `url('/assets/img/blog-img1.webp')`,
-                                                backgroundSize: 'cover',
-                                                backgroundPosition: 'center',
-                                                backgroundRepeat: 'no-repeat',
-                                                display: 'block',
-                                            }}
-                                            className="blog-wrapper"
-                                        >
-                                            <div className="blog-content d-flex h-100 justify-content-end flex-column">
-                                                <div className="description text-white fw-medium mb-2">
-                                                    The residential construction industry is evolving fast, with
-                                                    homeowners demanding smarter,
-                                                    greener, and more efficient spaces
+                    <p className="text-center mb-5">
+                        Insights, ideas, and updates to help you stay informed and inspired.
+                    </p>
+
+                    {blogsLoading ? (
+                        <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status" />
+                            <p className="mt-3 text-muted">Loading blogs...</p>
+                        </div>
+                    ) : blogs.length === 0 ? (
+                        <p className="text-center text-muted">No blogs available.</p>
+                    ) : (
+                        <div className="row g-4">
+                            {blogs.map((blog) => (
+                                <div key={blog.id} className="col-lg-4 col-md-6">
+                                    <Link
+                                        href={''}
+                                        className="blog-wrapper"
+                                        style={{
+                                            background: `url('${blog.featured_image}')`,
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                            backgroundRepeat: 'no-repeat',
+                                            display: 'block',
+                                        }}
+                                    >
+                                        <div className="blog-content d-flex h-100 justify-content-end flex-column">
+                                            <div className="description text-white fw-medium mb-2">
+                                                {getExcerpt(blog.content)}
+                                            </div>
+
+                                            <div className="d-flex align-items-center justify-content-between">
+                                                <div className="blog-icon d-flex align-items-center gap-2">
+                                                    <Image
+                                                        src={blog.author.profile_image}
+                                                        width={40}
+                                                        height={40}
+                                                        alt={blog.author.name}
+                                                        style={{ borderRadius: '100px' }}
+                                                    />
+                                                    <span className="fw-semibold text-white">
+                                                        {blog.author.name}
+                                                    </span>
                                                 </div>
-                                                <div
-                                                    className="d-flex align-items-center gap-1 justify-content-between">
-                                                    <div className="blog-icon d-flex align-items-center gap-2">
-                                                        <Image
-                                                            src="/assets/img/blog-icon1.svg"
-                                                            width={40}
-                                                            height={40}
-                                                            alt="Blog Icon"
-                                                            loading="lazy"
-                                                        />
-                                                        <span
-                                                            className="d-block fw-semibold text-white">Jonathan Louis</span>
-                                                    </div>
-                                                    <div style={{fontSize: '14px'}} className="date text-white">
-                                                        Aug 02, 2025
-                                                    </div>
+
+                                                <div className="date text-white fs-14">
+                                                    {formatBlogDate(blog.created_at)}
                                                 </div>
                                             </div>
-                                        </Link>
-                                    </div>
-                                ))}
-                            </div>
+                                        </div>
+                                    </Link>
+                                </div>
+                            ))}
                         </div>
-                    </div>
+                    )}
                 </div>
             </section>
 
@@ -794,8 +847,8 @@ export default function HomePage() {
                         </div>
                         <div className="text-center">
                             <Link href="/auth/register/subcontractor"
-                                  className="btn btn-light bg-white text-center d-lg-block mx-auto rounded-3"
-                                  style={{width: '300px'}}>Join as Subcontractor</Link>
+                                className="btn btn-light bg-white text-center d-lg-block mx-auto rounded-3"
+                                style={{ width: '300px' }}>Join as Subcontractor</Link>
                         </div>
                     </div>
                 </div>
@@ -858,7 +911,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            <Footer/>
+            <Footer />
         </div>
     );
 }
