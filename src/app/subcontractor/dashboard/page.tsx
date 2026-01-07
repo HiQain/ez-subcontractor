@@ -772,12 +772,6 @@ export default function DashboardSubContractor() {
                                             className="mb-3"
                                         />
                                         <p className="text-muted">No projects match your filters.</p>
-                                        <button
-                                            className="btn btn-outline-primary mt-2"
-                                            onClick={handleResetFilters}
-                                        >
-                                            Clear
-                                        </button>
                                     </div>
                                 ) : (
                                     <>
