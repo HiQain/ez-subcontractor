@@ -9,14 +9,6 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/free-trial.css';
 
-// 🔹 New: Banner image type (extendable)
-interface BannerImage {
-    id: number;
-    src: string;
-    alt: string;
-    // caption?: string; // optional: add later if needed
-}
-
 interface Project {
     id: number;
     city: string;
@@ -89,14 +81,6 @@ export default function DashboardSubContractor() {
     const [verticalAds, setVerticalAds] = useState<Ad[]>([]);
     const [adsLoading, setAdsLoading] = useState(true);
     const [adsError, setAdsError] = useState<string | null>(null);
-
-    const [bannerImages, setBannerImages] = useState<BannerImage[]>([]);
-    const [bannerImageRight, setBannerImageRight] = useState<BannerImage[]>([]);
-    const [bannerImagesSidebar, setBannerImagesSidebar] = useState<BannerImage[]>([]);
-    const [bannerImagesLoading, setBannerImagesLoading] = useState(true);
-    const [bannerImagesRightLoading, setBannerImagesRightLoading] = useState(true);
-    const [bannerImagesError, setBannerImagesError] = useState<string | null>(null);
-    const [bannerImagesRightError, setBannerRightImagesError] = useState<string | null>(null);
     const [profileLoaded, setProfileLoaded] = useState(false);
 
     const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
@@ -235,40 +219,6 @@ export default function DashboardSubContractor() {
         interval = Math.floor(seconds / 60);
         if (interval > 1) return `${interval} mins ago`;
         return 'Just now';
-    };
-
-    // 🔹 NEW: Fetch banner images (replace with your API)
-    const fetchBannerImages = async () => {
-        setBannerImagesLoading(true);
-        setBannerImagesError(null);
-
-        try {
-            // ✅ Replace this block with real API call later
-            // Example:
-            // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}banner-images`);
-            // const data = await res.json();
-
-            // 🔹 For now: static fallback (you can remove this when API ready)
-            const staticImages: BannerImage[] = [
-                { id: 1, src: '/assets/img/add1.jpg', alt: 'Construction Project 1' },
-                { id: 2, src: '/assets/img/add1.jpg', alt: 'Construction Project 2' },
-                { id: 3, src: '/assets/img/add1.jpg', alt: 'Construction Project 3' },
-            ];
-
-            // Simulate API delay (remove in production)
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            setBannerImages(staticImages);
-        } catch (err) {
-            console.error('Failed to load banner images:', err);
-            setBannerImagesError('Failed to load banner images');
-            // Fallback to default images
-            setBannerImages([
-                { id: 1, src: '/assets/img/add1.jpg', alt: 'Default Banner' },
-            ]);
-        } finally {
-            setBannerImagesLoading(false);
-        }
     };
 
     useEffect(() => {
@@ -476,10 +426,6 @@ export default function DashboardSubContractor() {
     // 🔹 Initial load: Banner images + saved + projects
     useEffect(() => {
         if (!profileLoaded) return;
-        fetchBannerImages();
-        // fetchBannerImages_right();
-        // fetchBannerImagesSidebar();
-
         fetchHorizontalAds();
         fetchVerticalAds();
     }, [profileLoaded]);
@@ -539,6 +485,10 @@ export default function DashboardSubContractor() {
         setPage(1);
     };
 
+    const leftAds = horizontalAds.slice(0, Math.ceil(horizontalAds.length / 2));
+
+    const rightAds = horizontalAds.filter(ad => !leftAds.includes(ad));
+
     return (
         <>
             <Header />
@@ -546,33 +496,71 @@ export default function DashboardSubContractor() {
                 <section className="banner-sec trial position-static">
                     <div className="container">
                         <div className="row g-4">
-                            <div className="col-lg-6 position-relative">
-                                {bannerImagesLoading ? (
+                            <div className="col-lg-6">
+                                {adsLoading ? (
                                     <div className="d-flex align-items-center justify-content-center bg-light rounded-4" style={{ height: '352px' }}>
                                         <div className="spinner-border text-primary" role="status">
                                             <span className="visually-hidden">Loading banner...</span>
                                         </div>
                                     </div>
-                                ) : bannerImagesError ? (
-                                    <div className="alert alert-warning d-flex align-items-center" style={{ height: '352px' }}>
-                                        {bannerImagesError}
-                                    </div>
+                                ) : adsError ? (
+                                    <div className="alert alert-warning">{adsError}</div>
                                 ) : (
-                                    <div className="slider rounded overflow-hidden">
-                                        <Slider ref={leftSliderRef} {...sliderSettings}>
-                                            {bannerImages.map((img) => (
-                                                <div key={img.id}>
+                                    <Slider {...sliderSettingsRight}>
+                                        {leftAds.map(ad => (
+                                            <a
+                                                key={ad.id}
+                                                href={ad.redirect_url}
+                                                target="_blank"
+                                                className="position-relative d-block"
+                                            >
+                                                <div style={{
+                                                    maxWidth: '650px',
+                                                    height: '426px',
+                                                }}>
                                                     <Image
-                                                        src={img.src}
-                                                        width={800}
-                                                        height={230}
-                                                        alt={img.alt}
-                                                        className="img-fluid w-100 h-100 rounded-4 object-fit-cover "
+                                                        src={ad.image}
+                                                        alt="Ad"
+                                                        className="img-fluid w-100 rounded-4 h-100 post-img"
+                                                        fill
+                                                        style={{ objectFit: 'cover' }}
                                                     />
                                                 </div>
-                                            ))}
-                                        </Slider>
-                                    </div>
+
+                                                {/* Overlay */}
+                                                <div
+                                                    className="caption-overlay position-absolute bottom-0 start-0 w-100 p-3"
+                                                    style={{
+                                                        background: 'linear-gradient(0deg, rgba(0,0,0,0.6), rgba(0,0,0,0))',
+                                                        color: '#fff',
+                                                        borderBottomLeftRadius: '0.5rem',
+                                                        borderBottomRightRadius: '0.5rem',
+                                                    }}
+                                                >
+                                                    <div className="d-flex align-items-center gap-2 mb-2">
+                                                        <Image
+                                                            src={ad.advertiser.profile_image_url || '/assets/img/profile-placeholder.webp'}
+                                                            width={35}
+                                                            height={35}
+                                                            className="rounded-circle"
+                                                            alt=""
+                                                            style={{ objectFit: 'cover' }}
+                                                        />
+                                                        <div>
+                                                            <p className="mb-0 fw-bold">{ad.advertiser.company_name}</p>
+                                                            <p className="mb-0 fs-13">{ad.advertiser.name}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    {ad.description && (
+                                                        <p className="caption-text mb-0">
+                                                            {ad.description}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </a>
+                                        ))}
+                                    </Slider>
                                 )}
                             </div>
                             <div className="col-lg-6">
@@ -586,7 +574,7 @@ export default function DashboardSubContractor() {
                                     <div className="alert alert-warning">{adsError}</div>
                                 ) : (
                                     <Slider {...sliderSettingsRight}>
-                                        {horizontalAds.map(ad => (
+                                        {rightAds.map(ad => (
                                             <a
                                                 key={ad.id}
                                                 href={ad.redirect_url}
