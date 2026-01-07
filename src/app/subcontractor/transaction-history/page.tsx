@@ -7,6 +7,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import SidebarSubcontractor from "../../components/SidebarSubcontractor";
 
+interface Category {
+    id: number;
+    title: string;
+}
 interface Transaction {
     id: number;
     subscription_id: string;
@@ -21,6 +25,7 @@ interface Transaction {
         id: number;
         name: string;
     };
+    categories: Category[];
 }
 
 export default function TransactionsPage() {
@@ -171,6 +176,7 @@ export default function TransactionsPage() {
                                                             <th>Card</th>
                                                             <th>Date</th>
                                                             <th>Amount</th>
+                                                            <th>Categories</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -182,11 +188,28 @@ export default function TransactionsPage() {
                                                             filteredTransactions.map((tx, index) => (
                                                                 <tr key={tx.id}>
                                                                     <td>{index + 1}</td>
-                                                                    <td>{`${tx.transaction_id.slice(0, 6)}...`}</td>
+                                                                    <td>{`${tx.transaction_id.slice(0, 14)}...`}</td>
                                                                     <td>{tx.plan.name}</td>
                                                                     <td>****{tx.card_last4}</td>
                                                                     <td>{new Date(tx.created_at).toLocaleDateString()}</td>
                                                                     <td>${tx.amount}</td>
+                                                                    <td>
+                                                                        {tx.categories.length > 0 ? (
+                                                                            <select
+                                                                                className="form-select"
+                                                                                value={tx.categories[0].id}
+                                                                                onChange={(e) => e.preventDefault()}
+                                                                            >
+                                                                                {tx.categories.map(cat => (
+                                                                                    <option key={cat.id} value={cat.id}>
+                                                                                        {cat.title}
+                                                                                    </option>
+                                                                                ))}
+                                                                            </select>
+                                                                        ) : (
+                                                                            <span>No Categories</span>
+                                                                        )}
+                                                                    </td>
                                                                 </tr>
                                                             ))
                                                         )}
