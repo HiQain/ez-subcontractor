@@ -153,7 +153,7 @@ export default function MyAds() {
                                         key={ad.id}
                                         className={isHorizontal ? 'col-xl-6' : 'col-xl-3'}
                                     >
-                                        <div className="image-wrapper position-relative">
+                                        <div className="image-wrapper position-relative" style={{ opacity: ad.can_pause === 1 ? 0.5 : 1 }}>
                                             {ad.description && (
                                                 <div className="caption-overlay">
                                                     <div className="d-flex align-items-center gap-2">
