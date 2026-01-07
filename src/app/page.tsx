@@ -11,9 +11,6 @@ import Footer from "./components/Footer";
 import "../styles/home.css";
 import "../styles/cards.css";
 import "../styles/slick-slider.css";
-import { generateToken, messaging } from "./notification/firebase";
-import { onMessage } from "firebase/messaging";
-import { showNotificationToast } from "./notification/toast";
 import { useRouter } from "next/navigation";
 
 interface Project {
@@ -162,20 +159,6 @@ export default function HomePage() {
             document.addEventListener('click', attemptPlay, { once: true });
             document.addEventListener('touchstart', attemptPlay, { once: true });
         }
-
-        // Firebase messaging
-        generateToken();
-        const unsubscribe = onMessage(messaging, (payload) => {
-            if (payload.notification) {
-                showNotificationToast(
-                    payload.notification.title || 'New Notification',
-                    payload.notification.body || '',
-                    'info'
-                );
-            }
-        });
-
-        return () => unsubscribe();
     }, []);
 
     // 🔹 Fetch Projects

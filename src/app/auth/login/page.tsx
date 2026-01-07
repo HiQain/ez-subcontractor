@@ -5,6 +5,9 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { generateToken, messaging } from '../../notification/firebase';
+import { onMessage } from 'firebase/messaging';
+import { showNotificationToast } from '../../notification/toast';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('johndoe@gmail.com');
@@ -40,6 +43,20 @@ export default function LoginPage() {
                     return;
             }
         }
+
+        // Firebase messaging
+        generateToken();
+        const unsubscribe = onMessage(messaging, (payload) => {
+            if (payload.notification) {
+                showNotificationToast(
+                    payload.notification.title || 'New Notification',
+                    payload.notification.body || '',
+                    'info'
+                );
+            }
+        });
+
+        return () => unsubscribe();
     }, [router]);
 
     // 🔹 Show non-blocking toast notification
@@ -144,6 +161,7 @@ export default function LoginPage() {
         }
 
         try {
+            const fcmToken = localStorage.getItem("fcmToken");
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/login`, {
                 method: 'POST',
                 headers: {
@@ -153,6 +171,13 @@ export default function LoginPage() {
                 body: JSON.stringify({
                     email: trimmedEmail,
                     password: trimmedPassword,
+                    device_token: fcmToken,
+                    device_type: "website",
+                    device_info: {
+                        "os": "website",
+                        "app_version": "1.0.0",
+                        "manufacturer": "website"
+                    }
                 }),
             });
 
