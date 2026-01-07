@@ -58,7 +58,6 @@ interface Ad {
 
 export default function DashboardSubContractor() {
     const router = useRouter();
-    const sliderRef = useRef<Slider | null>(null);
     const leftSliderRef = useRef<Slider | null>(null);
 
     // 🔹 Slider settings
@@ -79,7 +78,7 @@ export default function DashboardSubContractor() {
         speed: 600,
         slidesToShow: 1,
         slidesToScroll: 1,
-        arrows: true,
+        arrows: false,
         autoplay: true,
         autoplaySpeed: 4000,
         pauseOnHover: true,
@@ -594,34 +593,49 @@ export default function DashboardSubContractor() {
                                                 target="_blank"
                                                 className="position-relative d-block"
                                             >
-                                                <Image
-                                                    src={ad.image}
-                                                    width={650}
-                                                    height={426}
-                                                    alt="Ad"
-                                                    className="img-fluid w-100 h-100 rounded-4 object-fit-cover"
-                                                />
+                                                <div style={{
+                                                    maxWidth: '650px',
+                                                    height: '426px',
+                                                }}>
+                                                    <Image
+                                                        src={ad.image}
+                                                        alt="Ad"
+                                                        className="img-fluid w-100 rounded-4 h-100 post-img"
+                                                        fill
+                                                        style={{ objectFit: 'cover' }}
+                                                    />
+                                                </div>
 
                                                 {/* Overlay */}
-                                                <div className="d-flex align-items-center gap-3 position-absolute z-3"
-                                                    style={{ bottom: 20, left: 20 }}>
-                                                    <div className="bg-white rounded-circle p-1 shadow">
+                                                <div
+                                                    className="caption-overlay position-absolute bottom-0 start-0 w-100 p-3"
+                                                    style={{
+                                                        background: 'linear-gradient(0deg, rgba(0,0,0,0.6), rgba(0,0,0,0))',
+                                                        color: '#fff',
+                                                        borderBottomLeftRadius: '0.5rem',
+                                                        borderBottomRightRadius: '0.5rem',
+                                                    }}
+                                                >
+                                                    <div className="d-flex align-items-center gap-2 mb-2">
                                                         <Image
-                                                            src={ad.advertiser.profile_image_url}
-                                                            width={40}
-                                                            height={40}
+                                                            src={ad.advertiser.profile_image_url || '/assets/img/profile-placeholder.webp'}
+                                                            width={35}
+                                                            height={35}
                                                             className="rounded-circle"
                                                             alt=""
+                                                            style={{ objectFit: 'cover' }}
                                                         />
+                                                        <div>
+                                                            <p className="mb-0 fw-bold">{ad.advertiser.company_name}</p>
+                                                            <p className="mb-0 fs-13">{ad.advertiser.name}</p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <h6 className="fw-bold mb-0 text-white">
-                                                            {ad.advertiser.company_name}
-                                                        </h6>
-                                                        <p className="mb-0 text-white">
-                                                            {ad.advertiser.name}
+
+                                                    {ad.description && (
+                                                        <p className="caption-text mb-0">
+                                                            {ad.description}
                                                         </p>
-                                                    </div>
+                                                    )}
                                                 </div>
                                             </a>
                                         ))}
