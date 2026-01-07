@@ -646,7 +646,7 @@ export default function PostAnAd() {
                                     )}
                                     <div className="input-wrapper mb-4">
                                         <label className="fw-semibold mb-1">Caption</label>
-                                        <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Enter Caption here." />
+                                        <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Enter Caption" />
                                     </div>
                                 </div>
                                 {
