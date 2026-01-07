@@ -9,13 +9,6 @@ import Footer from "../../components/Footer";
 import '../../../styles/free-trial.css';
 import Slider from "react-slick";
 
-interface BannerImage {
-    id: number;
-    src: string;
-    alt: string;
-    // caption?: string; // optional: add later if needed
-}
-
 interface Project {
     id: number;
     city: string;
@@ -40,6 +33,19 @@ interface Contractor {
     created_at: string;
 }
 
+interface Ad {
+    id: number;
+    orientation: 'horizontal' | 'vertical';
+    description: string;
+    image: string;
+    redirect_url: string;
+    advertiser: {
+        name: string;
+        company_name: string;
+        profile_image_url: string;
+    };
+}
+
 export default function DashboardPage() {
     const router = useRouter();
     const [expandedCards, setExpandedCards] = useState<number[]>([]);
@@ -58,6 +64,8 @@ export default function DashboardPage() {
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Inside DashboardPage component
+    const [adsLoading, setAdsLoading] = useState(true);
+    const [adsError, setAdsError] = useState<string | null>(null);
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
     const [selectedRating, setSelectedRating] = useState<number>(0); // 0 to 5
     const [comment, setComment] = useState('');
@@ -65,17 +73,8 @@ export default function DashboardPage() {
     const [ratingLoading, setRatingLoading] = useState(false);
     const [currentContractor, setCurrentContractor] = useState<Contractor | null>(null); // Track which contractor is being rated
     const [contractors, setContractors] = useState<Contractor[]>([]);
+    const [horizontalAds, setHorizontalAds] = useState<Ad[]>([]);
 
-// 🔹 NEW: Banner images state (API-ready)
-    const [bannerImages, setBannerImages] = useState<BannerImage[]>([]);
-    const [bannerImageRight, setBannerImageRight] = useState<BannerImage[]>([]);
-    const [bannerImagesSidebar, setBannerImagesSidebar] = useState<BannerImage[]>([]);
-    const [bannerImagesLoading, setBannerImagesLoading] = useState(true);
-    const [bannerImagesRightLoading, setBannerImagesRightLoading] = useState(true);
-    const [bannerImagesError, setBannerImagesError] = useState<string | null>(null);
-    const [bannerImagesRightError, setBannerRightImagesError] = useState<string | null>(null);
-
-    const sliderRef = useRef<Slider | null>(null);
     const leftSliderRef = useRef<Slider | null>(null);
 
     // 🔹 Slider settings
@@ -96,24 +95,11 @@ export default function DashboardPage() {
         speed: 600,
         slidesToShow: 1,
         slidesToScroll: 1,
-        arrows: true,
+        arrows: false,
         autoplay: true,
         autoplaySpeed: 4000,
         pauseOnHover: true,
     };
-    const sliderSettings2 = {
-        dots: false,
-        infinite: true,
-        speed: 600,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        arrows: true,
-        autoplay: true,
-        autoplaySpeed: 4000,
-        pauseOnHover: true,
-    };
-
-    const selectRef = useRef(null);
 
     // 🔹 Show non-blocking thank-you toast
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -156,6 +142,27 @@ export default function DashboardPage() {
             clearTimeout(timeoutId);
             if (toast.parentNode) toast.parentNode.removeChild(toast);
         });
+    };
+
+    const fetchHorizontalAds = async () => {
+        setAdsLoading(true);
+        setAdsError(null);
+
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads?type=horizontal`,
+                { headers: { Accept: 'application/json' } }
+            );
+
+            const json = await res.json();
+            if (!res.ok) throw new Error('Failed to load ads');
+
+            setHorizontalAds(json.data || []);
+        } catch (err) {
+            setAdsError('Failed to load ads');
+        } finally {
+            setAdsLoading(false);
+        }
     };
 
     // 🔹 Toggle card expansion
@@ -231,126 +238,6 @@ export default function DashboardPage() {
         return num.toFixed(1).replace(/\.0$/, '');
     };
 
-    // 🔹 NEW: Fetch banner images (replace with your API)
-    const fetchBannerImages = async () => {
-        setBannerImagesLoading(true);
-        setBannerImagesError(null);
-
-        try {
-            // ✅ Replace this block with real API call later
-            // Example:
-            // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}banner-images`);
-            // const data = await res.json();
-
-            // 🔹 For now: static fallback (you can remove this when API ready)
-            const staticImages: BannerImage[] = [
-                { id: 1, src: '/assets/img/add1.jpg', alt: 'Construction Project 1' },
-                { id: 2, src: '/assets/img/add1.jpg', alt: 'Construction Project 2' },
-                { id: 3, src: '/assets/img/add1.jpg', alt: 'Construction Project 3' },
-            ];
-
-            // Simulate API delay (remove in production)
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            setBannerImages(staticImages);
-        } catch (err) {
-            console.error('Failed to load banner images:', err);
-            setBannerImagesError('Failed to load banner images');
-            // Fallback to default images
-            setBannerImages([
-                { id: 1, src: '/assets/img/add1.jpg', alt: 'Default Banner' },
-            ]);
-        } finally {
-            setBannerImagesLoading(false);
-        }
-    };
-    const fetchBannerImages_right = async () => {
-        setBannerImagesRightLoading(true);
-        setBannerRightImagesError(null);
-
-        try {
-            // ✅ Replace this block with real API call later
-            // Example:
-            // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}banner-images`);
-            // const data = await res.json();
-
-            // 🔹 For now: static fallback (you can remove this when API ready)
-            const staticImages: BannerImage[] = [
-                { id: 1, src: '/assets/img/add2.jpg', alt: 'Construction Project 1' },
-                { id: 2, src: '/assets/img/add2.jpg', alt: 'Construction Project 2' },
-                { id: 3, src: '/assets/img/add2.jpg', alt: 'Construction Project 3' },
-            ];
-
-            // Simulate API delay (remove in production)
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            setBannerImageRight(staticImages);
-        } catch (err) {
-            console.error('Failed to load banner images:', err);
-            setBannerRightImagesError('Failed to load banner images');
-            // Fallback to default images
-            setBannerImageRight([
-                { id: 1, src: '/assets/img/add2.webp', alt: 'Default Banner' },
-            ]);
-        } finally {
-            setBannerImagesRightLoading(false);
-        }
-    };
-
-    // 🔹 Fetch 4 most recent projects
-    useEffect(() => {
-        fetchBannerImages();
-        const fetchProjects = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    setError('Authentication required.');
-                    router.push('/auth/login');
-                    return;
-                }
-
-                const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects/my-projects?perPage=4&page=1`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Accept': 'application/json',
-                        },
-                    }
-                );
-
-                if (response.status === 401) {
-                    localStorage.removeItem('token');
-                    setError('Session expired. Please log in again.');
-                    router.push('/auth/login');
-                    return;
-                }
-
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.message?.[0] || 'Failed to load projects');
-                }
-
-                let fetchedProjects: Project[] = [];
-                if (data?.data?.projects?.data && Array.isArray(data.data.projects.data)) {
-                    fetchedProjects = [...data.data.projects.data].reverse();
-                }
-                setProjects(fetchedProjects);
-            } catch (err: any) {
-                setError(err.message || 'Failed to load projects.');
-
-                // 🔹 Show error toast
-                showToast(err.message || 'Failed to load projects.', 'error');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProjects();
-    }, [router]);
-
     // 🔹 Fetch latest-rated contractors (for the cards)
     useEffect(() => {
         const fetchContractors = async () => {
@@ -407,8 +294,7 @@ export default function DashboardPage() {
     }, []);
 
     useEffect(() => {
-        fetchBannerImages();
-        fetchBannerImages_right();
+        fetchHorizontalAds();
     }, []);
 
     // 🔍 Debounced search fetch
@@ -532,15 +418,9 @@ export default function DashboardPage() {
         }
     };
 
+    const leftAds = horizontalAds.slice(0, Math.ceil(horizontalAds.length / 2));
 
-    const settings = {
-        dots: false,
-        infinite: true,
-        speed: 600,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        arrows: false,
-    };
+    const rightAds = horizontalAds.filter(ad => !leftAds.includes(ad));
 
     return (
         <div className="sections overflow-hidden">
@@ -548,70 +428,138 @@ export default function DashboardPage() {
             <section className="banner-sec trial position-static">
                 <div className="container">
                     <div className="row g-4">
-                        <div className="col-lg-6 position-relative">
-                            {bannerImagesLoading ? (
+                        <div className="col-lg-6">
+                            {adsLoading ? (
                                 <div className="d-flex align-items-center justify-content-center bg-light rounded-4" style={{ height: '352px' }}>
                                     <div className="spinner-border text-primary" role="status">
                                         <span className="visually-hidden">Loading banner...</span>
                                     </div>
                                 </div>
-                            ) : bannerImagesError ? (
-                                <div className="alert alert-warning d-flex align-items-center" style={{ height: '352px' }}>
-                                    {bannerImagesError}
-                                </div>
+                            ) : adsError ? (
+                                <div className="alert alert-warning">{adsError}</div>
                             ) : (
-                                <div className="slider rounded overflow-hidden">
-                                    <Slider ref={leftSliderRef} {...sliderSettings}>
-                                        {bannerImages.map((img) => (
-                                            <div key={img.id}>
+                                <Slider {...sliderSettingsRight}>
+                                    {leftAds.map(ad => (
+                                        <a
+                                            key={ad.id}
+                                            href={ad.redirect_url}
+                                            target="_blank"
+                                            className="position-relative d-block"
+                                        >
+                                            <div style={{
+                                                maxWidth: '650px',
+                                                height: '426px',
+                                            }}>
                                                 <Image
-                                                    src={img.src}
-                                                    width={800}
-                                                    height={230}
-                                                    alt={img.alt}
-                                                    className="img-fluid w-100 h-100 rounded-4 object-fit-cover "
+                                                    src={ad.image}
+                                                    alt="Ad"
+                                                    className="img-fluid w-100 rounded-4 h-100 post-img"
+                                                    fill
+                                                    style={{ objectFit: 'cover' }}
                                                 />
                                             </div>
-                                        ))}
-                                    </Slider>
-                                </div>
+
+                                            {/* Overlay */}
+                                            <div
+                                                className="caption-overlay position-absolute bottom-0 start-0 w-100 p-3"
+                                                style={{
+                                                    background: 'linear-gradient(0deg, rgba(0,0,0,0.6), rgba(0,0,0,0))',
+                                                    color: '#fff',
+                                                    borderBottomLeftRadius: '0.5rem',
+                                                    borderBottomRightRadius: '0.5rem',
+                                                }}
+                                            >
+                                                <div className="d-flex align-items-center gap-2 mb-2">
+                                                    <Image
+                                                        src={ad.advertiser.profile_image_url || '/assets/img/profile-placeholder.webp'}
+                                                        width={35}
+                                                        height={35}
+                                                        className="rounded-circle"
+                                                        alt=""
+                                                        style={{ objectFit: 'cover' }}
+                                                    />
+                                                    <div>
+                                                        <p className="mb-0 fw-bold">{ad.advertiser.company_name}</p>
+                                                        <p className="mb-0 fs-13">{ad.advertiser.name}</p>
+                                                    </div>
+                                                </div>
+
+                                                {ad.description && (
+                                                    <p className="caption-text mb-0">
+                                                        {ad.description}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </a>
+                                    ))}
+                                </Slider>
                             )}
                         </div>
                         <div className="col-lg-6">
-                            {bannerImagesRightLoading ? (
+                            {adsLoading ? (
                                 <div className="d-flex align-items-center justify-content-center bg-light rounded-4" style={{ height: '352px' }}>
                                     <div className="spinner-border text-primary" role="status">
                                         <span className="visually-hidden">Loading banner...</span>
                                     </div>
                                 </div>
-                            ) : bannerImagesRightError ? (
-                                <div className="alert alert-warning d-flex align-items-center" style={{ height: '352px' }}>
-                                    {bannerImagesRightError}
-                                </div>
+                            ) : adsError ? (
+                                <div className="alert alert-warning">{adsError}</div>
                             ) : (
-                                <div className="slider slider-bottom-fade slider-arrow-right-bottom rounded overflow-hidden position-relative">
-                                    <Slider ref={leftSliderRef} {...sliderSettingsRight}>
-                                        {bannerImageRight.map((img) => (
-                                            <Image
-                                                key={img.id}
-                                                src={img.src}
-                                                width={800}
-                                                height={300}
-                                                alt={img.alt}
-                                                className="img-fluid w-100 h-100 rounded-4 object-fit-cover "
-                                            />
-                                        ))}
-                                    </Slider>
-                                    <div className="d-flex align-items-center gap-3 position-absolute z-3" style={{bottom: 20, left: 20}}>
-                                        <div className="bg-white rounded-circle p-2 shadow">
-                                            <Image className="img-fluide" src={'/assets/img/icons/fav.png'} width={50} height={50} alt={"icon"}/>
-                                        </div>
-                                        <div>
-                                            <h6 className="fw-bold mb-0 text-white">ABC Corporation</h6>
-                                            <p className="mb-0 text-white">John A</p>
-                                        </div>
-                                    </div>
-                                </div>
+                                <Slider {...sliderSettingsRight}>
+                                    {rightAds.map(ad => (
+                                        <a
+                                            key={ad.id}
+                                            href={ad.redirect_url}
+                                            target="_blank"
+                                            className="position-relative d-block"
+                                        >
+                                            <div style={{
+                                                maxWidth: '650px',
+                                                height: '426px',
+                                            }}>
+                                                <Image
+                                                    src={ad.image}
+                                                    alt="Ad"
+                                                    className="img-fluid w-100 rounded-4 h-100 post-img"
+                                                    fill
+                                                    style={{ objectFit: 'cover' }}
+                                                />
+                                            </div>
+
+                                            {/* Overlay */}
+                                            <div
+                                                className="caption-overlay position-absolute bottom-0 start-0 w-100 p-3"
+                                                style={{
+                                                    background: 'linear-gradient(0deg, rgba(0,0,0,0.6), rgba(0,0,0,0))',
+                                                    color: '#fff',
+                                                    borderBottomLeftRadius: '0.5rem',
+                                                    borderBottomRightRadius: '0.5rem',
+                                                }}
+                                            >
+                                                <div className="d-flex align-items-center gap-2 mb-2">
+                                                    <Image
+                                                        src={ad.advertiser.profile_image_url || '/assets/img/profile-placeholder.webp'}
+                                                        width={35}
+                                                        height={35}
+                                                        className="rounded-circle"
+                                                        alt=""
+                                                        style={{ objectFit: 'cover' }}
+                                                    />
+                                                    <div>
+                                                        <p className="mb-0 fw-bold">{ad.advertiser.company_name}</p>
+                                                        <p className="mb-0 fs-13">{ad.advertiser.name}</p>
+                                                    </div>
+                                                </div>
+
+                                                {ad.description && (
+                                                    <p className="caption-text mb-0">
+                                                        {ad.description}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </a>
+                                    ))}
+                                </Slider>
                             )}
                         </div>
                     </div>
@@ -628,7 +576,7 @@ export default function DashboardPage() {
                                 <div className="fs-3 fw-semibold mb-1 mb-md-3">Rate a Subcontractor</div>
                                 <div className="fs-14 fw-semibold">Recently rated contractors</div>
                             </div>
-                            <div className="search-wrapper position-relative w-100" style={{maxWidth: '400px'}}>
+                            <div className="search-wrapper position-relative w-100" style={{ maxWidth: '400px' }}>
                                 <div className="form-wrapper mb-0 d-flex align-items-center px-3 py-0 me-0">
                                     <input
                                         ref={inputRef}
@@ -676,7 +624,7 @@ export default function DashboardPage() {
                                                             height={40}
                                                             alt="Search Icon"
                                                         />
-                                                        ) : (
+                                                    ) : (
                                                         <Image
                                                             className="avatar rounded-circle"
                                                             src="/assets/img/profile-placeholder.webp"
@@ -802,8 +750,8 @@ export default function DashboardPage() {
                                                                                     isFull
                                                                                         ? '/assets/img/start1.svg'
                                                                                         : isHalf
-                                                                                        ? '/assets/img/star2.svg'
-                                                                                        : '/assets/img/star-empty.svg'
+                                                                                            ? '/assets/img/star2.svg'
+                                                                                            : '/assets/img/star-empty.svg'
                                                                                 }
                                                                                 width={14}
                                                                                 height={14}
@@ -1046,7 +994,7 @@ export default function DashboardPage() {
                                     type="button"
                                     className="border-0 bg-transparent p-0"
                                     onClick={() => setSelectedRating(star)}
-                                    onMouseEnter={() => {}}
+                                    onMouseEnter={() => { }}
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <Image
@@ -1054,8 +1002,8 @@ export default function DashboardPage() {
                                             star <= selectedRating
                                                 ? '/assets/img/start1.svg'
                                                 : star <= selectedRating + 0.5
-                                                ? '/assets/img/star2.svg'
-                                                : '/assets/img/star-empty.svg'
+                                                    ? '/assets/img/star2.svg'
+                                                    : '/assets/img/star-empty.svg'
                                         }
                                         width={32}
                                         height={32}
@@ -1087,7 +1035,7 @@ export default function DashboardPage() {
                             </button>
                             <button
                                 className="btn btn-primary w-50 justify-content-center rounded-2"
-                                style={{height: 50}}
+                                style={{ height: 50 }}
                                 onClick={handleRateSubcontractor}
                                 disabled={ratingLoading || selectedRating === 0}
                             >

@@ -604,22 +604,23 @@ export default function EditProfile() {
                                                     />
                                                 </div>
 
-                                                <div className="input-wrapper d-flex flex-column">
-                                                    <label htmlFor="category-select" className="mb-1 fw-semibold">
-                                                        Category
-                                                    </label>
-                                                    <div className="d-flex align-items-center gap-2 flex-wrap mb-4">
-                                                        {formData.category.map((cat) => (
-                                                            <div
-                                                                key={cat.id}
-                                                                className="fw-semibold bg-dark text-white fs-14 px-2 py-1 rounded-1"
-                                                            >
-                                                                {cat.title}
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                            </div>
+                                            <div className="input-wrapper d-flex flex-column">
+                                                <label htmlFor="category-select" className="mb-1 fw-semibold">
+                                                    Category
+                                                </label>
+                                                <div className="d-flex align-items-center gap-2 flex-wrap mb-4">
+                                                    {formData.category.map((cat) => (
+                                                        <div
+                                                            key={cat.id}
+                                                            className="fw-semibold bg-dark text-white fs-14 px-2 py-1 rounded-1"
+                                                        >
+                                                            {cat.title}
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
+
                                             <button
                                                 type="submit"
                                                 disabled={submitting}
