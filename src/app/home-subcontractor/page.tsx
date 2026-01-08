@@ -19,9 +19,6 @@ import '../../styles/testimonial.css';
 import '../../styles/faqs.css';
 import '../../styles/pricing.css';
 
-import { generateToken, messaging } from "../notification/firebase";
-import { onMessage } from "firebase/messaging";
-import { showNotificationToast } from "../notification/toast";
 import { useRouter } from "next/navigation";
 
 interface Project {
@@ -81,7 +78,7 @@ export default function HomePage() {
             try {
                 setBlogsLoading(true);
                 const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/latest`,
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/latest?type=subcontractor`,
                     {
                         method: 'GET',
                         headers: { Accept: 'application/json' },
@@ -120,60 +117,6 @@ export default function HomePage() {
         return text.length > limit ? text.slice(0, limit) + '...' : text;
     };
 
-    const sliderSettings = {
-        slidesToShow: 3,
-        slidesToScroll: 1,
-        arrows: false,
-        dots: false,
-        infinite: true,
-        speed: 600,
-        responsive: [
-            {
-                breakpoint: 992,
-                settings: {
-                    slidesToShow: 2,
-                },
-            },
-            {
-                breakpoint: 768,
-                settings: {
-                    slidesToShow: 1,
-                },
-            },
-            {
-                breakpoint: 600,
-                settings: {
-                    slidesToShow: 1,
-                    arrows: false,
-                },
-            },
-        ],
-    };
-    const testimonials = Array(4).fill({
-        rating: 4.5,
-        date: 'Oct 12, 2025',
-        text: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cursus nibh mauris, nec turpis orci lectus maecenas. Suspendisse sed magna eget nibh in turpis. Consequat duis diam lacus arcu. Faucibus venenatis felis id augue sit cursus pellentesque enim arcu. Elementum felis magna pretium in tincidunt. Suspendisse sed magna eget nibh in turpis. Consequat duis diam lacus arcu.`,
-        author: 'Jonathan Louis',
-    });
-
-    const accountTypes = [
-        {
-            id: 'general-contractor',
-            title: 'General Contractor',
-            icon: '/assets/img/icons/construction-worker.webp',
-        },
-        {
-            id: 'subcontractor',
-            title: 'Subcontractor',
-            icon: '/assets/img/icons/settings.svg',
-        },
-        {
-            id: 'affiliate',
-            title: 'Affiliate',
-            icon: '/assets/img/icons/portfolio.webp',
-        },
-    ];
-
     const [location, setLocation] = useState<{ lat: number; lng: number; error?: string } | null>(null);
     useEffect(() => {
         if (typeof window !== 'undefined' && navigator.geolocation) {
@@ -197,7 +140,6 @@ export default function HomePage() {
             setLocation({ lat: 0, lng: 0, error: 'Geolocation not supported' });
         }
     }, []);
-
 
     useEffect(() => {
         document.title = "Construction Projects & Sub-Contractors Network";
@@ -228,17 +170,6 @@ export default function HomePage() {
             document.addEventListener('click', attemptPlay, { once: true });
             document.addEventListener('touchstart', attemptPlay, { once: true });
         }
-
-        generateToken();
-        onMessage(messaging, (payload) => {
-            if (payload.notification) {
-                showNotificationToast(
-                    payload.notification.title || 'New Notification',
-                    payload.notification.body || '',
-                    'info'
-                );
-            }
-        })
     }, []);
 
     // 🔹 Fetch Projects
@@ -311,7 +242,6 @@ export default function HomePage() {
 
         return 'Just now';
     };
-
 
     useEffect(() => {
         const loadFaqs = async () => {
@@ -535,33 +465,6 @@ export default function HomePage() {
         pauseOnHover: false,
         dots: false,
         beforeChange: (_, next) => setCurrentSlide(next),
-    };
-
-    // const projects = Array(6).fill({
-    //     category: "Framing",
-    //     location: "Whittier, CA",
-    //     description: `Looking for a licensed painter to complete full interior repainting of a 2,000 sq ft office. Includes two coats of primer and final flat finish.`,
-    //     timeAgo: "23 mins ago",
-    // });
-
-    const [expandedCards, setExpandedCards] = useState(new Set());
-    const toggleExpand = (id) => {
-        const newExpanded = new Set(expandedCards);
-        newExpanded.has(id) ? newExpanded.delete(id) : newExpanded.add(id);
-        setExpandedCards(newExpanded);
-    };
-
-    const handleSelection = (typeId) => {
-        setSelectedType(typeId);
-        localStorage.setItem('role', typeId);
-        if (typeId == 'general-contractor') {
-            router.push('/auth/register/general-contractor');
-        } else if (typeId == 'subcontractor') {
-            router.push('/auth/register/subcontractor');
-        } else if (typeId == 'affiliate') {
-            router.push('/auth/register/affiliate');
-        }
-        console.log(typeId);
     };
 
     const sliderSettingsDesktop = {
