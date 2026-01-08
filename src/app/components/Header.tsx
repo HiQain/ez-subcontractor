@@ -77,8 +77,8 @@ export default function Header() {
                     },
                 });
                 const data = await res.json();
-                if (data.success && data.data && data.data.data) {
-                    setNotifications(data.data.data);
+                if (data.success && Array.isArray(data.data)) {
+                    setNotifications(data.data);
                 } else {
                     setNotifications([]);
                 }
