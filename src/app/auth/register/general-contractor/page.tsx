@@ -182,6 +182,7 @@ export default function RegisterPage() {
             'affiliate': 'affiliate',
         };
         const role = localStorage.getItem('role');
+        const fcmToken = localStorage.getItem("fcmToken");
 
         const payload: Record<string, any> = {
             name: formData.name,
@@ -194,9 +195,15 @@ export default function RegisterPage() {
             zip: formData.zip || '46000',
             work_radius: parseInt(formData.work_radius) || 0,
             category: 1,
-            role: 'general_contractor'
+            role: 'general_contractor',
+            device_token: fcmToken,
+            device_type: "website",
+            device_info: {
+                "os": "website",
+                "app_version": "1.0.0",
+                "manufacturer": "website"
+            }
         };
-
 
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/register`, {

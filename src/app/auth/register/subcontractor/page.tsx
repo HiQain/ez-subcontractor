@@ -325,6 +325,7 @@ export default function RegisterPage() {
 
         // ✅ Build payload
         const role = localStorage.getItem('role') || accountType.replace('-', '_');
+        const fcmToken = localStorage.getItem("fcmToken");
         localStorage.setItem('userZip', formData.zip);
         localStorage.setItem('userRadius', formData.work_radius.toString());
 
@@ -340,6 +341,13 @@ export default function RegisterPage() {
             work_radius: formData.work_radius || 0,
             category: formData.category || '1',
             role: 'subcontractor',
+            device_token: fcmToken,
+            device_type: "website",
+            device_info: {
+                "os": "website",
+                "app_version": "1.0.0",
+                "manufacturer": "website"
+            }
         };
 
         try {
