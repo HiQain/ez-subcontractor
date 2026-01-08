@@ -9,12 +9,6 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/free-trial.css';
 
-interface BannerImage {
-    id: number;
-    src: string;
-    alt: string;
-}
-
 interface Contractor {
     id: number;
     name: string;
@@ -36,7 +30,6 @@ interface Contractor {
 
 export default function AffiliateDashboard() {
     const router = useRouter();
-    const sliderRef = useRef<Slider | null>(null);
     const [contractors, setContractors] = useState<Contractor[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -277,42 +270,6 @@ export default function AffiliateDashboard() {
                 'error'
             );
         }
-    };
-
-    // 🔹 Render stars based on average_rating
-    const renderStars = (rating: string) => {
-        const avg = parseFloat(rating) || 0;
-        return [1, 2, 3, 4, 5].map((_, i) => {
-            const starValue = i + 1;
-            const isFull = starValue <= Math.floor(avg);
-            const isHalf = !isFull && starValue <= avg + 0.5;
-
-            return (
-                <Image
-                    key={i}
-                    src={
-                        isFull
-                            ? '/assets/img/start1.svg'
-                            : isHalf
-                                ? '/assets/img/star2.svg'
-                                : '/assets/img/star-empty.svg'
-                    }
-                    width={16}
-                    height={16}
-                    alt="Star Icon"
-                    style={{
-                        width: 'clamp(12px, 4vw, 16px)',
-                        height: 'clamp(12px, 4vw, 16px)',
-                    }}
-                />
-            );
-        });
-    };
-
-    // 🔹 Format rating display
-    const formatRating = (rating: string) => {
-        const num = parseFloat(rating);
-        return isNaN(num) ? 'N/A' : num.toFixed(1);
     };
 
     return (
