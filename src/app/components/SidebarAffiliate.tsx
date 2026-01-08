@@ -11,6 +11,7 @@ const sidebarLinks = [
     { href: '/affiliate/saved-contractors', label: 'Saved Contractors', icon: '/assets/img/icons/saved.svg' },
     { href: '/affiliate/my-subscription', label: 'My Subscription', icon: '/assets/img/icons/subscription.svg' },
     { href: '/affiliate/transaction-history', label: 'Transaction History', icon: '/assets/img/icons/transactions.svg' },
+    { href: '/affiliate/ads-transaction', label: 'Ads Transaction', icon: '/assets/img/icons/transactions.svg' },
     { href: '/affiliate/saved-cards', label: 'Saved Cards', icon: '/assets/img/icons/saved.svg' },
 ];
 
@@ -58,7 +59,7 @@ export default function SidebarSubcontractor({ onLogout }: SidebarProps) {
             <div className="bottom-bar">
                 <div className="buttons-wrapper">
                     <button
-                        onClick={onLogout || (() => {})}
+                        onClick={onLogout || (() => { })}
                         className="custom-btn bg-danger"
                         style={{ borderColor: '#DC2626' }}
                     >

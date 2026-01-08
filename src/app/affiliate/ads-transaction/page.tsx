@@ -7,45 +7,45 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import SidebarSubcontractor from "../../components/SidebarAffiliate";
 
-interface Category {
+interface AdTransaction {
     id: number;
-    title: string;
-}
-
-interface Transaction {
-    id: number;
-    subscription_id: string;
+    user_id: number;
+    ad_id: number;
     amount: string;
     transaction_id: string;
-    promo_code: string | null;
-    card_brand: string;
-    card_last4: string;
     card_holder: string;
+    card_last4: string;
+    card_brand: string;
+    status: string;
     created_at: string;
-    plan: {
+    updated_at: string;
+    ad: {
         id: number;
-        name: string;
+        orientation: string;
+        start_date: string;
+        end_date: string;
+        ad_placement_id: number;
     };
-    categories: Category[];
 }
 
-export default function TransactionsPage() {
+export default function AdTransactionsPage() {
     const router = useRouter();
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const pathname = usePathname();
+    const [transactions, setTransactions] = useState<AdTransaction[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
+    const [filteredTransactions, setFilteredTransactions] = useState<AdTransaction[]>([]);
     const [logoutLoading, setLogoutLoading] = useState(false);
 
-    // ✅ Fetch transactions from API
+    // ✅ Fetch ad transactions from API
     useEffect(() => {
         const fetchTransactions = async () => {
             setLoading(true);
             setError(null);
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/transactions`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ad-transactions`, {
                     headers: {
                         'Content-Type': 'application/json',
                         ...(token && { Authorization: `Bearer ${token}` }),
@@ -54,7 +54,7 @@ export default function TransactionsPage() {
                 const data = await res.json();
 
                 if (!res.ok || !data.success) {
-                    throw new Error(data.message?.[0] || 'Failed to fetch transactions');
+                    throw new Error(data.message?.[0] || 'Failed to fetch ad transactions');
                 }
 
                 setTransactions(data.data);
@@ -76,9 +76,10 @@ export default function TransactionsPage() {
             const term = searchTerm.toLowerCase();
             const filtered = transactions.filter(tx =>
                 tx.transaction_id.toLowerCase().includes(term) ||
-                tx.plan.name.toLowerCase().includes(term) ||
                 tx.card_holder.toLowerCase().includes(term) ||
-                tx.amount.toLowerCase().includes(term)
+                tx.amount.toLowerCase().includes(term) ||
+                tx.ad.orientation.toLowerCase().includes(term) ||
+                tx.status.toLowerCase().includes(term)
             );
             setFilteredTransactions(filtered);
         }
@@ -147,7 +148,7 @@ export default function TransactionsPage() {
                             <div className="col-xl-9">
                                 <div className="right-bar">
                                     <div className="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-4">
-                                        <div className="change fw-semibold fs-4">Transaction History</div>
+                                        <div className="change fw-semibold fs-4">Ad Transaction History</div>
                                         <div className="form-wrapper mb-0" style={{ flexGrow: 1, maxWidth: '300px' }}>
                                             <input
                                                 type="text"
@@ -161,55 +162,41 @@ export default function TransactionsPage() {
                                     <div className="p-0 mb-4">
                                         <div className="table-responsive">
                                             {loading ? (
-                                                <p className='p-4'>Loading transactions...</p>
+                                                <p className='p-4'>Loading ad transactions...</p>
                                             ) : error ? (
                                                 <p className="text-danger">{error}</p>
                                             ) : transactions.length === 0 ? (
-                                                <p className='p-4'>No transactions found.</p>
+                                                <p className='p-4'>No ad transactions found.</p>
                                             ) : (
                                                 <table className="custom-table">
                                                     <thead>
                                                         <tr>
                                                             <th>S. No</th>
                                                             <th>Transaction ID</th>
-                                                            <th>Subscription</th>
+                                                            <th>Ad ID</th>
+                                                            <th>Orientation</th>
                                                             <th>Card</th>
+                                                            <th>Status</th>
                                                             <th>Date</th>
                                                             <th>Amount</th>
-                                                            <th>Categories</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {filteredTransactions.length === 0 ? (
                                                             <tr>
-                                                                <td colSpan={6} className="text-center">No transactions found</td>
+                                                                <td colSpan={8} className="text-center">No ad transactions found</td>
                                                             </tr>
                                                         ) : (
                                                             filteredTransactions.map((tx, index) => (
                                                                 <tr key={tx.id}>
                                                                     <td>{index + 1}</td>
                                                                     <td>{`${tx.transaction_id.slice(0, 14)}...`}</td>
-                                                                    <td>{tx.plan.name}</td>
+                                                                    <td>{tx.ad.id}</td>
+                                                                    <td>{tx.ad.orientation}</td>
                                                                     <td>****{tx.card_last4}</td>
+                                                                    <td>{tx.status}</td>
                                                                     <td>{new Date(tx.created_at).toLocaleDateString()}</td>
                                                                     <td>${tx.amount}</td>
-                                                                    <td>
-                                                                        {tx.categories.length > 0 ? (
-                                                                            <select
-                                                                                className="form-select"
-                                                                                value={tx.categories[0].id}
-                                                                                onChange={(e) => e.preventDefault()}
-                                                                            >
-                                                                                {tx.categories.map(cat => (
-                                                                                    <option key={cat.id} value={cat.id}>
-                                                                                        {cat.title}
-                                                                                    </option>
-                                                                                ))}
-                                                                            </select>
-                                                                        ) : (
-                                                                            <span>No Categories</span>
-                                                                        )}
-                                                                    </td>
                                                                 </tr>
                                                             ))
                                                         )}
