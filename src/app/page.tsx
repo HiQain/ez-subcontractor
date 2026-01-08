@@ -88,7 +88,7 @@ export default function HomePage() {
 
         if (token && role) {
             switch (role) {
-                case 'general-contractor':
+                case 'general_contractor':
                     router.replace('/general-contractor/dashboard');
                     return;
 

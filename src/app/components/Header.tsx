@@ -131,7 +131,7 @@ export default function Header() {
                     {/* 👇 Menu logic — same as before */}
                     {(
                         pathname.startsWith('/general-contractor') ||
-                        (pathname === '/messages' && role === 'general-contractor')
+                        (pathname === '/messages' && role === 'general_contractor')
                     ) && (
                             <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
                                 <li className="nav-item">
