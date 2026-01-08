@@ -65,15 +65,11 @@ export default function RegisterPage() {
         license_number: 'LIC123456',
         zip: '0',
         work_radius: '0',
-        category: 1, // string ID (e.g., '1')
+        category: 1,
     });
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [showOld, setShowOld] = useState(false);
-    const [showNew, setShowNew] = useState(false);
-    const [showConfirm, setShowConfirm] = useState(false);
-    const [oldPassword, setOldPassword] = useState('');
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isAgreed, setIsAgreed] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -175,15 +171,8 @@ export default function RegisterPage() {
             return;
         }
 
-        // ✅ Build payload — matches Postman exactly
-        const roleMap: Record<string, string> = {
-            'general-contractor': 'general-contractor',
-            'sub-contractor': 'subcontractor',
-            'affiliate': 'affiliate',
-        };
-        const role = localStorage.getItem('role');
+        // ✅ Build payload
         const fcmToken = localStorage.getItem("fcmToken");
-
         const payload: Record<string, any> = {
             name: formData.name,
             email: formData.email,
@@ -191,7 +180,7 @@ export default function RegisterPage() {
             company_name: formData.company_name,
             password: formData.password,
             password_confirmation: formData.password_confirmation,
-            license_number: 'LIC123456',
+            license_number: formData.license_number || 'LIC123456',
             zip: formData.zip || '46000',
             work_radius: parseInt(formData.work_radius) || 0,
             category: 1,
@@ -215,31 +204,20 @@ export default function RegisterPage() {
                 body: JSON.stringify(payload),
             });
 
-            let data = await response.json();
-
+            const data = await response.json();
             console.log(data);
 
             if (response.ok) {
-                // 🔑 Extract token & user
-                const token = data.data.token;
-                localStorage.setItem('token', token);
-                localStorage.setItem('role', 'general_contractor');
+                const token = data.data?.token;
+
                 if (token) {
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('role', 'general_contractor');
+
                     showToast('Registration successful! Welcome aboard!');
-                    // Delay navigation to show toast
+
                     setTimeout(() => {
-                        if (role == 'general_contractor') {
-                            console.log(1);
-                            router.push('/general-contractor/dashboard');
-                        }
-                        if (role == 'subcontractor') {
-                            console.log(2);
-                            router.push('/subscription-list');
-                        }
-                        if (role == 'affiliate') {
-                            console.log(3);
-                            router.push('/subscription-list');
-                        }
+                        router.push('/general-contractor/dashboard');
                     }, 1500);
                 } else {
                     showToast('Registration succeeded, but no token received.', 'error');
