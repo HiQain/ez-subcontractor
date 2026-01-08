@@ -62,6 +62,37 @@ export default function Header() {
     const { role, resolved } = authState;
     const isLoggedIn = !!role;
 
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [loadingNotifications, setLoadingNotifications] = useState(true);
+
+    useEffect(() => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+        const fetchNotifications = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/notifications`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const data = await res.json();
+                if (data.success && data.data && data.data.data) {
+                    setNotifications(data.data.data);
+                } else {
+                    setNotifications([]);
+                }
+            } catch (err) {
+                console.error('Error fetching notifications:', err);
+                setNotifications([]);
+            } finally {
+                setLoadingNotifications(false);
+            }
+        };
+
+        if (isLoggedIn) fetchNotifications();
+    }, [isLoggedIn]);
+
     // 🛑 During SSR or before client JS: show only static, non-auth parts
     if (!resolved) {
         return (
@@ -353,17 +384,23 @@ export default function Header() {
                                 <li>
                                     <span className="fw-bold px-3 border-bottom d-block py-2">Notifications</span>
                                 </li>
-                                <li>
-                                    <a className="dropdown-item py-2" href="#">
-                                        <span className="d-flex align-items-center justify-content-between w-100">
-                                            <span className="d-block fw-medium">Success</span>
-                                            <span className="fs-12">1 hr ago</span>
-                                        </span>
-                                        <span className="fs-12 opacity-50">
-                                            You have accessed the app at 07:00 AM
-                                        </span>
-                                    </a>
-                                </li>
+                                {loadingNotifications ? (
+                                    <li className="dropdown-item py-2 text-center">Loading...</li>
+                                ) : notifications.length === 0 ? (
+                                    <li className="dropdown-item py-2 text-center">No notifications</li>
+                                ) : (
+                                    notifications.map((notif) => (
+                                        <li key={notif.id}>
+                                            <a className="dropdown-item py-2" href="#">
+                                                <span className="d-flex align-items-center justify-content-between w-100">
+                                                    <span className="d-block fw-medium">{notif.title}</span>
+                                                    <span className="fs-12">{new Date(notif.created_at).toLocaleTimeString()}</span>
+                                                </span>
+                                                <span className="fs-12 opacity-50">{notif.body}</span>
+                                            </a>
+                                        </li>
+                                    ))
+                                )}
                             </ul>
                         </div>
                         <Link

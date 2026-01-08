@@ -163,13 +163,12 @@ export default function PostAnAd() {
     };
 
     const normalizeUrl = (url: string) => {
-        let finalUrl = url.trim();
-
-        if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
-            finalUrl = `https://${finalUrl}`;
+        const trimmed = url.trim();
+        if (!trimmed) return '';
+        if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+            return `https://${trimmed}`;
         }
-
-        return finalUrl;
+        return trimmed;
     };
 
     // 🔹 Handle Post Ad button click
@@ -182,17 +181,6 @@ export default function PostAnAd() {
         const token = localStorage.getItem('token');
         if (!token) {
             showToast('User not authenticated', 'error');
-            return;
-        }
-
-        // 🔹 URL validation
-        if ((orientation === 'Horizontal') && !horizontalUrl.trim()) {
-            showToast('Please enter Horizontal URL', 'error');
-            return;
-        }
-
-        if ((orientation === 'Vertical') && !verticalUrl.trim()) {
-            showToast('Please enter Vertical URL', 'error');
             return;
         }
 
@@ -238,13 +226,27 @@ export default function PostAnAd() {
 
             // 🔹 Images + URLs based on orientation
             if (orientation === 'Horizontal') {
-                formData.append('horizontal_image', mainFileRef.current!.files![0]);
-                formData.append('horizontal_url', normalizeUrl(horizontalUrl));
+                if (mainFileRef.current?.files?.[0]) {
+                    formData.append('horizontal_image', mainFileRef.current.files[0]);
+                } else if (mainImage) {
+                    formData.append('horizontal_image_url', mainImage);
+                }
+
+                if (horizontalUrl?.trim()) {
+                    formData.append('horizontal_url', normalizeUrl(horizontalUrl));
+                }
             }
 
             if (orientation === 'Vertical') {
-                formData.append('vertical_image', smallFileRef.current!.files![0]);
-                formData.append('vertical_url', normalizeUrl(verticalUrl));
+                if (smallFileRef.current?.files?.[0]) {
+                    formData.append('vertical_image', smallFileRef.current.files[0]);
+                } else if (smallImage) {
+                    formData.append('vertical_image_url', smallImage);
+                }
+
+                if (verticalUrl?.trim()) {
+                    formData.append('vertical_url', normalizeUrl(verticalUrl));
+                }
             }
 
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/create`, {
@@ -497,14 +499,28 @@ export default function PostAnAd() {
             formData.append('description', description);
 
             // 🔹 Images + URLs only for selected orientation
+            // Horizontal
             if (orientation === 'Horizontal') {
-                if (mainFileRef.current?.files?.[0]) formData.append('horizontal_image', mainFileRef.current.files[0]);
-                if (horizontalUrl?.trim()) formData.append('horizontal_url', normalizeUrl(horizontalUrl));
+                if (mainFileRef.current?.files?.[0]) {
+                    formData.append('horizontal_image', mainFileRef.current.files[0]);
+                } else if (mainImage) {
+                    formData.append('horizontal_image_url', mainImage);
+                }
+
+                // URL key always bhejna, chahe empty ho
+                formData.append('horizontal_url', horizontalUrl ? normalizeUrl(horizontalUrl) : '');
             }
 
+            // Vertical
             if (orientation === 'Vertical') {
-                if (smallFileRef.current?.files?.[0]) formData.append('vertical_image', smallFileRef.current.files[0]);
-                if (verticalUrl?.trim()) formData.append('vertical_url', normalizeUrl(verticalUrl));
+                if (smallFileRef.current?.files?.[0]) {
+                    formData.append('vertical_image', smallFileRef.current.files[0]);
+                } else if (smallImage) {
+                    formData.append('vertical_image_url', smallImage);
+                }
+
+                // URL key always bhejna, chahe empty ho
+                formData.append('vertical_url', verticalUrl ? normalizeUrl(verticalUrl) : '');
             }
 
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads/${adId}/update`, {
