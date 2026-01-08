@@ -306,46 +306,25 @@ export default function Header() {
                                     </Link>
                                     <ul className="dropdown-menu">
                                         <li>
-                                            <button
-                                                type="button"
-                                                className={`dropdown-item ${role === 'general-contractor' ? 'bg-primary text-white' : ''}`}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    localStorage.setItem('role', 'general-contractor');
-                                                    setAuthState({ role: 'general-contractor', resolved: true });
-                                                    router.push('/home-general-contractor');
-                                                }}
-                                            >
+                                            <Link
+                                                href={'/home-general-contractor'}
+                                                className={`dropdown-item d-flex align-items-center`}>
                                                 General Contractor
-                                            </button>
+                                            </Link>
                                         </li>
                                         <li>
-                                            <button
-                                                type="button"
-                                                className={`dropdown-item ${role === 'subcontractor' ? 'bg-primary text-white' : ''}`}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    localStorage.setItem('role', 'subcontractor');
-                                                    setAuthState({ role: 'subcontractor', resolved: true });
-                                                    router.push('/home-subcontractor');
-                                                }}
-                                            >
+                                            <Link
+                                                href={'/home-subcontractor'}
+                                                className={`dropdown-item d-flex align-items-center`}>
                                                 Subcontractor
-                                            </button>
+                                            </Link>
                                         </li>
                                         <li>
-                                            <button
-                                                type="button"
-                                                className={`dropdown-item ${role === 'affiliate' ? 'bg-primary text-white' : ''}`}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    localStorage.setItem('role', 'affiliate');
-                                                    setAuthState({ role: 'affiliate', resolved: true });
-                                                    router.push('/home-affiliate');
-                                                }}
-                                            >
+                                            <Link
+                                                href={'/home-affiliate'}
+                                                className={`dropdown-item d-flex align-items-center `}>
                                                 Affiliate
-                                            </button>
+                                            </Link>
                                         </li>
                                     </ul>
                                 </li>
