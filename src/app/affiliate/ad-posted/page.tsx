@@ -153,54 +153,53 @@ export default function MyAds() {
                                         key={ad.id}
                                         className={isHorizontal ? 'col-xl-6' : 'col-xl-3'}
                                     >
-                                        <div className="image-wrapper position-relative" style={{ opacity: ad.can_pause === 1 ? 0.5 : 1 }}>
-                                            {ad.description && (
-                                                <div className="caption-overlay">
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        {/* Profile Image */}
-                                                        <Image
-                                                            src={ad.user.profile_image_url || '/assets/img/profile-placeholder.webp'}
-                                                            className="worker-img rounded-circle"
-                                                            width={35}
-                                                            height={35}
-                                                            alt={`${ad.user.name}'s Profile`}
-                                                            style={{ objectFit: 'cover' }}
-                                                        />
+                                        {/* Card wrapper with border, shadow, rounded */}
+                                        <div className="bg-white rounded-4 overflow-hidden border shadow-sm position-relative" style={{ opacity: ad.can_pause === 1 ? 0.5 : 1 }}>
 
-                                                        {/* Text block */}
-                                                        <div className="d-flex flex-column">
-                                                            <p className="mb-0 fw-bold text-white">
-                                                                {ad.user.company_name}
-                                                            </p>
-                                                            <p className="mb-0 text-white fs-13">
-                                                                {ad.user.name}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Caption */}
-                                                    <p className="caption-text mt-2">
-                                                        {ad.description}
-                                                    </p>
-                                                </div>
-                                            )}
-                                            <div style={{
-                                                maxWidth: isHorizontal ? '650px' : '371px',
-                                                height: '426px',
-                                            }}>
+                                            {/* Image */}
+                                            <div
+                                                style={{
+                                                    height: '326px',
+                                                    position: 'relative',
+                                                    borderBottom: '1px solid #e9ecef'
+                                                }}
+                                            >
                                                 <Image
                                                     src={imagePath}
                                                     alt="Ad"
-                                                    className="img-fluid w-100 h-100 post-img"
                                                     fill
+                                                    className="img-fluid"
                                                     style={{ objectFit: 'cover' }}
                                                 />
                                             </div>
 
+                                            {/* Caption/Profile BELOW image */}
+                                            <div className="p-3">
+                                                <div className="d-flex align-items-center gap-2 mb-2">
+                                                    <Image
+                                                        src={ad.user.profile_image_url || '/assets/img/profile-placeholder.webp'}
+                                                        width={35}
+                                                        height={35}
+                                                        className="rounded-circle"
+                                                        alt={`${ad.user.name} profile`}
+                                                        style={{ objectFit: 'cover' }}
+                                                    />
+                                                    <div className="d-flex flex-column">
+                                                        <p className="mb-0 fw-bold fs-14">{ad.user.company_name}</p>
+                                                        <p className="mb-0 text-muted fs-13">{ad.user.name}</p>
+                                                    </div>
+                                                </div>
+
+                                                {ad.description && (
+                                                    <p className="mb-0 text-muted fs-14">{ad.description}</p>
+                                                )}
+                                            </div>
+
+                                            {/* Edit/Delete buttons (top-right) */}
                                             <div className="icon-wrapper d-flex gap-2 position-absolute top-0 end-0 p-2">
                                                 <button
                                                     onClick={() => handleEdit(ad.id)}
-                                                    className="icon bg-transparent border-0 p-0"
+                                                    className="icon bg-white border rounded p-2 shadow-sm"
                                                 >
                                                     <Image
                                                         src="/assets/img/icons/edit-dark.svg"
@@ -212,7 +211,7 @@ export default function MyAds() {
 
                                                 <button
                                                     onClick={() => handleDelete(ad.id)}
-                                                    className="icon bg-transparent border-0 p-0"
+                                                    className="icon bg-white border rounded p-2 shadow-sm"
                                                     disabled={deletingId === ad.id}
                                                 >
                                                     {deletingId === ad.id ? (
@@ -225,7 +224,8 @@ export default function MyAds() {
                                         </div>
                                     </div>
                                 );
-                            })}
+                            })
+                        }
 
                         {loading && (
                             <center>
