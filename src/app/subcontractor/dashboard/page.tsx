@@ -498,7 +498,10 @@ export default function DashboardSubContractor() {
                         <div className="row g-4">
                             <div className="col-lg-6">
                                 {adsLoading ? (
-                                    <div className="d-flex align-items-center justify-content-center bg-light rounded-4" style={{ height: '352px' }}>
+                                    <div
+                                        className="d-flex align-items-center justify-content-center bg-light rounded-4"
+                                        style={{ height: '352px' }}
+                                    >
                                         <div className="spinner-border text-primary" role="status">
                                             <span className="visually-hidden">Loading banner...</span>
                                         </div>
@@ -512,51 +515,54 @@ export default function DashboardSubContractor() {
                                                 key={ad.id}
                                                 href={ad.redirect_url}
                                                 target="_blank"
-                                                className="position-relative d-block"
+                                                className="d-block text-decoration-none text-dark"
                                             >
-                                                <div style={{
-                                                    maxWidth: '650px',
-                                                    height: '426px',
-                                                }}>
-                                                    <Image
-                                                        src={ad.image}
-                                                        alt="Ad"
-                                                        className="img-fluid w-100 rounded-4 h-100 post-img"
-                                                        fill
-                                                        style={{ objectFit: 'cover' }}
-                                                    />
-                                                </div>
+                                                <div className="bg-white rounded-4 overflow-hidden border">
 
-                                                {/* Overlay */}
-                                                <div
-                                                    className="caption-overlay position-absolute bottom-0 start-0 w-100 p-3"
-                                                    style={{
-                                                        background: 'linear-gradient(0deg, rgba(0,0,0,0.6), rgba(0,0,0,0))',
-                                                        color: '#fff',
-                                                        borderBottomLeftRadius: '0.5rem',
-                                                        borderBottomRightRadius: '0.5rem',
-                                                    }}
-                                                >
-                                                    <div className="d-flex align-items-center gap-2 mb-2">
+                                                    {/* Image */}
+                                                    <div style={{ height: '326px', position: 'relative', borderBottom: '1px solid #e9ecef' }}>
                                                         <Image
-                                                            src={ad.advertiser.profile_image_url || '/assets/img/profile-placeholder.webp'}
-                                                            width={35}
-                                                            height={35}
-                                                            className="rounded-circle"
-                                                            alt=""
+                                                            src={ad.image}
+                                                            alt="Ad"
+                                                            fill
+                                                            className="img-fluid"
                                                             style={{ objectFit: 'cover' }}
                                                         />
-                                                        <div>
-                                                            <p className="mb-0 fw-bold">{ad.advertiser.company_name}</p>
-                                                            <p className="mb-0 fs-13">{ad.advertiser.name}</p>
-                                                        </div>
                                                     </div>
 
-                                                    {ad.description && (
-                                                        <p className="caption-text mb-0">
-                                                            {ad.description}
-                                                        </p>
-                                                    )}
+                                                    {/* Content below image */}
+                                                    <div className="p-3">
+
+                                                        {/* Profile + Company */}
+                                                        <div className="d-flex align-items-center gap-3 mb-2">
+                                                            <Image
+                                                                src={
+                                                                    ad.advertiser.profile_image_url ||
+                                                                    '/assets/img/profile-placeholder.webp'
+                                                                }
+                                                                width={40}
+                                                                height={40}
+                                                                className="rounded-circle"
+                                                                alt=""
+                                                                style={{ objectFit: 'cover' }}
+                                                            />
+                                                            <div>
+                                                                <p className="mb-0 fw-bold">
+                                                                    {ad.advertiser.company_name}
+                                                                </p>
+                                                                <p className="mb-0 text-muted fs-13">
+                                                                    {ad.advertiser.name}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Caption */}
+                                                        {ad.description && (
+                                                            <p className="mb-0 text-muted fs-14">
+                                                                {ad.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </a>
                                         ))}
@@ -565,7 +571,10 @@ export default function DashboardSubContractor() {
                             </div>
                             <div className="col-lg-6">
                                 {adsLoading ? (
-                                    <div className="d-flex align-items-center justify-content-center bg-light rounded-4" style={{ height: '352px' }}>
+                                    <div
+                                        className="d-flex align-items-center justify-content-center bg-light rounded-4"
+                                        style={{ height: '352px' }}
+                                    >
                                         <div className="spinner-border text-primary" role="status">
                                             <span className="visually-hidden">Loading banner...</span>
                                         </div>
@@ -579,51 +588,54 @@ export default function DashboardSubContractor() {
                                                 key={ad.id}
                                                 href={ad.redirect_url}
                                                 target="_blank"
-                                                className="position-relative d-block"
+                                                className="d-block text-decoration-none text-dark"
                                             >
-                                                <div style={{
-                                                    maxWidth: '650px',
-                                                    height: '426px',
-                                                }}>
-                                                    <Image
-                                                        src={ad.image}
-                                                        alt="Ad"
-                                                        className="img-fluid w-100 rounded-4 h-100 post-img"
-                                                        fill
-                                                        style={{ objectFit: 'cover' }}
-                                                    />
-                                                </div>
+                                                <div className="bg-white rounded-4 overflow-hidden border">
 
-                                                {/* Overlay */}
-                                                <div
-                                                    className="caption-overlay position-absolute bottom-0 start-0 w-100 p-3"
-                                                    style={{
-                                                        background: 'linear-gradient(0deg, rgba(0,0,0,0.6), rgba(0,0,0,0))',
-                                                        color: '#fff',
-                                                        borderBottomLeftRadius: '0.5rem',
-                                                        borderBottomRightRadius: '0.5rem',
-                                                    }}
-                                                >
-                                                    <div className="d-flex align-items-center gap-2 mb-2">
+                                                    {/* Image */}
+                                                    <div style={{ height: '326px', position: 'relative', borderBottom: '1px solid #e9ecef' }}>
                                                         <Image
-                                                            src={ad.advertiser.profile_image_url || '/assets/img/profile-placeholder.webp'}
-                                                            width={35}
-                                                            height={35}
-                                                            className="rounded-circle"
-                                                            alt=""
+                                                            src={ad.image}
+                                                            alt="Ad"
+                                                            fill
+                                                            className="img-fluid"
                                                             style={{ objectFit: 'cover' }}
                                                         />
-                                                        <div>
-                                                            <p className="mb-0 fw-bold">{ad.advertiser.company_name}</p>
-                                                            <p className="mb-0 fs-13">{ad.advertiser.name}</p>
-                                                        </div>
                                                     </div>
 
-                                                    {ad.description && (
-                                                        <p className="caption-text mb-0">
-                                                            {ad.description}
-                                                        </p>
-                                                    )}
+                                                    {/* Content below image */}
+                                                    <div className="p-3">
+
+                                                        {/* Profile + Company */}
+                                                        <div className="d-flex align-items-center gap-3 mb-2">
+                                                            <Image
+                                                                src={
+                                                                    ad.advertiser.profile_image_url ||
+                                                                    '/assets/img/profile-placeholder.webp'
+                                                                }
+                                                                width={40}
+                                                                height={40}
+                                                                className="rounded-circle"
+                                                                alt=""
+                                                                style={{ objectFit: 'cover' }}
+                                                            />
+                                                            <div>
+                                                                <p className="mb-0 fw-bold">
+                                                                    {ad.advertiser.company_name}
+                                                                </p>
+                                                                <p className="mb-0 text-muted fs-13">
+                                                                    {ad.advertiser.name}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Caption */}
+                                                        {ad.description && (
+                                                            <p className="mb-0 text-muted fs-14">
+                                                                {ad.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </a>
                                         ))}
@@ -721,34 +733,37 @@ export default function DashboardSubContractor() {
                                                 key={ad.id}
                                                 href={ad.redirect_url}
                                                 target="_blank"
-                                                className="d-block px-1"
+                                                className="d-block px-1 text-decoration-none text-dark"
                                             >
-                                                <div className="image-wrapper position-relative rounded-4 overflow-hidden">
+                                                <div className="bg-white rounded-4 overflow-hidden border h-100">
 
                                                     {/* Image */}
-                                                    <div style={{ height: 426 }}>
+                                                    <div
+                                                        style={{
+                                                            height: '326px',
+                                                            position: 'relative',
+                                                            borderBottom: '1px solid #e9ecef'
+                                                        }}
+                                                    >
                                                         <Image
                                                             src={ad.image}
-                                                            width={371}
-                                                            height={426}
                                                             alt="Ad"
-                                                            className="img-fluid w-100 h-100 object-fit-cover"
+                                                            fill
+                                                            className="img-fluid"
+                                                            style={{ objectFit: 'cover' }}
                                                         />
                                                     </div>
 
-                                                    {/* Caption Overlay */}
-                                                    <div
-                                                        className="caption-overlay position-absolute bottom-0 start-0 w-100 p-3"
-                                                        style={{
-                                                            background: 'linear-gradient(0deg, rgba(0,0,0,0.6), rgba(0,0,0,0))',
-                                                            color: '#fff',
-                                                            borderBottomLeftRadius: '0.5rem',
-                                                            borderBottomRightRadius: '0.5rem',
-                                                        }}
-                                                    >
+                                                    {/* Content BELOW image (vertical style preserved) */}
+                                                    <div className="p-3">
+
+                                                        {/* Profile + Company */}
                                                         <div className="d-flex align-items-center gap-2 mb-2">
                                                             <Image
-                                                                src={ad.advertiser.profile_image_url || '/assets/img/profile-placeholder.webp'}
+                                                                src={
+                                                                    ad.advertiser.profile_image_url ||
+                                                                    '/assets/img/profile-placeholder.webp'
+                                                                }
                                                                 width={35}
                                                                 height={35}
                                                                 className="rounded-circle"
@@ -756,13 +771,18 @@ export default function DashboardSubContractor() {
                                                                 style={{ objectFit: 'cover' }}
                                                             />
                                                             <div>
-                                                                <p className="mb-0 fw-bold">{ad.advertiser.company_name}</p>
-                                                                <p className="mb-0 fs-13">{ad.advertiser.name}</p>
+                                                                <p className="mb-0 fw-bold fs-14">
+                                                                    {ad.advertiser.company_name}
+                                                                </p>
+                                                                <p className="mb-0 text-muted fs-13">
+                                                                    {ad.advertiser.name}
+                                                                </p>
                                                             </div>
                                                         </div>
 
+                                                        {/* Caption (separate, niche) */}
                                                         {ad.description && (
-                                                            <p className="caption-text mb-0">
+                                                            <p className="mb-0 text-muted fs-14">
                                                                 {ad.description}
                                                             </p>
                                                         )}
