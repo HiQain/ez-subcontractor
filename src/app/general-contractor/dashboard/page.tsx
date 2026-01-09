@@ -185,59 +185,59 @@ export default function DashboardPage() {
         }
     };
 
-    useEffect(() => {
-        const fetchProjects = async () => {
-            setLoading(true);
-            setError(null);
+    const fetchProjects = async () => {
+        setLoading(true);
+        setError(null);
 
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    setError('Authentication required. Please log in.');
-                    router.push('/auth/login');
-                    return;
-                }
-
-                const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects/my-projects?perPage=100&page=1`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            Accept: 'application/json',
-                        },
-                    }
-                );
-
-                if (response.status === 401) {
-                    localStorage.removeItem('token');
-                    setError('Session expired. Please log in again.');
-                    router.push('/auth/login');
-                    return;
-                }
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.message?.[0] || 'Failed to load projects');
-                }
-
-                let fetchedProjects: Project[] = [];
-                if (data?.data?.projects?.data && Array.isArray(data.data.projects.data)) {
-                    fetchedProjects = data.data.projects.data;
-                } else {
-                    console.warn('Unexpected API structure:', data);
-                }
-
-                setProjects(fetchedProjects);
-            } catch (err: any) {
-                console.error('Fetch error:', err);
-                setError(err.message || 'Network error. Please try again.');
-                showToast('Failed to load projects.', 'error');
-            } finally {
-                setLoading(false);
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError('Authentication required. Please log in.');
+                router.push('/auth/login');
+                return;
             }
-        };
 
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects/my-projects?perPage=100&page=1`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: 'application/json',
+                    },
+                }
+            );
+
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                setError('Session expired. Please log in again.');
+                router.push('/auth/login');
+                return;
+            }
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message?.[0] || 'Failed to load projects');
+            }
+
+            let fetchedProjects: Project[] = [];
+            if (data?.data?.projects?.data && Array.isArray(data.data.projects.data)) {
+                fetchedProjects = data.data.projects.data.slice(0, 2);
+            } else {
+                console.warn('Unexpected API structure:', data);
+            }
+
+            setProjects(fetchedProjects);
+        } catch (err: any) {
+            console.error('Fetch error:', err);
+            setError(err.message || 'Network error. Please try again.');
+            showToast('Failed to load projects.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchProjects();
     }, [router]);
 
@@ -276,6 +276,7 @@ export default function DashboardPage() {
                 const modal = (window as any).bootstrap.Modal.getInstance(modalEl);
                 modal?.hide();
             }
+            fetchProjects();
         } catch (err: any) {
             console.error('Delete error:', err);
             setDeleteError(err.message || 'Failed to delete project.');
@@ -962,10 +963,14 @@ export default function DashboardPage() {
                                     </div>
                                 )}
                             </div>
-                            <Link href="/general-contractor/my-projects" className="btn bg-dark rounded-3 mx-auto d-block w-fit">
-                                <span className="text-white me-2">See All Projects</span>
-                                <Image src="/assets/img/icons/arrow-white.svg" width={12} height={12} alt="Icon" />
-                            </Link>
+                            {
+                                projects.length !== 0 && (
+                                    <Link href="/general-contractor/my-projects" className="btn bg-dark rounded-3 mx-auto d-block w-fit">
+                                        <span className="text-white me-2">See All Projects</span>
+                                        <Image src="/assets/img/icons/arrow-white.svg" width={12} height={12} alt="Icon" />
+                                    </Link>
+                                )
+                            }
                         </>
                     )}
                 </div>
