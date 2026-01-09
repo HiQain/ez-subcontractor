@@ -38,6 +38,11 @@ export default function AffiliateDashboard() {
     const [hasMore, setHasMore] = useState(true);
     const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
     const [profileLoaded, setProfileLoaded] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [role, setRole] = useState('all');
+    const [city, setCity] = useState('');
+    const [zipCode, setZipCode] = useState('');
+    const [workRadius, setWorkRadius] = useState(2);
 
     // 🔹 Saved state
     const [savedContractors, setSavedContractors] = useState<Set<number>>(new Set());
@@ -100,51 +105,62 @@ export default function AffiliateDashboard() {
 
         try {
             const token = localStorage.getItem('token');
-            // 🔴 Use `targetPage`, **not** `page`
-            const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}common/contractors?page=${targetPage}&perPage=${perPage}`;
+
+            const params = new URLSearchParams();
+            params.append('page', String(targetPage));
+            params.append('perPage', String(perPage));
+
+            if (searchTerm) params.append('search', searchTerm);
+            if (role && role !== 'all') params.append('role', role);
+            if (city) params.append('city', city);
+            if (zipCode) params.append('zip', zipCode);
+            params.append('radius', String(workRadius));
+
+            const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}common/contractors?${params.toString()}`;
 
             const response = await fetch(url, {
-                method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json',
                 },
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const data = await response.json();
 
-            if (data.success && Array.isArray(data.data?.data)) {
-                const newData = data.data.data;
+            const newData = data?.data?.data || [];
+            const total = data?.data?.total || 0;
 
-                let updatedContractors = resetPage ? newData : [...contractors, ...newData];
+            setContractors(prev =>
+                resetPage ? newData : [...prev, ...newData]
+            );
 
-                // 🟢 Deduplication still applies (optional but safe)
-                if (!resetPage) {
-                    const existingIds = new Set(contractors.map(c => c.id));
-                    const uniqueNewData = newData.filter(c => !existingIds.has(c.id));
-                    updatedContractors = [...contractors, ...uniqueNewData];
-                }
+            setHasMore(targetPage * perPage < total);
 
-                setContractors(updatedContractors);
-
-                const total = data.data.total || 0;
-                const totalPages = Math.ceil(total / perPage);
-                setHasMore(targetPage < totalPages); // 🔵 Use targetPage
-
-            } else {
-                throw new Error(data.message?.[0] || 'Failed to load contractors');
-            }
         } catch (err: any) {
-            console.error('Fetch contractors error:', err);
-            setError(err.message || 'Failed to load contractors. Please try again.');
+            setError(err.message || 'Failed to load contractors');
         } finally {
             setLoading(false);
         }
+    };
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchContractors(true);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm, role, city, zipCode, workRadius]);
+
+    const handleClearFilters = () => {
+        setSearchTerm('');
+        setRole('all');
+        setCity('');
+        setZipCode('');
+        setWorkRadius(2);
+        setPage(1);
+        fetchContractors(true);
     };
 
     // 🔹 Load initial data
@@ -298,14 +314,19 @@ export default function AffiliateDashboard() {
                                                 height={18}
                                                 alt="Search Icon"
                                             />
-                                            <input type="text" placeholder="Search here" />
+                                            <input
+                                                type="text"
+                                                placeholder="Search here"
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                            />
                                         </div>
 
                                         <span className="d-block mb-2 fw-medium">Type</span>
                                         <div className="radio-group d-flex align-items-center gap-2 flex-wrap mb-3">
-                                            {['All', 'Subcontractor', 'General Contractor'].map((label, i) => (
+                                            {['all', 'subcontractor', 'general_contractor'].map((value) => (
                                                 <label
-                                                    key={i}
+                                                    key={value}
                                                     className="radio-option d-flex align-items-center gap-2"
                                                 >
                                                     <input
@@ -313,32 +334,43 @@ export default function AffiliateDashboard() {
                                                         style={{ width: '24px', height: '24px' }}
                                                         className="mb-0"
                                                         name="subscription"
-                                                        value={label.toLowerCase()}
-                                                        defaultChecked={label === 'Yearly'}
+                                                        value={value}
+                                                        checked={role === value}
+                                                        onChange={() => setRole(value)}
                                                     />
-                                                    <span className="fs-14 fw-medium">{label}</span>
+                                                    <span className="fs-14 fw-medium">{value.replace('_', ' ')}</span>
                                                 </label>
                                             ))}
                                         </div>
 
                                         <span className="d-block mb-2 fw-medium">City</span>
-                                        <input type="text" placeholder="Whittier, CA" />
+                                        <input
+                                            type="text"
+                                            placeholder="Whittier, CA"
+                                            value={city}
+                                            onChange={(e) => setCity(e.target.value)}
+                                        />
 
                                         <span className="d-block mb-2 fw-medium">Zip Code</span>
-                                        <input type="text" placeholder="29391" />
+                                        <input
+                                            type="text"
+                                            placeholder="29391"
+                                            value={zipCode}
+                                            onChange={(e) => setZipCode(e.target.value)}
+                                        />
 
-                                        <div className="range-wrapper mb-5">
+                                        <div className="range-wrapper mb-3">
                                             <div className="range-container">
                                                 <div className="slider-wrap">
                                                     <input
                                                         type="range"
                                                         min="0"
                                                         max="100"
-                                                        defaultValue="2"
-                                                        id="milesRange"
+                                                        value={workRadius}
+                                                        onChange={(e) => setWorkRadius(Number(e.target.value))}
                                                         className="range-slider"
                                                     />
-                                                    <div className="range-value">2 miles</div>
+                                                    <div className="range-value">{workRadius} miles</div>
                                                 </div>
                                             </div>
                                             <div className="d-flex align-items-center justify-content-between">
@@ -346,6 +378,13 @@ export default function AffiliateDashboard() {
                                                 <span className="max">100 miles</span>
                                             </div>
                                         </div>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-dark text-center justify-content-center btn-sm w-100 mb-4"
+                                            onClick={handleClearFilters}
+                                        >
+                                            Clear
+                                        </button>
                                     </div>
 
                                     {/* Right Filter Cards */}
