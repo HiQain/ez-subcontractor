@@ -357,7 +357,6 @@ export default function PostAd() {
                 return;
             }
 
-            showSuccessToast('✅ Project posted successfully!');
             setSelectedCategory('');
             setCity('');
             setState('');
@@ -417,7 +416,7 @@ export default function PostAd() {
                                             id="category-select2"
                                             className="form-control"
                                             value={selectedCategory}
-                                            // onChange handled by Select2
+                                        // onChange handled by Select2
                                         >
                                             <option value="">Select category</option>
                                             {categories.map((cat) => (
