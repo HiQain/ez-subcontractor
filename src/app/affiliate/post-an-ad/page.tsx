@@ -547,6 +547,46 @@ export default function PostAnAd() {
         }
     };
 
+    // 🔹 Remove card (Optimistic Update)
+    const handleRemoveCard = async (cardId: string) => {
+        try {
+            setLoading(true);
+
+            // 🔹 Optimistically remove card from UI first
+            setCards((prevCards) => prevCards.filter((card) => card.id !== cardId));
+
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error('Authentication required');
+
+            // 🔹 Hit API after updating UI
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/cards/${cardId}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                    },
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                // 🔹 If API fails, rollback UI change
+                fetchSavedCards(); // Or you can manually re-add the card to state
+                throw new Error(data.message || 'Failed to remove card');
+            }
+
+            showToast('Card removed successfully', 'success');
+        } catch (err: any) {
+            console.error('Remove card error:', err);
+            showToast(err.message || 'Failed to remove card', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <>
             <Header />
@@ -704,7 +744,15 @@ export default function PostAnAd() {
                                                                     {cards.map((card) => (
                                                                         <div key={card.id} className="col-xl-6">
                                                                             <div className="credit-card mb-2 position-relative">
-                                                                                <div key={card.id} className="checkbox-wrapper">
+                                                                                {/* 🔹 Delete button fixed in top-left */}
+                                                                                <button
+                                                                                    onClick={() => handleRemoveCard(card.id)}
+                                                                                    className="icon bg-white border rounded p-2 shadow-sm position-absolute"
+                                                                                    style={{ top: '10px', left: '10px', zIndex: 10 }}
+                                                                                >
+                                                                                    <Image src="/assets/img/icons/delete-dark.svg" width={24} height={24} alt="Delete" />
+                                                                                </button>
+                                                                                <div className="checkbox-wrapper">
                                                                                     <input
                                                                                         type="checkbox"
                                                                                         className="checkbox checkbox1"
