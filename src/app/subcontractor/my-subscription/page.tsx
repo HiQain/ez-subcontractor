@@ -167,6 +167,15 @@ export default function SubscriptionPage() {
         }
     };
 
+    const formatDate = (dateStr: string) => {
+        const date = new Date(dateStr);
+
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+        });
+    };
 
     return (
         <>
@@ -312,8 +321,8 @@ export default function SubscriptionPage() {
                                                                     </div>
 
                                                                     {/* Dates */}
-                                                                    <div className="text-center fs-14 mt-3 mb-3 text-muted">
-                                                                        {sub.start_date} → {sub.end_date}
+                                                                    <div className="text-center fs-14 mb-3 text-muted">
+                                                                        {formatDate(sub.start_date)} → {formatDate(sub.end_date)}
                                                                     </div>
                                                                 </div>
                                                                 <CancelSubscriptionModal
