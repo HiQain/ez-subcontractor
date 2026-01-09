@@ -185,6 +185,62 @@ export default function DashboardPage() {
         }
     };
 
+    useEffect(() => {
+        const fetchProjects = async () => {
+            setLoading(true);
+            setError(null);
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    setError('Authentication required. Please log in.');
+                    router.push('/auth/login');
+                    return;
+                }
+
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects/my-projects?perPage=100&page=1`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: 'application/json',
+                        },
+                    }
+                );
+
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    setError('Session expired. Please log in again.');
+                    router.push('/auth/login');
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message?.[0] || 'Failed to load projects');
+                }
+
+                let fetchedProjects: Project[] = [];
+                if (data?.data?.projects?.data && Array.isArray(data.data.projects.data)) {
+                    fetchedProjects = data.data.projects.data;
+                } else {
+                    console.warn('Unexpected API structure:', data);
+                }
+
+                setProjects(fetchedProjects);
+            } catch (err: any) {
+                console.error('Fetch error:', err);
+                setError(err.message || 'Network error. Please try again.');
+                showToast('Failed to load projects.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProjects();
+    }, [router]);
+
     // 🔹 Delete project
     const handleDelete = async () => {
         if (!deletingId) return;
@@ -270,11 +326,8 @@ export default function DashboardPage() {
             }
 
             if (data?.success) {
-                // ✅ Reverse and take only first 3
-                const contractors = Array.isArray(data.data)
-                    ? [...data.data].slice(0, 3)
-                    : [];
-                setContractors(contractors);
+                // Take only first 3
+                setContractors(data.data.slice(0, 3));
             } else {
                 throw new Error('Invalid response format');
             }
@@ -860,13 +913,27 @@ export default function DashboardPage() {
                                                 <div className="buttons d-flex align-items-center gap-2 flex-wrap-md">
                                                     <button
                                                         className="btn btn-primary rounded-3 w-100 justify-content-center"
-                                                        onClick={() => router.push(`/general-contractor/project-details?id=${project.id}`)}
+                                                        onClick={() => {
+                                                            localStorage.setItem(
+                                                                'project-id',
+                                                                `${project.id}`
+                                                            );
+                                                            router.push(
+                                                                '/general-contractor/project-details'
+                                                            );
+                                                        }}
                                                     >
                                                         View Details
                                                     </button>
                                                     <button
                                                         className="btn bg-dark rounded-3 w-100 justify-content-center text-white"
-                                                        onClick={() => router.push(`/general-contractor/edit-project?id=${project.id}`)}
+                                                        onClick={() => {
+                                                            localStorage.setItem(
+                                                                'project-id',
+                                                                `${project.id}`
+                                                            );
+                                                            router.push('/general-contractor/edit-project');
+                                                        }}
                                                     >
                                                         Edit
                                                     </button>

@@ -182,7 +182,7 @@ export default function DashboardPage() {
 
                 let fetchedProjects: Project[] = [];
                 if (data?.data?.projects?.data && Array.isArray(data.data.projects.data)) {
-                    fetchedProjects = [...data.data.projects.data].reverse();
+                    fetchedProjects = data.data.projects.data;
                 } else {
                     console.warn('Unexpected API structure:', data);
                 }
@@ -401,7 +401,7 @@ export default function DashboardPage() {
                                             <div className="bar d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
                                                 <div className="fs-5 fw-semibold">
                                                     {project.category?.name ||
-                                                    `${project.city}, ${project.state}`}
+                                                        `${project.city}, ${project.state}`}
                                                 </div>
                                                 <div
                                                     className="btn p-1 ps-3 pe-3 fs-12"
