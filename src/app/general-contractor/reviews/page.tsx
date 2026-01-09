@@ -239,7 +239,7 @@ export default function ReviewsPage() {
                                                         <div className="fs-12 fw-medium">
                                                             {contractor.city && contractor.state
                                                                 ? `${contractor.city}, ${contractor.state}`
-                                                                : 'Location not available'}
+                                                                : ''}
                                                         </div>
                                                         <div className="right d-flex align-items-center gap-2 flex-wrap">
                                                             <div className="rating-icons d-flex align-items-center gap-1">
