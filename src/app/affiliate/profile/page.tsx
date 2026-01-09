@@ -23,6 +23,7 @@ interface ProfileData {
     category: number | null;
     average_rating: string;
     total_ratings: number;
+    license_number: string;
 }
 
 interface Category {
@@ -169,6 +170,7 @@ export default function ProfilePage() {
                         category: data.data.specialization ? Number(data.data.specialization) : null,
                         average_rating: (parseFloat(data.data.average_rating) || 0).toString(),
                         total_ratings: data.data.total_ratings || 0,
+                        license_number: data.data.license_number || '',
                     });
                 } else {
                     setError(data.message || 'Failed to load profile');
@@ -423,6 +425,16 @@ export default function ProfilePage() {
                                                         </Link>
                                                     </div>
                                                 </div>
+                                                {profile.license_number?.trim() && (
+                                                    <div className="col-xl-3 col-sm-6">
+                                                        <div className="content">
+                                                            <div className="text-gray-light fw-medium mb-2">
+                                                                License Number
+                                                            </div>
+                                                            <div className="fw-semibold fs-18">{profile.license_number}</div>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
