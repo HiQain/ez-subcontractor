@@ -238,58 +238,58 @@ export default function DashboardPage() {
         return num.toFixed(1).replace(/\.0$/, '');
     };
 
+    const fetchContractors = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError('Authentication required.');
+                return;
+            }
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/contractors/latest-rated?limit=3`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                    },
+                }
+            );
+
+            if (response.status === 401) {
+                setError('Session expired.');
+                localStorage.removeItem('token');
+                return;
+            }
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message?.[0] || 'Failed to load contractors');
+            }
+
+            if (data?.success) {
+                // ✅ Reverse and take only first 3
+                const contractors = Array.isArray(data.data)
+                    ? [...data.data].slice(0, 3)
+                    : [];
+                setContractors(contractors);
+            } else {
+                throw new Error('Invalid response format');
+            }
+        } catch (err: any) {
+            setError(err.message || 'Failed to load contractors.');
+
+            // 🔹 Show error toast
+            showToast(err.message || 'Failed to load contractors.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // 🔹 Fetch latest-rated contractors (for the cards)
     useEffect(() => {
-        const fetchContractors = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    setError('Authentication required.');
-                    return;
-                }
-
-                const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}common/contractors/latest-rated?limit=3`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Accept': 'application/json',
-                        },
-                    }
-                );
-
-                if (response.status === 401) {
-                    setError('Session expired.');
-                    localStorage.removeItem('token');
-                    return;
-                }
-
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.message?.[0] || 'Failed to load contractors');
-                }
-
-                if (data?.success) {
-                    // ✅ Reverse and take only first 3
-                    const contractors = Array.isArray(data.data)
-                        ? [...data.data].slice(0, 3)
-                        : [];
-                    setContractors(contractors);
-                } else {
-                    throw new Error('Invalid response format');
-                }
-            } catch (err: any) {
-                setError(err.message || 'Failed to load contractors.');
-
-                // 🔹 Show error toast
-                showToast(err.message || 'Failed to load contractors.', 'error');
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchContractors();
     }, []);
 
@@ -310,7 +310,7 @@ export default function DashboardPage() {
             try {
                 const token = localStorage.getItem('token');
                 const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}common/contractors?page=1&perPage=20&search=${encodeURIComponent(searchTerm)}`,
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}common/contractors?role=subcontractor&page=1&perPage=20&search=${encodeURIComponent(searchTerm)}`,
                     {
                         headers: {
                             'Authorization': token ? `Bearer ${token}` : '',
@@ -404,6 +404,7 @@ export default function DashboardPage() {
             setCurrentContractor(null);
             setSelectedRating(0);
             setComment('');
+            fetchContractors();
 
             // Optional: Refresh contractor list or update average_rating locally
             // You could refetch contractors here if needed
