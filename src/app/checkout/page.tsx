@@ -217,8 +217,17 @@ export default function CheckoutPage() {
     let finalTotal = total;
 
     // Promo logic
-    if (appliedPromo?.type === 'fixed') {
-        finalTotal = Math.max(finalTotal - parseFloat(appliedPromo.value), 0);
+    if (appliedPromo) {
+        const promoValue = parseFloat(appliedPromo.value);
+
+        if (appliedPromo.type === 'fixed') {
+            finalTotal = Math.max(finalTotal - promoValue, 0);
+        }
+
+        if (appliedPromo.type === 'percent') {
+            const discountAmount = (finalTotal * promoValue) / 100;
+            finalTotal = Math.max(finalTotal - discountAmount, 0);
+        }
     }
 
     // ✅ Note card for Trial plan
@@ -557,13 +566,15 @@ export default function CheckoutPage() {
                                                 )}
 
                                                 {/* ✅ Promo Discount */}
-                                                {appliedPromo && appliedPromo.type === 'fixed' && (
+                                                {appliedPromo && (
                                                     <div className="d-flex align-items-center justify-content-between mt-2">
                                                         <span style={{ fontSize: '14px', color: '#28a745' }}>
                                                             Promo ({appliedPromo.code})
                                                         </span>
                                                         <span className="fw-semibold" style={{ fontSize: '14px', color: '#28a745' }}>
-                                                            -${parseFloat(appliedPromo.value)}
+                                                            {appliedPromo.type === 'fixed'
+                                                                ? `-$${parseFloat(appliedPromo.value)}`
+                                                                : `-${parseFloat(appliedPromo.value)}%`}
                                                         </span>
                                                     </div>
                                                 )}

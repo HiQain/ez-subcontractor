@@ -369,8 +369,6 @@ export default function RegisterPage() {
                     localStorage.setItem('role', 'subcontractor');
                 }
 
-                showToast('Registration successful! Redirecting...', 'success');
-
                 // Delay for UX
                 setTimeout(() => {
                     const paths: Record<string, string> = {
