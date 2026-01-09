@@ -15,6 +15,7 @@ interface Contractor {
     company_name: string;
     city: string | null;
     state: string | null;
+    profile_image_url: string;
     average_rating: string; // e.g., "4.50"
     ratings_count: string;  // e.g., "2"
     created_at: string;     // e.g., "2025-11-06T20:51:19.000000Z"
@@ -205,13 +206,23 @@ export default function ReviewsPage() {
                                                 <div className="review-inner-card">
                                                     <div className="top d-flex align-items-center gap-2 justify-content-between flex-wrap mb-2">
                                                         <div className="icon-wrapper d-flex align-items-center gap-2">
-                                                            <Image
-                                                                src="/assets/img/profile-img.webp"
-                                                                width={40}
-                                                                height={40}
-                                                                alt="Card Image"
-                                                                loading="lazy"
-                                                            />
+                                                            {contractor.profile_image_url ? (
+                                                                <Image
+                                                                    className="avatar rounded-circle"
+                                                                    src={contractor.profile_image_url}
+                                                                    width={40}
+                                                                    height={40}
+                                                                    alt="Search Icon"
+                                                                />
+                                                            ) : (
+                                                                <Image
+                                                                    className="avatar rounded-circle"
+                                                                    src="/assets/img/profile-placeholder.webp"
+                                                                    width={40}
+                                                                    height={40}
+                                                                    alt="Search Icon"
+                                                                />
+                                                            )}
                                                             <div className="content">
                                                                 <div className="fw-semibold fs-14 mb-1 text-capitalize">{contractor.name}</div>
                                                                 <div style={{ color: '#8F9B1F' }} className="fw-semibold fs-14">
@@ -247,8 +258,8 @@ export default function ReviewsPage() {
                                                                                     isFull
                                                                                         ? '/assets/img/start1.svg'
                                                                                         : isHalf
-                                                                                        ? '/assets/img/star2.svg'
-                                                                                        : '/assets/img/star-empty.svg'
+                                                                                            ? '/assets/img/star2.svg'
+                                                                                            : '/assets/img/star-empty.svg'
                                                                                 }
                                                                                 width={14}
                                                                                 height={14}

@@ -527,13 +527,25 @@ export default function ProjectSubcontractorDetailsPage() {
                             {/* Right Side */}
                             <div className="col-lg-3">
                                 <div className="custom-card card-2">
-                                    <Image
-                                        src="/assets/img/icons/p-icon.svg"
-                                        width={104}
-                                        height={104}
-                                        className="d-block mx-auto mb-3"
-                                        alt="P Icon"
-                                    />
+                                    {project.user?.profile_image_url ? (
+                                        <Image
+                                            src={project.user?.profile_image_url}
+                                            width={104}
+                                            height={104}
+                                            alt="P Icon"
+                                            loading="lazy"
+                                            className="d-block mx-auto mb-3"
+                                        />
+                                    ) : (
+                                        <Image
+                                            src="/assets/img/placeholder-round.png"
+                                            width={104}
+                                            height={104}
+                                            alt="P Icon"
+                                            loading="lazy"
+                                            className="d-block mx-auto mb-3"
+                                        />
+                                    )}
 
                                     {project.user?.company_name && (
                                         <div className="title text-black fw-semibold text-center fs-5 mb-2">{project.user.company_name}</div>
