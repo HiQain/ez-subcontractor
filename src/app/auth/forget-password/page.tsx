@@ -167,7 +167,9 @@ export default function ForgotPassword() {
                                 </div>
 
                                 <div className="buttons-wrapper d-flex align-items-center gap-4 mt-3">
-                                    <button onClick={() => router.back()} className="btn btn-outline-dark rounded-3 justify-content-center w-100">
+                                    <button
+                                        type="button" onClick={() => router.back()} className="btn btn-outline-dark rounded-3 justify-content-center w-100"
+                                    >
                                         Back
                                     </button>
                                     <button

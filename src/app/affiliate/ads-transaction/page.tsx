@@ -173,10 +173,8 @@ export default function AdTransactionsPage() {
                                                         <tr>
                                                             <th>S. No</th>
                                                             <th>Transaction ID</th>
-                                                            <th>Ad ID</th>
                                                             <th>Orientation</th>
                                                             <th>Card</th>
-                                                            <th>Status</th>
                                                             <th>Date</th>
                                                             <th>Amount</th>
                                                         </tr>
@@ -191,10 +189,8 @@ export default function AdTransactionsPage() {
                                                                 <tr key={tx.id}>
                                                                     <td>{index + 1}</td>
                                                                     <td>{`${tx.transaction_id.slice(0, 14)}...`}</td>
-                                                                    <td>{tx.ad.id}</td>
                                                                     <td>{tx.ad.orientation}</td>
                                                                     <td>****{tx.card_last4}</td>
-                                                                    <td>{tx.status}</td>
                                                                     <td>{new Date(tx.created_at).toLocaleDateString()}</td>
                                                                     <td>${tx.amount}</td>
                                                                 </tr>
