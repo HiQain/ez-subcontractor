@@ -258,7 +258,6 @@ export default function PostAnAd() {
             const data = await res.json();
 
             if (res.ok && data.success) {
-                showToast('Ad posted successfully!', 'success');
                 router.push('/affiliate/ad-posted');
             } else {
                 const serverMessage = Array.isArray(data.message)

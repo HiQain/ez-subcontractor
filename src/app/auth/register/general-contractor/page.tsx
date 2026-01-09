@@ -214,8 +214,6 @@ export default function RegisterPage() {
                     localStorage.setItem('token', token);
                     localStorage.setItem('role', 'general_contractor');
 
-                    showToast('Registration successful! Welcome aboard!');
-
                     setTimeout(() => {
                         router.push('/general-contractor/dashboard');
                     }, 1500);

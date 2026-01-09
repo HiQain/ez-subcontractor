@@ -221,8 +221,6 @@ export default function RegisterPage() {
                 localStorage.setItem('role', 'affiliate');
 
                 if (token) {
-                    showToast('Registration successful! Welcome aboard!');
-
                     setTimeout(() => {
                         const paths: Record<string, string> = {
                             'general-contractor': '/subscription-list',

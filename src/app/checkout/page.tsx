@@ -332,7 +332,6 @@ export default function CheckoutPage() {
             }
 
             // ✅ Success
-            showToast('Subscription activated successfully!', 'success'); // ✅ Success toast
             router.push('/thank-you');
 
         } catch (err: any) {
