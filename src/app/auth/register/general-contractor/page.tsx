@@ -10,7 +10,6 @@ import { useRouter, useParams } from 'next/navigation';
 
 export default function RegisterPage() {
     const router = useRouter();
-    const params = useParams();
 
     // 🔹 Show non-blocking toast notification
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -62,7 +61,7 @@ export default function RegisterPage() {
         company_name: 'ABC Corporation',
         password: 'Password123',
         password_confirmation: 'Password123',
-        license_number: 'LIC123456',
+        license_number: '',
         zip: '0',
         work_radius: '0',
         category: 1,
@@ -180,7 +179,7 @@ export default function RegisterPage() {
             company_name: formData.company_name,
             password: formData.password,
             password_confirmation: formData.password_confirmation,
-            license_number: formData.license_number || 'LIC123456',
+            license_number: formData.license_number,
             zip: formData.zip || '46000',
             work_radius: parseInt(formData.work_radius) || 0,
             category: 1,

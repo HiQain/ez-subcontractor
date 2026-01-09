@@ -457,14 +457,16 @@ export default function ProfilePage() {
                                                     </Link>
                                                 </div>
                                             </div>
-                                            <div className="col-xl-3 col-sm-6">
-                                                <div className="content">
-                                                    <div className="text-gray-light fw-medium mb-2">License Number</div>
-                                                    <div className="fw-semibold fs-18 text-dark text-truncate">
-                                                        {profile.license_number}
+                                            {profile.license_number !== '' && (
+                                                <div className="col-xl-3 col-sm-6">
+                                                    <div className="content">
+                                                        <div className="text-gray-light fw-medium mb-2">License Number</div>
+                                                        <div className="fw-semibold fs-18 text-dark text-truncate">
+                                                            {profile.license_number}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
