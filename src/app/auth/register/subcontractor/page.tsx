@@ -26,7 +26,7 @@ export default function RegisterPage() {
         password: 'Password123!',
         password_confirmation: 'Password123!',
         license_number: '',
-        zip: '10000',
+        zip: '',
         work_radius: 25,
         category: '',
     });
@@ -309,10 +309,8 @@ export default function RegisterPage() {
 
         if (['general-contractor', 'subcontractor'].includes(accountType)) {
             if (!formData.category) newErrors.category = 'Please select a category';
-            if (!formData.license_number.trim()) newErrors.license_number = 'License Number is required';
         }
 
-        if (!formData.zip.trim()) newErrors.zip = 'Zip Code is required';
         if (formData.work_radius === 0) newErrors.work_radius = 'Work Radius is required';
 
         if (Object.keys(newErrors).length > 0) {
@@ -326,7 +324,9 @@ export default function RegisterPage() {
         // ✅ Build payload
         const role = localStorage.getItem('role') || accountType.replace('-', '_');
         const fcmToken = localStorage.getItem("fcmToken");
-        localStorage.setItem('userZip', formData.zip);
+        if (formData.zip?.trim()) {
+            localStorage.setItem('userZip', formData.zip);
+        }
         localStorage.setItem('userRadius', formData.work_radius.toString());
 
         const payload: Record<string, any> = {

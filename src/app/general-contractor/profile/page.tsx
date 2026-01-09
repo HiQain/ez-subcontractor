@@ -457,7 +457,7 @@ export default function ProfilePage() {
                                                     </Link>
                                                 </div>
                                             </div>
-                                            {profile.license_number !== '' && (
+                                            {profile.license_number?.trim() && (
                                                 <div className="col-xl-3 col-sm-6">
                                                     <div className="content">
                                                         <div className="text-gray-light fw-medium mb-2">License Number</div>

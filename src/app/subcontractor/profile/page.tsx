@@ -20,6 +20,7 @@ interface ProfileData {
     state: string;
     zipCode: string;
     workRadius: number;
+    license_number: string;
     category: Specialization[];
     average_rating: string;
     total_ratings: number;
@@ -173,6 +174,7 @@ export default function ProfilePage() {
                         category: data.data.specializations || [],
                         average_rating: (parseFloat(data.data.average_rating) || 0).toString(),
                         total_ratings: data.data.total_ratings || 0,
+                        license_number: data.data.license_number || '',
                     });
                 } else {
                     setError(data.message || 'Failed to load profile');
@@ -484,12 +486,14 @@ export default function ProfilePage() {
                                             </div>
 
                                             <div className="row g-2">
-                                                <div className="col-xl-3 col-sm-6">
-                                                    <div className="content">
-                                                        <div className="text-gray-light fw-medium mb-2">Zip Code</div>
-                                                        <div className="fw-semibold fs-18">{profile.zipCode}</div>
+                                                {profile.zipCode?.trim() && (
+                                                    <div className="col-xl-3 col-sm-6">
+                                                        <div className="content">
+                                                            <div className="text-gray-light fw-medium mb-2">Zip Code</div>
+                                                            <div className="fw-semibold fs-18">{profile.zipCode}</div>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                )}
                                                 <div className="col-xl-3 col-sm-6">
                                                     <div className="content">
                                                         <div className="text-gray-light fw-medium mb-2">
@@ -498,6 +502,16 @@ export default function ProfilePage() {
                                                         <div className="fw-semibold fs-18">{profile.workRadius} miles</div>
                                                     </div>
                                                 </div>
+                                                {profile.license_number?.trim() && (
+                                                    <div className="col-xl-3 col-sm-6">
+                                                        <div className="content">
+                                                            <div className="text-gray-light fw-medium mb-2">
+                                                                License Number
+                                                            </div>
+                                                            <div className="fw-semibold fs-18">{profile.license_number}</div>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
