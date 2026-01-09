@@ -61,6 +61,33 @@ export default function HomePage() {
 
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
+    // 🔹 Gallery State
+    const [galleryItems, setGalleryItems] = useState<any[]>([]);
+    const [galleryLoading, setGalleryLoading] = useState(true);
+
+    // 🔹 Fetch Gallery
+    const fetchGallery = async () => {
+        try {
+            setGalleryLoading(true);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/gallery-items`);
+            const data = await res.json();
+            if (data.success) {
+                setGalleryItems(data.data || []);
+            } else {
+                setGalleryItems([]);
+            }
+        } catch (err) {
+            console.error("Gallery fetch error:", err);
+            setGalleryItems([]);
+        } finally {
+            setGalleryLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchGallery();
+    }, []);
+
 
     const accountTypes = [
         {
@@ -472,6 +499,43 @@ export default function HomePage() {
                         )}
                     </div>
                 </section>
+
+                {/* 🔹 Gallery Section (Projects ke baad) */}
+                <section className="gallery-sec py-5">
+                    <div className="container">
+                        <div className="content-wrapper mb-4 text-center">
+                            <h2 className="main-title">Our Gallery</h2>
+                            <p className="text-muted">Explore the latest project images and works</p>
+                        </div>
+
+                        {/** Loading State **/}
+                        {galleryLoading ? (
+                            <div className="text-center py-5">
+                                <div className="spinner-border text-primary" role="status">
+                                    <span className="visually-hidden">Loading gallery...</span>
+                                </div>
+                                <p className="mt-3 text-muted">Fetching gallery items</p>
+                            </div>
+                        ) : galleryItems.length === 0 ? (
+                            <div className="text-center py-5">
+                                <p className="text-muted">No gallery items available.</p>
+                            </div>
+                        ) : (
+                            <div className="gallery-grid">
+                                {galleryItems.map((item) => (
+                                    <div key={item.id} className="gallery-item">
+                                        <img
+                                            src={item.image_url}
+                                            alt={`Gallery Item ${item.id}`}
+                                            className="img-fluid rounded shadow-sm"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </section>
+
             </div>
 
             <Footer />

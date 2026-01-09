@@ -3,9 +3,50 @@
   width: 100%;
   overflow: hidden;
 }
+
 .home-banner-sec .custom-pagination {
   transform: translateY(-70px);
 }
+
+
+/* Masonry Gallery */
+.gallery-grid {
+  column-count: 3;
+  /* Desktop: 3 columns */
+  column-gap: 15px;
+}
+
+@media (max-width: 1200px) {
+  .gallery-grid {
+    column-count: 2;
+    /* Tablet: 2 columns */
+  }
+}
+
+@media (max-width: 768px) {
+  .gallery-grid {
+    column-count: 1;
+    /* Mobile: 1 column */
+  }
+}
+
+.gallery-item {
+  break-inside: avoid;
+  /* important for masonry effect */
+  margin-bottom: 15px;
+}
+
+.gallery-item img {
+  width: 100%;
+  display: block;
+  border-radius: 8px;
+  transition: transform 0.3s;
+}
+
+.gallery-item img:hover {
+  transform: scale(1.05);
+}
+
 .home-banner-sec .custom-pagination .custom-dot {
   width: 12px;
   height: 12px;
@@ -15,6 +56,7 @@
   transition: all 0.3s ease;
   border: none;
 }
+
 .home-banner-sec .custom-pagination .custom-dot.active {
   background: #c9da2b;
   border: 2px solid #272727;
@@ -23,16 +65,19 @@
   border-radius: 30px;
   border: none;
 }
+
 .home-banner-sec .slick-slider,
 .home-banner-sec .slick-list,
 .home-banner-sec .slick-track,
 .home-banner-sec .banner-wrapper {
   height: 60vh;
 }
+
 .home-banner-sec .slick-dots {
   bottom: 100px;
   justify-content: center;
 }
+
 .home-banner-sec .banner-wrapper {
   position: relative;
   display: flex;
@@ -42,6 +87,7 @@
   padding: clamp(140px, 28vw, 140px) 20px;
   text-align: center;
 }
+
 .home-banner-sec .banner-wrapper .content-wrapper {
   position: relative;
   z-index: 2;
@@ -50,6 +96,7 @@
   margin: 0 auto;
   text-align: center;
 }
+
 .home-banner-sec .banner-wrapper .content-wrapper .buttons {
   display: flex;
   align-items: center;
@@ -58,6 +105,7 @@
   gap: 20px;
   margin-bottom: 30px;
 }
+
 .home-banner-sec .banner-wrapper .content-wrapper .buttons .custom-form-btn {
   text-decoration: none;
   display: flex;
@@ -70,35 +118,44 @@
   font-size: 18px;
   font-weight: 600;
 }
+
 .home-banner-sec .banner-wrapper .content-wrapper .buttons .btn-s1 {
   background-color: #C9DA2B;
   color: #272727;
 }
+
 .home-banner-sec .banner-wrapper .content-wrapper .buttons .btn-s1:hover {
   background-color: #a8b723;
 }
+
 .home-banner-sec .banner-wrapper .content-wrapper .buttons .btn-s1 img {
   filter: brightness(0) invert(0);
 }
+
 .home-banner-sec .banner-wrapper .content-wrapper .buttons .btn-s2 {
   background-color: #272727;
   color: white;
 }
+
 .home-banner-sec .banner-wrapper .content-wrapper .buttons .btn-s2:hover {
   background-color: #1b1b1b;
 }
+
 .home-banner-sec .banner-wrapper .content-wrapper .buttons .btn-s3 {
   border-color: white;
   color: white;
 }
+
 .home-banner-sec .banner-wrapper .content-wrapper .buttons .btn-s3:hover {
   background-color: #C9DA2B;
   border-color: #C9DA2B;
   color: var(#272727);
 }
+
 .home-banner-sec .banner-wrapper .content-wrapper .buttons .btn-s3:hover img {
   filter: brightness(0) invert(0);
 }
+
 .home-banner-sec .banner-wrapper .content-wrapper .notice-button {
   background-color: rgba(0, 187, 255, 0.1450980392);
   border: 1px solid #00bbff;
@@ -117,15 +174,18 @@
 .home-banner-sec.page-banner {
   background-color: #272727;
 }
+
 .home-banner-sec.page-banner video {
   opacity: 0.5;
 }
+
 .home-banner-sec.page-banner .slick-slider,
 .home-banner-sec.page-banner .slick-list,
 .home-banner-sec.page-banner .slick-track,
 .home-banner-sec.page-banner .banner-wrapper {
   height: auto;
 }
+
 .home-banner-sec.page-banner .banner-wrapper {
   padding: 50px 0;
 }
@@ -135,6 +195,7 @@
   z-index: 2;
   margin-top: -60px;
 }
+
 .role-cards .account-card {
   min-width: 100% !important;
   border-radius: 10px;
@@ -144,6 +205,7 @@
   padding: 30px 20px;
   margin-bottom: 10px;
 }
+
 .role-cards .account-card input {
   display: none;
 }
@@ -156,9 +218,11 @@
 .testimonial-sec {
   padding: 50px 0;
 }
+
 .testimonial-sec .review-slider {
   position: relative;
 }
+
 .testimonial-sec .review-card {
   background: white;
   border-radius: 25px;
@@ -170,9 +234,11 @@
   overflow: hidden;
   z-index: 1;
 }
+
 .testimonial-sec .review-card .author {
   flex-wrap: wrap;
 }
+
 .testimonial-sec .review-card::after {
   content: "";
   position: absolute;
@@ -198,10 +264,12 @@
   z-index: 2;
   transition: all 0.3s ease;
 }
+
 .slick-prev:hover,
 .slick-next:hover {
   background-color: #333 !important;
 }
+
 .slick-prev::before,
 .slick-next::before {
   content: "" !important;
@@ -224,6 +292,7 @@
 .pricing-sec {
   padding: 50px 0;
 }
+
 .pricing-sec .pricing-tabs {
   border: 1px solid #272727;
   border-radius: 30px;
@@ -231,6 +300,7 @@
   width: fit-content;
   margin: 0 auto;
 }
+
 .pricing-sec .pricing-tabs .tab-btn {
   border: 1px solid transparent;
   border-radius: 50px;
@@ -240,17 +310,21 @@
   cursor: pointer;
   transition: all 0.3s ease;
 }
+
 .pricing-sec .pricing-tabs .tab-btn.active {
   background-color: #C9DA2B;
   color: #fff;
   border-color: #C9DA2B;
 }
+
 .pricing-sec .pricing-content {
   display: none;
 }
+
 .pricing-sec .pricing-content.active {
   display: block;
 }
+
 .pricing-sec .price-card {
   background: #fff;
   height: 100%;
@@ -261,10 +335,12 @@
   position: relative;
   transition: transform 0.3s ease;
 }
+
 .pricing-sec .price-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.1450980392);
 }
+
 .pricing-sec .price-card .pricing-header {
   border: 2px solid #C9DA2B;
   border-bottom-width: 10px;
@@ -272,20 +348,24 @@
   border-radius: 25px;
   margin-bottom: 25px;
 }
+
 .pricing-sec .price-card .pricing-header .title1 {
   font-size: clamp(20px, 2vw, 24px);
   font-weight: 600;
   margin-bottom: 20px;
   display: block;
 }
+
 .pricing-sec .price-card .pricing-header .price {
   font-size: clamp(36px, 4vw, 48px);
   font-weight: 400;
   color: #000;
 }
+
 .pricing-sec .price-card .pricing-body {
   padding: 0 25px;
 }
+
 .pricing-sec .price-card .pricing-body .list-with-icon {
   list-style: none;
   margin: 0;
@@ -294,6 +374,7 @@
   flex-direction: column;
   gap: 15px;
 }
+
 .pricing-sec .price-card .pricing-body .list-with-icon li {
   position: relative;
   padding-left: 28px;
@@ -302,6 +383,7 @@
   font-weight: 500;
   color: #000;
 }
+
 .pricing-sec .price-card .pricing-body .list-with-icon li::before {
   content: "";
   position: absolute;
@@ -311,6 +393,7 @@
   width: 16px;
   height: 16px;
 }
+
 .pricing-sec .price-card .note-card {
   border: 1px solid #00bbff;
   background: rgba(0, 187, 255, 0.062745098);
@@ -318,6 +401,7 @@
   padding: 10px;
   margin: 20px 25px;
 }
+
 .pricing-sec .price-card .btn {
   width: 100%;
   border-radius: 10px;
@@ -331,17 +415,21 @@
   text-decoration: none;
   transition: all 0.3s ease;
 }
+
 .pricing-sec .price-card .btn:hover {
   background: #272727;
   color: white;
   opacity: 0.8;
 }
+
 .pricing-sec .price-card1 {
   border-color: #f3705a !important;
 }
+
 .pricing-sec .price-card1 .pricing-header {
   border-color: #f3705a !important;
 }
+
 .pricing-sec .price-card1 .pricing-body .list-with-icon li::before {
   background-image: url("/img/check-red.svg") !important;
 }
@@ -349,11 +437,13 @@
 .cta-sec {
   padding: 50px 0;
 }
+
 .cta-sec .cta-sec-wrapper {
   background: center/cover no-repeat;
   padding: clamp(75px, 15vw, 150px) clamp(35px, 7vw, 70px);
   border-radius: 50px;
 }
+
 .cta-sec .cta-btn {
   padding: 16px;
   border-radius: 10px;
@@ -373,36 +463,46 @@
     flex-wrap: wrap;
     gap: 12px;
   }
+
   .banner-sec .content-wrapper .form-wrapper .input-wrapper:first-child {
     border: none;
   }
+
   .banner-sec .content-wrapper .buttons .custom-form-btn {
     padding: 10px 20px;
     font-size: 16px;
   }
 }
+
 @media (max-width: 576px) {
   .home-hero-btn {
     min-width: 250px;
     justify-content: center;
   }
-  .home-banner-sec .slick-slider, .home-banner-sec .slick-list, .home-banner-sec .slick-track {
+
+  .home-banner-sec .slick-slider,
+  .home-banner-sec .slick-list,
+  .home-banner-sec .slick-track {
     height: auto;
   }
+
   .home-banner-sec .content-wrapper .notice-button {
     font-size: 18px;
     border-radius: 16px;
     padding: 10px 20px;
   }
+
   .home-banner-sec .banner-wrapper {
     padding: 50px 0;
     height: auto;
   }
+
   .role-cards {
     margin-top: 0;
     padding: 30px 0 0;
     background-color: rgba(0, 0, 0, 0.05);
   }
+
   .role-cards .account-card {
     border-radius: 6px;
     background-color: #fff;
@@ -411,10 +511,12 @@
     padding: 15px;
     margin-bottom: 0;
   }
+
   .role-cards .account-card img {
     height: 30px;
     width: auto;
   }
+
   .role-cards .account-card .title {
     font-size: 16px;
   }
