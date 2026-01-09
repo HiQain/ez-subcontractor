@@ -1,10 +1,31 @@
+import "../../styles/style.css";
+
 type ToastType = 'info' | 'success' | 'error';
+
+let toastContainer: HTMLDivElement | null = null;
+
+const getToastContainer = () => {
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.id = 'toast-container';
+    toastContainer.style.position = 'fixed';
+    toastContainer.style.top = '20px';
+    toastContainer.style.right = '20px';
+    toastContainer.style.zIndex = '99999';
+    toastContainer.style.display = 'flex';
+    toastContainer.style.flexDirection = 'column';
+    toastContainer.style.gap = '12px';
+    document.body.appendChild(toastContainer);
+  }
+  return toastContainer;
+};
 
 export const showNotificationToast = (
   title: string,
   body: string,
   type: ToastType = 'info'
 ) => {
+  const container = getToastContainer();
   const toast = document.createElement('div');
 
   const styles = {
@@ -32,10 +53,6 @@ export const showNotificationToast = (
 
   toast.innerHTML = `
     <div style="
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 99999;
       min-width: 320px;
       max-width: 380px;
       background: ${bg};
@@ -70,7 +87,7 @@ export const showNotificationToast = (
     </div>
   `;
 
-  document.body.appendChild(toast);
+  container.appendChild(toast);
 
   const closeBtn = toast.querySelector('span');
   closeBtn?.addEventListener('click', () => toast.remove());
