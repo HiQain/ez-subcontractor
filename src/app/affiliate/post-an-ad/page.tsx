@@ -554,6 +554,7 @@ export default function PostAnAd() {
 
             // 🔹 Optimistically remove card from UI first
             setCards((prevCards) => prevCards.filter((card) => card.id !== cardId));
+            showToast('Card removed successfully', 'success');
 
             const token = localStorage.getItem('token');
             if (!token) throw new Error('Authentication required');
@@ -578,7 +579,6 @@ export default function PostAnAd() {
                 throw new Error(data.message || 'Failed to remove card');
             }
 
-            showToast('Card removed successfully', 'success');
         } catch (err: any) {
             console.error('Remove card error:', err);
             showToast(err.message || 'Failed to remove card', 'error');
