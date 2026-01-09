@@ -220,7 +220,7 @@ export default function PostAnAd() {
             // 🔹 Dates (7 weeks)
             const today = new Date();
             const endDate = new Date();
-            endDate.setDate(today.getDate() + 7 * 7);
+            endDate.setDate(today.getDate() + 1 * 7);
             formData.append('start_date', today.toISOString().split('T')[0]);
             formData.append('end_date', endDate.toISOString().split('T')[0]);
 
