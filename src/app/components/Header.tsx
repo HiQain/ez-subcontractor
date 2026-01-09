@@ -380,9 +380,46 @@ export default function Header() {
                                     alt="Notifications"
                                 />
                             </Link>
-                            <ul className="dropdown-menu dropdown-menu-end" style={{ minWidth: '300px' }}>
-                                <li>
-                                    <span className="fw-bold px-3 border-bottom d-block py-2">Notifications</span>
+                            <ul
+                                className="dropdown-menu dropdown-menu-end notifications-dropdown"
+                                style={{ minWidth: '300px', maxHeight: '400px', overflowY: 'auto' }}
+                            >
+                                <li className="d-flex justify-content-between align-items-center px-3 border-bottom py-2">
+                                    <span className="fw-bold">Notifications</span>
+                                    {notifications.length > 0 && (
+                                        <button
+                                            className="btn btn-sm btn-outline-danger"
+                                            onClick={async () => {
+                                                const token = localStorage.getItem('token');
+                                                if (!token) return;
+
+                                                try {
+                                                    const res = await fetch(
+                                                        `${process.env.NEXT_PUBLIC_API_BASE_URL}common/notifications/clear`,
+                                                        {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                Authorization: `Bearer ${token}`,
+                                                                'Content-Type': 'application/json',
+                                                            },
+                                                        }
+                                                    );
+
+                                                    const data = await res.json();
+                                                    if (res.ok && data.success) {
+                                                        setNotifications([]);
+                                                        console.log('Notifications cleared');
+                                                    } else {
+                                                        console.error('Failed to clear notifications');
+                                                    }
+                                                } catch (err) {
+                                                    console.error('Error clearing notifications:', err);
+                                                }
+                                            }}
+                                        >
+                                            Clear All
+                                        </button>
+                                    )}
                                 </li>
                                 {loadingNotifications ? (
                                     <li className="dropdown-item py-2 text-center">Loading...</li>
