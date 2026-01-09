@@ -531,7 +531,6 @@ export default function PostAnAd() {
             const data = await res.json();
 
             if (res.ok && data.success) {
-                showToast('Ad updated successfully!', 'success');
                 router.back();
             } else {
                 showToast(
