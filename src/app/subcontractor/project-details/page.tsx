@@ -55,20 +55,30 @@ interface BannerImage {
     // caption?: string; // optional: add later if needed
 }
 
+interface Ad {
+    id: number;
+    orientation: 'horizontal' | 'vertical';
+    description: string;
+    image: string;
+    redirect_url: string;
+    advertiser: {
+        name: string;
+        company_name: string;
+        profile_image_url: string;
+    };
+}
 
 export default function ProjectSubcontractorDetailsPage() {
     const router = useRouter();
     const [projectId, setProjectId] = useState<string | null>(null);
+    const [verticalAds, setVerticalAds] = useState<Ad[]>([]);
     const [project, setProject] = useState<Project | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [bannerImagesSidebar, setBannerImagesSidebar] = useState<BannerImage[]>([]);
-    const [bannerImagesLoading, setBannerImagesLoading] = useState(true);
-    const [bannerImagesError, setBannerImagesError] = useState<string | null>(null);
     const leftSliderRef = useRef<Slider | null>(null);
 
     const sliderSettings = {
-        dots: false,
+        dots: true,
         infinite: true,
         speed: 600,
         slidesToShow: 1,
@@ -109,8 +119,24 @@ export default function ProjectSubcontractorDetailsPage() {
         };
     };
 
+    const fetchVerticalAds = async () => {
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads?type=vertical`,
+                { headers: { Accept: 'application/json' } }
+            );
+
+            const json = await res.json();
+            if (!res.ok) throw new Error('Failed');
+
+            setVerticalAds(json.data || []);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     useEffect(() => {
-        fetchBannerImagesSidebar();
+        fetchVerticalAds();
         setProjectId(localStorage.getItem('project-id'));
         if (!projectId) {
             setError('Project ID is missing.');
@@ -169,39 +195,6 @@ export default function ProjectSubcontractorDetailsPage() {
 
         fetchProject();
     }, [projectId]);
-
-    const fetchBannerImagesSidebar = async () => {
-        setBannerImagesLoading(true);
-        setBannerImagesError(null);
-
-        try {
-            // ✅ Replace this block with real API call later
-            // Example:
-            // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}banner-images`);
-            // const data = await res.json();
-
-            // 🔹 For now: static fallback (you can remove this when API ready)
-            const staticImagesSidebar: BannerImage[] = [
-                { id: 1, src: '/assets/img/filter-img.webp', alt: 'Construction Project 1' },
-                { id: 2, src: '/assets/img/filter-img.webp', alt: 'Construction Project 2' },
-                { id: 3, src: '/assets/img/filter-img.webp', alt: 'Construction Project 3' },
-            ];
-
-            // Simulate API delay (remove in production)
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            setBannerImagesSidebar(staticImagesSidebar);
-        } catch (err) {
-            console.error('Failed to load banner images:', err);
-            setBannerImagesError('Failed to load banner images');
-            // Fallback to default images
-            setBannerImagesSidebar([
-                { id: 1, src: '/assets/img/filter-img.webp', alt: 'Default Banner' },
-            ]);
-        } finally {
-            setBannerImagesLoading(false);
-        }
-    };
 
     const pdfs = project?.attachments
         ? project.attachments.filter(a =>
@@ -602,19 +595,69 @@ export default function ProjectSubcontractorDetailsPage() {
                                     </div>
                                 </div>
 
-                                <div className="slider rounded overflow-hidden">
+                                <div className="slider overflow-hidden rounded-4">
                                     <Slider ref={leftSliderRef} {...sliderSettings}>
-                                        {bannerImagesSidebar.map((img) => (
-                                            <div key={img.id} className="px-1">
-                                                <Image
-                                                    src={img.src}
-                                                    width={800}
-                                                    height={230}
-                                                    alt={img.alt}
-                                                    className="img-fluid w-100 h-100 rounded-4 object-fit-cover "
-                                                // Optional: add loading="lazy" later
-                                                />
-                                            </div>
+                                        {verticalAds.map(ad => (
+                                            <a
+                                                key={ad.id}
+                                                href={ad.redirect_url}
+                                                target="_blank"
+                                                className="d-block px-1 text-decoration-none text-dark"
+                                            >
+                                                <div className="bg-white rounded-4 overflow-hidden border h-100">
+
+                                                    {/* Image */}
+                                                    <div
+                                                        style={{
+                                                            height: '326px',
+                                                            position: 'relative',
+                                                            borderBottom: '1px solid #e9ecef'
+                                                        }}
+                                                    >
+                                                        <Image
+                                                            src={ad.image}
+                                                            alt="Ad"
+                                                            fill
+                                                            className="img-fluid"
+                                                            style={{ objectFit: 'cover' }}
+                                                        />
+                                                    </div>
+
+                                                    {/* Content BELOW image (vertical style preserved) */}
+                                                    <div className="p-3">
+
+                                                        {/* Profile + Company */}
+                                                        <div className="d-flex align-items-center gap-2 mb-2">
+                                                            <Image
+                                                                src={
+                                                                    ad.advertiser.profile_image_url ||
+                                                                    '/assets/img/profile-placeholder.webp'
+                                                                }
+                                                                width={35}
+                                                                height={35}
+                                                                className="rounded-circle"
+                                                                alt=""
+                                                                style={{ objectFit: 'cover' }}
+                                                            />
+                                                            <div>
+                                                                <p className="mb-0 fw-bold fs-14">
+                                                                    {ad.advertiser.company_name}
+                                                                </p>
+                                                                <p className="mb-0 text-muted fs-13">
+                                                                    {ad.advertiser.name}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Caption (separate, niche) */}
+                                                        {ad.description && (
+                                                            <p className="mb-0 text-muted fs-14">
+                                                                {ad.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </a>
                                         ))}
                                     </Slider>
                                 </div>
