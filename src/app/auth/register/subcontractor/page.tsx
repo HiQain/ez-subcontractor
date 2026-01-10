@@ -367,6 +367,17 @@ export default function RegisterPage() {
                 if (token) {
                     localStorage.setItem('token', token);
                     localStorage.setItem('role', 'subcontractor');
+
+                    const selectedCategoryObj = categories.find(
+                        cat => cat.id === formData.category
+                    );
+
+                    if (selectedCategoryObj) {
+                        localStorage.setItem(
+                            'selectedCategory',
+                            JSON.stringify(selectedCategoryObj)
+                        );
+                    }
                 }
 
                 // Delay for UX

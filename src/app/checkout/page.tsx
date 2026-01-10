@@ -133,7 +133,12 @@ export default function CheckoutPage() {
     // ✅ Load selected plan from localStorage
     useEffect(() => {
         const plan = localStorage.getItem('selectedPlan');
+        const selectedCategory = localStorage.getItem('selectedCategory');
         if (plan) setSelectedPlan(JSON.parse(plan));
+        if (selectedCategory) {
+            const parsedCategory = JSON.parse(selectedCategory);
+            setSelectedCategories([parsedCategory]);
+        }
     }, []);
 
     // ✅ Load name & email from localStorage
@@ -254,36 +259,65 @@ export default function CheckoutPage() {
     const handleConfirmPayment = async () => {
         setError(null);
 
-        // 🔹 Validate name & email
         if (!name.trim() || !email.trim()) {
-            const msg = 'Please enter your name and email';
-            setError(msg);
-            showToast(msg, 'error'); // ✅ Toast added
-            setTimeout(() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 500);
+            showToast('Please enter your name and email', 'error');
             return;
         }
-
-        if (!stripe || !elements) {
-            const msg = 'Stripe not loaded yet';
-            setError(msg);
-            showToast(msg, 'error'); // ✅ Toast added
-            return;
-        }
-
-        const cardElement = elements.getElement(CardElement);
-        if (!cardElement) {
-            const msg = 'Card details missing';
-            setError(msg);
-            showToast(msg, 'error'); // ✅ Toast added
-            return;
+        if (role === 'subcontractor') {
+            if (selectedCategories.length === 0) {
+                showToast('Please select at least one category', 'error');
+                return;
+            }
         }
 
         setLoading(true);
 
         try {
-            // 🔹 1. Create Stripe Payment Method
+            const token = localStorage.getItem('token');
+
+            // ===============================
+            // ✅ FREE PLAN FLOW (NO STRIPE)
+            // ===============================
+            if (selectedPlan.id === 1) {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/create-subscription`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token && { Authorization: `Bearer ${token}` }),
+                        },
+                        body: JSON.stringify({
+                            plan_id: selectedPlan.id,
+                            ...(role === 'subcontractor' && {
+                                category_ids: selectedCategories.map(c => c.id),
+                            }),
+                        }),
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message?.[0] || 'Free subscription failed');
+                }
+
+                router.push('/thank-you');
+                return;
+            }
+
+            // ===============================
+            // 🔹 PAID PLAN FLOW (STRIPE)
+            // ===============================
+            if (!stripe || !elements) {
+                throw new Error('Stripe not loaded');
+            }
+
+            const cardElement = elements.getElement(CardElement);
+            if (!cardElement) {
+                throw new Error('Card details missing');
+            }
+
             const { error: stripeError, paymentMethod } =
                 await stripe.createPaymentMethod({
                     type: 'card',
@@ -292,14 +326,8 @@ export default function CheckoutPage() {
                 });
 
             if (stripeError || !paymentMethod) {
-                const msg = stripeError?.message || 'Payment method creation failed';
-                setError(msg);
-                showToast(msg, 'error'); // ✅ Toast added
-                throw new Error(msg);
+                throw new Error(stripeError?.message || 'Payment failed');
             }
-
-            // 🔹 2. Call Backend Subscription API
-            const token = localStorage.getItem('token');
 
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/create-subscription`,
@@ -311,13 +339,11 @@ export default function CheckoutPage() {
                     },
                     body: JSON.stringify({
                         plan_id: selectedPlan.id,
+                        payment_method_id: paymentMethod.id,
                         ...(role === 'subcontractor' && {
                             category_ids: selectedCategories.map(c => c.id),
                         }),
-                        payment_method_id: paymentMethod.id,
-                        ...(promoCode?.trim() && {
-                            promo_code: promoCode.trim(),
-                        }),
+                        ...(promoCode && { promo_code: promoCode }),
                     }),
                 }
             );
@@ -325,22 +351,13 @@ export default function CheckoutPage() {
             const data = await response.json();
 
             if (!response.ok || !data.success) {
-                const msg = data.message?.[0] || 'Subscription creation failed';
-                setError(msg);
-                showToast(msg, 'error'); // ✅ Toast added
-                throw new Error(msg);
+                throw new Error(data.message?.[0] || 'Subscription failed');
             }
 
-            // ✅ Success
             router.push('/thank-you');
 
         } catch (err: any) {
-            const msg = err.message || 'Something went wrong';
-            setError(msg);
-            showToast(msg, 'error'); // ✅ Final catch-all toast
-            setTimeout(() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 500);
+            showToast(err.message || 'Something went wrong', 'error');
         } finally {
             setLoading(false);
         }
@@ -451,50 +468,54 @@ export default function CheckoutPage() {
                                     }
 
                                     {/* Selected Categories Buttons */}
-                                    <div className="buttons d-flex align-items-center gap-2 flex-wrap">
-                                        {selectedCategories.map(cat => (
-                                            <div
-                                                key={cat.id}
-                                                className="btn bg-dark p-2 fs-12 rounded-3 d-flex align-items-center gap-1"
-                                            >
-                                                <span className="text-gray-light">{cat.name}</span>
-                                                <Image
-                                                    src="/assets/img/cancel_svgrepo.com.svg"
-                                                    width={16}
-                                                    height={16}
-                                                    alt="Cancel"
-                                                    onClick={() => toggleCategory(cat)}
-                                                    style={{ cursor: 'pointer' }}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
+                                    {role === 'subcontractor' && (
+                                        <div className="buttons d-flex align-items-center gap-2 flex-wrap">
+                                            {selectedCategories.map(cat => (
+                                                <div
+                                                    key={cat.id}
+                                                    className="btn bg-dark p-2 fs-12 rounded-3 d-flex align-items-center gap-1"
+                                                >
+                                                    <span className="text-gray-light">{cat.name}</span>
+                                                    <Image
+                                                        src="/assets/img/cancel_svgrepo.com.svg"
+                                                        width={16}
+                                                        height={16}
+                                                        alt="Cancel"
+                                                        onClick={() => toggleCategory(cat)}
+                                                        style={{ cursor: 'pointer' }}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
 
                                     {/* STRIPE CARD FORM */}
-                                    <div className="input-wrapper d-flex flex-column">
-                                        <label className="mb-1 fw-semibold">Card Details *</label>
+                                    {selectedPlan.id !== 1 && (
+                                        <div className="input-wrapper d-flex flex-column">
+                                            <label className="mb-1 fw-semibold">Card Details *</label>
 
-                                        <div
-                                            style={{
-                                                border: '1px solid #ddd',
-                                                borderRadius: '8px',
-                                                padding: '12px',
-                                                background: '#fff',
-                                            }}
-                                        >
-                                            <CardElement
-                                                options={{
-                                                    style: {
-                                                        base: {
-                                                            fontSize: '16px',
-                                                            color: '#000',
-                                                            '::placeholder': { color: '#999' },
-                                                        },
-                                                    },
+                                            <div
+                                                style={{
+                                                    border: '1px solid #ddd',
+                                                    borderRadius: '8px',
+                                                    padding: '12px',
+                                                    background: '#fff',
                                                 }}
-                                            />
+                                            >
+                                                <CardElement
+                                                    options={{
+                                                        style: {
+                                                            base: {
+                                                                fontSize: '16px',
+                                                                color: '#000',
+                                                                '::placeholder': { color: '#999' },
+                                                            },
+                                                        },
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     {selectedPlan.id !== 1 && (
                                         <div className="input-wrapper-s2 d-flex align-items-start gap-2">
@@ -582,7 +603,8 @@ export default function CheckoutPage() {
 
                                                 <div className="d-flex align-items-center justify-content-between">
                                                     <span style={{ fontSize: '14px' }} className="fw-semibold">Total</span>
-                                                    <span style={{ fontSize: '14px' }} className="fw-semibold">${Math.trunc(finalTotal)}</span>
+                                                    {/* <span style={{ fontSize: '14px' }} className="fw-semibold">${Math.trunc(finalTotal)}</span> */}
+                                                    <span className="fw-semibold">${selectedPlan.id === 1 ? 0 : Math.trunc(finalTotal)}</span>
                                                 </div>
 
                                                 {role === 'subcontractor' && (
@@ -604,9 +626,14 @@ export default function CheckoutPage() {
                                     <button
                                         className="btn btn-primary rounded-3 mt-4"
                                         onClick={handleConfirmPayment}
-                                        disabled={!stripe || loading}
+                                        disabled={(selectedPlan.id !== 1 && !stripe) || loading}
                                     >
-                                        {loading ? 'Processing...' : 'Confirm Payment'}
+                                        {loading
+                                            ? 'Processing...'
+                                            : selectedPlan.id === 1
+                                                ? 'Activate Free Plan'
+                                                : 'Confirm Payment'
+                                        }
                                     </button>
                                 </div>
                             </div>

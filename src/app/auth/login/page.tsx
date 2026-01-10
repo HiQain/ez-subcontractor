@@ -184,8 +184,13 @@ export default function LoginPage() {
                 localStorage.setItem('userEmail', trimmedEmail);
                 localStorage.setItem('userZip', user.zip);
                 localStorage.setItem('userRadius', user.work_radius);
-
-
+                if (user.role === 'subcontractor' && user.specializations?.length > 0) {
+                    const cat = {
+                        id: user.specializations[0].id,
+                        name: user.specializations[0].title,
+                    };
+                    localStorage.setItem('selectedCategory', JSON.stringify(cat));
+                }
                 // Optional: persist email if "Remember me"
                 if (rememberMe) {
                     localStorage.setItem('rememberedEmail', trimmedEmail);
