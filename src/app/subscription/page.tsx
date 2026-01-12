@@ -11,7 +11,7 @@ export default function PricingPage() {
     const router = useRouter();
 
     // State
-    const [activeTab, setActiveTab] = useState<'subcontractor' | 'affiliate'>('subcontractor');
+    const [activeTab, setActiveTab] = useState<'subcontractor' | 'affiliate' | 'general_contractor'>('subcontractor');
     const [plans, setPlans] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -118,7 +118,7 @@ export default function PricingPage() {
                                     <span className="price">
                                         $
                                         <span className="fw-bold">
-                                            {plan.discount ? plan.price - (plan.price / 100) * plan.discount : plan.price}
+                                            {Math.trunc(plan.discount ? plan.price - (plan.price / 100) * plan.discount : plan.price)}
                                         </span>
                                     </span>
                                     {plan.saveText && (
@@ -126,7 +126,7 @@ export default function PricingPage() {
                                             style={{ backgroundColor: plan.saveColor }}
                                             className="custom-btn text-white py-2 px-3 rounded-pill"
                                         >
-                                            {parseFloat(plan.discount)} % OFF
+                                            {Math.trunc(parseFloat(plan.discount))} % OFF
                                         </div>
                                     )}
                                 </div>
@@ -170,9 +170,6 @@ export default function PricingPage() {
         </div>
     );
 
-
-
-
     return (
         <div>
             <Header />
@@ -210,8 +207,27 @@ export default function PricingPage() {
                                         Affiliate
                                     </button>
                                 </li>
-                                <div className="slider"></div>
-                                {/* 👈 This is the animated green background */}
+                                <li className="nav-item" role="presentation">
+                                    <button
+                                        className={`nav-link ${activeTab === 'general_contractor' ? 'active' : ''}`}
+                                        type="button"
+                                        onClick={() => setActiveTab('general_contractor')}
+                                    >
+                                        General Contractor
+                                    </button>
+                                </li>
+                                <span
+                                    className="slider"
+                                    style={{
+                                        width: activeTab === 'affiliate' ? '30%' : activeTab === 'general_contractor' ? '40%' : '33.333%',
+                                        transform:
+                                            activeTab === 'subcontractor'
+                                                ? 'translateX(0%)'
+                                                : activeTab === 'affiliate'
+                                                    ? 'translateX(105%)'
+                                                    : 'translateX(150%)',
+                                    }}
+                                />
                             </ul>
                         </div>
                     </div>
@@ -258,6 +274,19 @@ export default function PricingPage() {
                                         ) : (
                                             <div className="col-12 text-center py-5">
                                                 <p>No affiliate plans available at this time.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div
+                                    className={`tab-pane fade ${activeTab === 'general_contractor' ? 'show active' : ''} pricing-content`}
+                                    id="general_contractor">
+                                    <div className="row g-3 justify-content-center">
+                                        {plans.length > 0 ? (
+                                            plans.map((plan) => renderPlanCard(plan))
+                                        ) : (
+                                            <div className="col-12 text-center py-5">
+                                                <p>No General Contractor plans available at this time.</p>
                                             </div>
                                         )}
                                     </div>
