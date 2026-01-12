@@ -70,6 +70,7 @@ export default function ChangePassword() {
     const links = [
         { href: '/general-contractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/user.svg' },
         { href: '/general-contractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
+        { href: '/general-contractor/my-subscription', label: 'My Subscription', icon: '/assets/img/icons/subscription.svg' },
     ];
 
 
@@ -256,7 +257,7 @@ export default function ChangePassword() {
                                                                 method: 'POST',
                                                                 headers: { Authorization: `Bearer ${token}` },
                                                             });
-                                                        } catch {}
+                                                        } catch { }
                                                         localStorage.removeItem('token');
                                                         localStorage.removeItem('isLoggedIn');
                                                         localStorage.removeItem('userEmail');

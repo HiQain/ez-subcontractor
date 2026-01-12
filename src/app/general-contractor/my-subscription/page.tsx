@@ -177,6 +177,12 @@ export default function SubscriptionPage() {
         });
     };
 
+    const links = [
+        { href: '/general-contractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/user.svg' },
+        { href: '/general-contractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
+        { href: '/general-contractor/my-subscription', label: 'My Subscription', icon: '/assets/img/icons/subscription.svg' },
+    ];
+
     return (
         <>
             <Header />
@@ -185,7 +191,82 @@ export default function SubscriptionPage() {
                     <div className="container">
                         <div className="row g-4">
                             <div className="col-xl-3">
-                                <SidebarSubcontractor onLogout={handleLogout} />
+                                <div className="sidebar h-100">
+                                    <div className="main-wrapper bg-dark p-0 h-100 d-flex flex-column justify-content-between">
+
+                                        {/* SidebarSubcontractor Links */}
+                                        <div className="buttons-wrapper">
+                                            {links.map((link) => (
+                                                <Link
+                                                    key={link.href}
+                                                    href={link.href}
+                                                    className={`custom-btn ${pathname === link.href ? 'active' : ''}`}
+                                                >
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        <Image
+                                                            src={link.icon}
+                                                            width={20}
+                                                            height={20}
+                                                            alt="Icon"
+                                                        />
+                                                        <span className="text-white">{link.label}</span>
+                                                    </div>
+                                                    <Image
+                                                        src="/assets/img/icons/angle-right.svg"
+                                                        width={15}
+                                                        height={9}
+                                                        alt="Arrow"
+                                                        style={{ objectFit: 'contain' }}
+                                                    />
+                                                </Link>
+                                            ))}
+                                        </div>
+
+                                        <div className="bottom-bar mt-auto">
+                                            <div className="buttons-wrapper">
+                                                <button
+                                                    onClick={async () => {
+                                                        const token = localStorage.getItem('token');
+                                                        if (!token) {
+                                                            router.push('/auth/login');
+                                                            return;
+                                                        }
+                                                        try {
+                                                            await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}auth/logout`, {
+                                                                method: 'POST',
+                                                                headers: { Authorization: `Bearer ${token}` },
+                                                            });
+                                                        } catch { }
+                                                        localStorage.removeItem('token');
+                                                        localStorage.removeItem('isLoggedIn');
+                                                        localStorage.removeItem('userEmail');
+                                                        localStorage.removeItem('subscription');
+                                                        router.push('/auth/login');
+                                                    }}
+                                                    className="custom-btn bg-danger w-100 border-0"
+                                                    style={{ borderColor: '#DC2626' }}
+                                                >
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        <Image
+                                                            src="/assets/img/icons/logout.svg"
+                                                            width={20}
+                                                            height={20}
+                                                            alt="Logout Icon"
+                                                        />
+                                                        <span className="text-white">Logout</span>
+                                                    </div>
+                                                    <Image
+                                                        src="/assets/img/icons/angle-right.svg"
+                                                        width={15}
+                                                        height={9}
+                                                        alt="Arrow"
+                                                        style={{ objectFit: 'contain' }}
+                                                    />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Right Content */}
