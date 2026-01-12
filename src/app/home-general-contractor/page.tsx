@@ -12,13 +12,12 @@ import Footer from "../components/Footer";
 import "../../styles/home.css";
 import "../../styles/cards.css";
 import "../../styles/slick-slider.css";
-import '../../styles/how-it-works.css';
-import '../../styles/blog.css';
-import '../../styles/about-us.css';
-import '../../styles/testimonial.css';
-import '../../styles/faqs.css';
-
-import { useRouter } from "next/navigation";
+import "../../styles/how-it-works.css";
+import "../../styles/blog.css";
+import "../../styles/about-us.css";
+import "../../styles/testimonial.css";
+import "../../styles/faqs.css";
+import "../../styles/pricing.css";
 
 const stripHtml = (html: string): string => {
     if (typeof window === 'undefined') {
@@ -45,6 +44,7 @@ export default function HomePage() {
     const [howItWorks, setHowItWorks] = useState<any>(null);
     const [blogs, setBlogs] = useState([]);
     const [blogsLoading, setBlogsLoading] = useState(true);
+    const [plans, setPlans] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchBlogs = async () => {
@@ -163,6 +163,159 @@ export default function HomePage() {
         loadHowItWorks();
     }, []);
 
+    useEffect(() => {
+        const fetchPlans = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/public/plans?role=general_contractor`);
+                const text = await res.text();
+
+                if (!text.startsWith('{') && !text.startsWith('[')) {
+                    throw new Error('Unauthorized or server returned HTML. Please log in.');
+                }
+
+                const data = JSON.parse(text);
+
+                if (res.ok && data.success && Array.isArray(data.data?.plans)) {
+                    const transformedPlans = data.data.plans.map((plan: any) => ({
+                        id: plan.id,
+                        title: plan.plan_name,
+                        price: parseFloat(plan.price),
+                        discount: plan.discount_price,
+                        features: plan.features.map((f: any) => f.feature),
+                        hasNote: plan.type === 'trial',
+                        isPopular: plan.label === 'Popular',
+                        showStrike: !!plan.discount_price,
+                        saveText: plan.discount_price ? `${Math.round(100 - (parseFloat(plan.discount_price) / parseFloat(plan.price)) * 100)}% OFF` : '',
+                        saveColor: '#DC2626',
+                        duration_days: plan.duration_days,
+                        type: plan.type,
+                        stripe_price_id: plan.stripe_price_id,
+                        extra_category_price: plan.extra_category_price,
+                        is_subscribed: plan.is_subscribed,
+                        is_cancelled: plan.is_cancelled,
+                    }));
+
+                    setPlans(transformedPlans);
+                } else {
+                    throw new Error(data.message?.[0] || 'Failed to load plans');
+                }
+            } catch (err: any) {
+                console.error('Error fetching plans:', err);
+            }
+        };
+
+        fetchPlans();
+    },);
+
+    const renderNoteCard = () => (
+        <div className="note-card d-flex align-items-start gap-1">
+            <Image
+                src="/assets/img/icons/note.webp"
+                width={24}
+                height={24}
+                alt="Note"
+                loading="lazy"
+                className="d-block"
+            />
+            <div className="content">
+                <span style={{ fontSize: '14px' }} className="d-block fw-semibold mb-1">
+                    Note
+                </span>
+                <p style={{ fontSize: '12px' }} className="mb-0">
+                    After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with contractors, and accessing premium tools.
+                </p>
+            </div>
+        </div>
+    );
+
+    const renderPlanCard = (plan: any) => (
+        <div key={plan.id} className="col-lg-4 col-md-6">
+            <div className={`price-card ${plan.isPopular ? 'popular' : ''} free`}>
+                <div>
+                    <div className="pricing-header">
+                        {plan.isPopular ? (
+                            <div className="d-flex align-items-center justify-content-between mb-3">
+                                <span className="title1 mb-0 text-truncate">{plan.title}</span>
+                                <div
+                                    style={{ fontSize: '14px' }}
+                                    className="custom-btn bg-white shadow p-2 rounded-pill"
+                                >
+                                    🔥 Popular
+                                </div>
+                            </div>
+                        ) : (
+                            <span className="title1 text-truncate">{plan.title}</span>
+                        )}
+
+
+
+                        {plan.showStrike ? (
+                            <div className="d-flex align-items-center justify-content-between gap-1 flex-wrap">
+                                <div className="d-flex align-items-center gap-2">
+                                    <del className="fs-18 fw-medium text-black">$ {Math.trunc(plan.price)}</del>
+                                    <div className="d-flex align-items-center gap-2 justify-content-between">
+                                        <span className="price">
+                                            $
+                                            <span className="fw-bold">
+                                                {Math.trunc(plan.discount ? plan.price - plan.price / 100 * plan.discount : plan.price)}
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                                {plan.saveText && (
+                                    <div
+                                        style={{ backgroundColor: plan.saveColor, maxWidth: '130px' }}
+                                        className="custom-btn text-white py-2 px-3 rounded-pill"
+                                    >
+                                        {Math.trunc(plan.discount)} % OFF
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="d-flex align-items-center gap-2">
+                                <span className="price">
+                                    $<span className="fw-bold">{Math.trunc(plan.price)}</span>
+                                </span>
+                                {plan.saveText && (
+                                    <button
+                                        type="button"
+                                        style={{ backgroundColor: plan.saveColor }}
+                                        className="custom-btn text-white p-2 rounded-pill"
+                                    >
+                                        {plan.saveText}
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="pricing-body mb-3">
+                        <ul className="m-0 p-0 list-with-icon">
+                            {plan.features.map((feature: string, i: number) => (
+                                <li key={i}>{feature}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="d-flex align-items-center flex-column">
+                    {plan.hasNote && renderNoteCard()}
+                    <div className="pricing-button w-100 pt-0">
+                        <a
+                            href={'/auth/register/subcontractor'}
+                            className={plan.is_subscribed ? 'btn btn-primary bg-primary' : 'btn'}
+                        >
+                            {plan.is_subscribed && plan.status !== 'cancelled'
+                                ? 'Current Plan'
+                                : 'Buy Now'}
+                        </a>
+                    </div >
+                </div >
+            </div >
+        </div >
+    );
+
     const banners = [
         {
             id: 1,
@@ -271,6 +424,29 @@ export default function HomePage() {
                             </div>
                         </div>
                     )}
+                </div>
+            </section>
+
+            <section className="pricing-sec">
+                <div className="container">
+                    <h2 className="main-title text-center fw-bold mb-3">Our Plans</h2>
+                    <p className="text-center mb-5">Choose Your Plan and Start Getting Project Leads Today</p>
+                    <div className="tab-content pricing-wrapper">
+                        <div className="tab-pane fade show active pricing-content">
+                            <div className="row g-3 justify-content-center">
+                                {plans.length > 0 ? (
+                                    plans.map((plan) => renderPlanCard(plan))
+                                ) : (
+                                    <div className="text-center py-5">
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Loading projects...</span>
+                                        </div>
+                                        <p className="mt-3 text-muted">Fetching plans</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
