@@ -120,7 +120,12 @@ export default function PricingPage() {
                                         {blogs.map((blog) => (
                                             <div key={blog.id} className="col-md-6">
                                                 <Link
-                                                    href={''}
+                                                    href={{
+                                                        pathname: '/blog-detail',
+                                                        query: {
+                                                            slug: blog.slug,
+                                                        },
+                                                    }}
                                                     className="blog-wrapper"
                                                     style={{
                                                         background: `url('${blog.featured_image}')`,
@@ -142,6 +147,7 @@ export default function PricingPage() {
                                                                     width={40}
                                                                     height={40}
                                                                     alt={blog.author.name}
+                                                                    style={{ borderRadius: '100px' }}
                                                                 />
                                                                 <span className="fw-semibold text-white">
                                                                     {blog.author.name}

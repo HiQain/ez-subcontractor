@@ -293,7 +293,12 @@ export default function HomePage() {
                             {blogs.map((blog) => (
                                 <div key={blog.id} className="col-lg-4 col-md-6">
                                     <Link
-                                        href={''}
+                                        href={{
+                                            pathname: '/blog-detail',
+                                            query: {
+                                                slug: blog.slug,
+                                            },
+                                        }}
                                         className="blog-wrapper"
                                         style={{
                                             background: `url('${blog.featured_image}')`,
