@@ -205,7 +205,11 @@ export default function LoginPage() {
                 setTimeout(() => {
                     switch (user.role) {
                         case 'general_contractor':
-                            router.push('/general-contractor/dashboard');
+                            if (user.is_subscription) {
+                                router.push('/general-contractor/dashboard');
+                            } else {
+                                router.push('/subscription-list');
+                            }
                             break;
                         case 'subcontractor':
                             if (user.is_subscription) {

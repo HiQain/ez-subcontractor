@@ -214,7 +214,7 @@ export default function RegisterPage() {
                     localStorage.setItem('role', 'general_contractor');
 
                     setTimeout(() => {
-                        router.push('/general-contractor/dashboard');
+                        router.push('/subscription-list');
                     }, 1500);
                 } else {
                     showToast('Registration succeeded, but no token received.', 'error');
