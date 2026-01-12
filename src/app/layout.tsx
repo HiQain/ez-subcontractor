@@ -1,7 +1,6 @@
 "use client";
 import "../styles/font-montserrat.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "../styles/style.css";
@@ -12,6 +11,9 @@ import { showNotificationToast } from "./notification/toast";
 
 export default function RootLayout({ children }) {
     useEffect(() => {
+        // ✅ Import Bootstrap JS client-side only
+        import("bootstrap/dist/js/bootstrap.bundle.min.js");
+
         // Firebase messaging
         generateToken();
         const unsubscribe = onMessage(messaging, (payload) => {
@@ -25,7 +27,7 @@ export default function RootLayout({ children }) {
         });
 
         return () => unsubscribe();
-    }, [])
+    }, []);
 
     return (
         <html lang="en">
