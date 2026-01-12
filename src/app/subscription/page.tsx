@@ -24,7 +24,7 @@ export default function PricingPage() {
                 setError(null);
 
                 const token = localStorage.getItem('token'); // Optional: auth not required for public plans
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/plans?role=${activeTab}`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/public/plans?role=${activeTab}`, {
                     headers: token ? { Authorization: `Bearer ${token}` } : {},
                 });
                 const data = await res.json();
@@ -66,8 +66,13 @@ export default function PricingPage() {
     }, [activeTab]); // 🔁 Re-fetch when tab changes
 
     const handleSelectPlan = (plan: any) => {
+        const token = localStorage.getItem('token');
         localStorage.setItem('selectedPlan', JSON.stringify({ ...plan, type: activeTab }));
-        router.push('/checkout');
+        if (token && token !== 'null' && token !== 'undefined') {
+            router.push('/checkout');
+        } else {
+            router.push('/auth/login');
+        }
     };
 
     const renderNoteCard = () => (
