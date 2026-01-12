@@ -12,6 +12,7 @@ export default function VerifyEmail() {
     const [error, setError] = useState('');
     const [email, setEmail] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [hasSubmitted, setHasSubmitted] = useState(false);
     const router = useRouter();
 
     // 🔹 Show non-blocking toast notification
@@ -90,13 +91,14 @@ export default function VerifyEmail() {
 
     // ✅ Auto-submit when OTP is complete (reliable — no race condition!)
     useEffect(() => {
-        if (otp.every(d => d !== '') && !isSubmitting) {
+        if (otp.every(d => d !== '') && !isSubmitting && !hasSubmitted) {
+            setHasSubmitted(true); // 🔹 prevent multiple submits
             const submitTimer = setTimeout(() => {
                 void handleSubmit();
-            }, 30); // Small debounce for safety
+            }, 100); // 100ms safe debounce
             return () => clearTimeout(submitTimer);
         }
-    }, [otp, isSubmitting]);
+    }, [otp, isSubmitting, hasSubmitted]);
 
     // ✅ Submit handler (guarded against double calls)
     const handleSubmit = async () => {
@@ -148,6 +150,7 @@ export default function VerifyEmail() {
             showToast('Network error. Please check your internet connection.', 'error');
         } finally {
             setIsSubmitting(false);
+            setHasSubmitted(false);
         }
     };
 
@@ -284,7 +287,7 @@ export default function VerifyEmail() {
                             <div className="buttons-wrapper d-flex align-items-center gap-4">
                                 <button
                                     type="button"
-                                    onClick={() => router.push('/auth/forget-password')}
+                                    onClick={() => router.back()}
                                     className="btn btn-outline-dark rounded-3 justify-content-center w-100"
                                     disabled={isSubmitting}
                                 >
