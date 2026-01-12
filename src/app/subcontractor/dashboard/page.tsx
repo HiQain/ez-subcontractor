@@ -190,9 +190,14 @@ export default function DashboardSubContractor() {
         const zip = localStorage.getItem('userZip');
         const radius = localStorage.getItem('userRadius');
 
-        setWorkRadius(radius ? parseInt(radius) : 2);
-        setZipCode(zip)
-    }, [])
+        setWorkRadius(radius && radius !== 'null' ? parseInt(radius) : 2);
+
+        if (zip && zip !== 'null' && zip !== 'undefined') {
+            setZipCode(zip);
+        } else {
+            setZipCode('');
+        }
+    }, []);
 
     // 🔹 Format time ago (unchanged)
     const formatTimeAgo = (dateString: string): string => {
