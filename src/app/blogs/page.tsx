@@ -137,7 +137,7 @@ export default function PricingPage() {
                                                 >
                                                     <div className="blog-content d-flex h-100 justify-content-end flex-column">
                                                         <div className="description text-white fw-medium mb-2">
-                                                            {getExcerpt(blog.content)}
+                                                            {getExcerpt(blog.title)}
                                                         </div>
 
                                                         <div className="d-flex align-items-center justify-content-between">

@@ -702,7 +702,7 @@ export default function DashboardSubContractor() {
                                             <input
                                                 type="range"
                                                 min="0"
-                                                max="100"
+                                                max="500"
                                                 value={workRadius}
                                                 onChange={(e) => setWorkRadius(Number(e.target.value))}
                                                 className="range-slider"
@@ -710,7 +710,7 @@ export default function DashboardSubContractor() {
                                             <div
                                                 className="range-value"
                                                 style={{
-                                                    left: `${((workRadius - 0) / (100 - 0)) * 100}%`,
+                                                    left: `${(workRadius / 500) * 100}%`,
                                                 }}
                                             >
                                                 {workRadius} miles
@@ -719,7 +719,7 @@ export default function DashboardSubContractor() {
                                     </div>
                                     <div className="d-flex align-items-center justify-content-between">
                                         <span className="min">0 miles</span>
-                                        <span className="max">100 miles</span>
+                                        <span className="max">500 miles</span>
                                     </div>
                                 </div>
 

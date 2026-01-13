@@ -693,6 +693,7 @@ export default function RegisterPage() {
                                                     name="work_radius"
                                                     placeholder="0"
                                                     min="0"
+                                                    max={500}
                                                     step="1"
                                                     value={formData.work_radius}
                                                     onChange={(e) => {
