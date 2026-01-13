@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import '../../../styles/free-trial.css';
-import Slider from "react-slick";
 
 interface Project {
     id: number;
@@ -33,18 +32,18 @@ interface Contractor {
     created_at: string;
 }
 
-interface Ad {
-    id: number;
-    orientation: 'horizontal' | 'vertical';
-    description: string;
-    image: string;
-    redirect_url: string;
-    advertiser: {
-        name: string;
-        company_name: string;
-        profile_image_url: string;
-    };
-}
+// interface Ad {
+//     id: number;
+//     orientation: 'horizontal' | 'vertical';
+//     description: string;
+//     image: string;
+//     redirect_url: string;
+//     advertiser: {
+//         name: string;
+//         company_name: string;
+//         profile_image_url: string;
+//     };
+// }
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -63,9 +62,8 @@ export default function DashboardPage() {
     const listRef = useRef<HTMLUListElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Inside DashboardPage component
-    const [adsLoading, setAdsLoading] = useState(true);
-    const [adsError, setAdsError] = useState<string | null>(null);
+    // const [adsLoading, setAdsLoading] = useState(true);
+    // const [adsError, setAdsError] = useState<string | null>(null);
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
     const [selectedRating, setSelectedRating] = useState<number>(0); // 0 to 5
     const [comment, setComment] = useState('');
@@ -73,33 +71,32 @@ export default function DashboardPage() {
     const [ratingLoading, setRatingLoading] = useState(false);
     const [currentContractor, setCurrentContractor] = useState<Contractor | null>(null); // Track which contractor is being rated
     const [contractors, setContractors] = useState<Contractor[]>([]);
-    const [horizontalAds, setHorizontalAds] = useState<Ad[]>([]);
+    // const [horizontalAds, setHorizontalAds] = useState<Ad[]>([]);
 
-    const leftSliderRef = useRef<Slider | null>(null);
+    // const leftSliderRef = useRef<Slider | null>(null);
 
-    // 🔹 Slider settings
-    const sliderSettings = {
-        dots: true,
-        infinite: true,
-        speed: 600,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        arrows: false,
-        autoplay: true,
-        autoplaySpeed: 4000,
-        pauseOnHover: true,
-    };
-    const sliderSettingsRight = {
-        dots: false,
-        infinite: true,
-        speed: 600,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        arrows: false,
-        autoplay: true,
-        autoplaySpeed: 4000,
-        pauseOnHover: true,
-    };
+    // const sliderSettings = {
+    //     dots: true,
+    //     infinite: true,
+    //     speed: 600,
+    //     slidesToShow: 1,
+    //     slidesToScroll: 1,
+    //     arrows: false,
+    //     autoplay: true,
+    //     autoplaySpeed: 4000,
+    //     pauseOnHover: true,
+    // };
+    // const sliderSettingsRight = {
+    //     dots: false,
+    //     infinite: true,
+    //     speed: 600,
+    //     slidesToShow: 1,
+    //     slidesToScroll: 1,
+    //     arrows: false,
+    //     autoplay: true,
+    //     autoplaySpeed: 4000,
+    //     pauseOnHover: true,
+    // };
 
     // 🔹 Show non-blocking thank-you toast
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -144,26 +141,26 @@ export default function DashboardPage() {
         });
     };
 
-    const fetchHorizontalAds = async () => {
-        setAdsLoading(true);
-        setAdsError(null);
+    // const fetchHorizontalAds = async () => {
+    //     setAdsLoading(true);
+    //     setAdsError(null);
 
-        try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads?type=horizontal`,
-                { headers: { Accept: 'application/json' } }
-            );
+    //     try {
+    //         const res = await fetch(
+    //             `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads?type=horizontal`,
+    //             { headers: { Accept: 'application/json' } }
+    //         );
 
-            const json = await res.json();
-            if (!res.ok) throw new Error('Failed to load ads');
+    //         const json = await res.json();
+    //         if (!res.ok) throw new Error('Failed to load ads');
 
-            setHorizontalAds(json.data || []);
-        } catch (err) {
-            setAdsError('Failed to load ads');
-        } finally {
-            setAdsLoading(false);
-        }
-    };
+    //         setHorizontalAds(json.data || []);
+    //     } catch (err) {
+    //         setAdsError('Failed to load ads');
+    //     } finally {
+    //         setAdsLoading(false);
+    //     }
+    // };
 
     // 🔹 Toggle card expansion
     const toggleCard = (index: number) => {
@@ -347,9 +344,9 @@ export default function DashboardPage() {
         fetchContractors();
     }, []);
 
-    useEffect(() => {
-        fetchHorizontalAds();
-    }, []);
+    // useEffect(() => {
+    //     fetchHorizontalAds();
+    // }, []);
 
     // 🔍 Debounced search fetch
     const debouncedFetch = useCallback(
@@ -473,14 +470,15 @@ export default function DashboardPage() {
         }
     };
 
-    const leftAds = horizontalAds.slice(0, Math.ceil(horizontalAds.length / 2));
+    // const leftAds = horizontalAds.slice(0, Math.ceil(horizontalAds.length / 2));
 
-    const rightAds = horizontalAds.filter(ad => !leftAds.includes(ad));
+    // const rightAds = horizontalAds.filter(ad => !leftAds.includes(ad));
 
     return (
         <div className="sections overflow-hidden">
             <Header />
-            <section className="banner-sec trial position-static">
+
+            {/* <section className="banner-sec trial position-static">
                 <div className="container">
                     <div className="row g-4">
                         <div className="col-lg-6">
@@ -506,7 +504,6 @@ export default function DashboardPage() {
                                         >
                                             <div className="bg-white rounded-4 overflow-hidden border">
 
-                                                {/* Image */}
                                                 <div style={{ height: '326px', position: 'relative', borderBottom: '1px solid #e9ecef' }}>
                                                     <Image
                                                         src={ad.image}
@@ -517,10 +514,8 @@ export default function DashboardPage() {
                                                     />
                                                 </div>
 
-                                                {/* Content below image */}
                                                 <div className="p-3">
 
-                                                    {/* Profile + Company */}
                                                     <div className="d-flex align-items-center gap-3 mb-2">
                                                         <Image
                                                             src={
@@ -543,7 +538,6 @@ export default function DashboardPage() {
                                                         </div>
                                                     </div>
 
-                                                    {/* Caption */}
                                                     {ad.description && (
                                                         <p className="mb-0 text-muted fs-14">
                                                             {ad.description}
@@ -579,7 +573,6 @@ export default function DashboardPage() {
                                         >
                                             <div className="bg-white rounded-4 overflow-hidden border">
 
-                                                {/* Image */}
                                                 <div style={{ height: '326px', position: 'relative', borderBottom: '1px solid #e9ecef' }}>
                                                     <Image
                                                         src={ad.image}
@@ -590,10 +583,8 @@ export default function DashboardPage() {
                                                     />
                                                 </div>
 
-                                                {/* Content below image */}
                                                 <div className="p-3">
 
-                                                    {/* Profile + Company */}
                                                     <div className="d-flex align-items-center gap-3 mb-2">
                                                         <Image
                                                             src={
@@ -616,7 +607,6 @@ export default function DashboardPage() {
                                                         </div>
                                                     </div>
 
-                                                    {/* Caption */}
                                                     {ad.description && (
                                                         <p className="mb-0 text-muted fs-14">
                                                             {ad.description}
@@ -631,10 +621,10 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             {/* My Projects & Rate Subcontractor */}
-            <section className="review mb-5">
+            <section className="review mb-5 mt-5">
                 <div className="container">
                     {/* 🔍 Rate a Subcontractor with Search */}
                     <div className="review-wrapper mb-4">

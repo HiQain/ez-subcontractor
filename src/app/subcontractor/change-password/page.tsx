@@ -180,13 +180,6 @@ export default function ChangePassword() {
 
             if (response.ok) {
                 showToast('Password updated successfully!');
-                // Optional: auto-logout & redirect to login (recommended for security)
-                setTimeout(() => {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('isLoggedIn');
-                    localStorage.removeItem('userEmail');
-                    router.push('/auth/login');
-                }, 1500);
             } else {
                 showToast(data.message || 'Failed to change password. Please try again.', 'error');
             }
