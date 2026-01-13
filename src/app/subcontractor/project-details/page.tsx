@@ -38,6 +38,7 @@ interface Project {
     category: { name: string };
     attachments: Attachment[];
     created_at: string;
+    contact_options: ('email' | 'phone' | 'chat')[];
     user: { // ✅ This is an object
         id: string;
         name: string;
@@ -46,13 +47,6 @@ interface Project {
         company_name: string;
         profile_image_url: string | null;
     };
-}
-
-interface BannerImage {
-    id: number;
-    src: string;
-    alt: string;
-    // caption?: string; // optional: add later if needed
 }
 
 interface Ad {
@@ -561,32 +555,36 @@ export default function ProjectSubcontractorDetailsPage() {
                                         </div>
                                     )}
 
-                                    <Link
-                                        href={{
-                                            pathname: '/messages',
-                                            query: {
-                                                userId: project.user.id,
-                                                name: project.user.name,
-                                                email: project.user.email,
-                                                phone: project.user.phone,
-                                                companyName: project.user.company_name,
-                                            },
-                                        }}
-                                        className="btn bg-dark w-100 justify-content-center rounded-3 mt-4 mb-3"
-                                    >
-                                        <Image src="/assets/img/Chat-light.svg" width={20} height={20} alt="Chat Icon" />
-                                        <span className="p-1" style={{ color: 'white' }}>Chat Now</span>
-                                    </Link>
+                                    {
+                                        project.contact_options?.includes('chat') && (
+                                            <Link
+                                                href={{
+                                                    pathname: '/messages',
+                                                    query: {
+                                                        userId: project.user.id,
+                                                        name: project.user.name,
+                                                        email: project.user.email,
+                                                        phone: project.user.phone,
+                                                        companyName: project.user.company_name,
+                                                    },
+                                                }}
+                                                className="btn bg-dark w-100 justify-content-center rounded-3 mt-4 mb-3"
+                                            >
+                                                <Image src="/assets/img/Chat-light.svg" width={20} height={20} alt="Chat Icon" />
+                                                <span className="p-1" style={{ color: 'white' }}>Chat Now</span>
+                                            </Link>
+                                        )
+                                    }
 
                                     <div>
-                                        {project.user?.email && (
+                                        {project.contact_options?.includes('email') && project.user?.email && (
                                             <Link href={`mailto:${project.user.email}`} className="btn btn-outline-dark rounded-3 w-100 justify-content-center mb-3">
                                                 <Image src="/assets/img/icons/message-dark.svg" width={20} height={20} alt="Email Icon" />
                                                 <span className='p-1'>Email</span>
                                             </Link>
                                         )}
 
-                                        {project.user?.phone && (
+                                        {project.contact_options?.includes('phone') && project.user?.phone && (
                                             <Link href={`tel:${project.user.phone}`} className="btn btn-outline-dark rounded-3 w-100 justify-content-center">
                                                 <Image src="/assets/img/icons/call-dark.svg" width={20} height={20} alt="Phone Icon" />
                                                 <span className='p-1'>Phone</span>

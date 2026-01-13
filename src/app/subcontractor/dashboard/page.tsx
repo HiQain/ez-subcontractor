@@ -19,6 +19,7 @@ interface Project {
     category: {
         name: string;
     };
+    contact_options: ('email' | 'phone' | 'chat')[];
     user: {
         id: number;
         name: string;
@@ -266,7 +267,6 @@ export default function DashboardSubContractor() {
             fetchProfile(); // ✅ Call the async function
         }
     }, []); // empty dep array = runs once on mount
-
 
     // 🔹 Fetch categories (unchanged)
     useEffect(() => {
@@ -941,7 +941,7 @@ export default function DashboardSubContractor() {
                                                                 {
                                                                     project.user && (
                                                                         <div className="social-icons">
-                                                                            {project.user?.email && (
+                                                                            {project.contact_options?.includes('email') && project.user?.email && (
                                                                                 <Link href={'mailto:' + project.user?.email} className="icon">
                                                                                     <Image
                                                                                         src={`/assets/img/icons/message-white.svg`}
@@ -953,26 +953,30 @@ export default function DashboardSubContractor() {
                                                                                 </Link>
                                                                             )}
 
-                                                                            <Link href={{
-                                                                                pathname: '/messages',
-                                                                                query: {
-                                                                                    userId: project.user.id,
-                                                                                    name: project.user.name,
-                                                                                    email: project.user.email,
-                                                                                    phone: project.user.phone,
-                                                                                    companyName: project.user.company_name,
-                                                                                },
-                                                                            }} className="icon">
-                                                                                <Image
-                                                                                    src="/assets/img/icons/Chat.svg"
-                                                                                    width={20}
-                                                                                    height={20}
-                                                                                    alt="Social Icon"
-                                                                                    loading="lazy"
-                                                                                />
-                                                                            </Link>
+                                                                            {
+                                                                                project.contact_options?.includes('chat') && (
+                                                                                    <Link href={{
+                                                                                        pathname: '/messages',
+                                                                                        query: {
+                                                                                            userId: project.user.id,
+                                                                                            name: project.user.name,
+                                                                                            email: project.user.email,
+                                                                                            phone: project.user.phone,
+                                                                                            companyName: project.user.company_name,
+                                                                                        },
+                                                                                    }} className="icon">
+                                                                                        <Image
+                                                                                            src="/assets/img/icons/Chat.svg"
+                                                                                            width={20}
+                                                                                            height={20}
+                                                                                            alt="Social Icon"
+                                                                                            loading="lazy"
+                                                                                        />
+                                                                                    </Link>
+                                                                                )
+                                                                            }
 
-                                                                            {project.user?.phone && (
+                                                                            {project.contact_options?.includes('phone') && project.user?.phone && (
                                                                                 <Link href={'mailto:' + project.user?.phone} className="icon">
                                                                                     <Image
                                                                                         src={`/assets/img/icons/call-white.svg`}
