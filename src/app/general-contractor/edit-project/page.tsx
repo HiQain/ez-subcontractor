@@ -69,6 +69,7 @@ export default function EditProjectPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [status, setStatus] = useState<string>('');
+    const [contactOptions, setContactOptions] = useState<string[]>([]);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -223,6 +224,7 @@ export default function EditProjectPage() {
                             description: att.description,
                         }))
                     );
+                    setContactOptions(proj.contact_options || []);
                 } else {
                     throw new Error('Project not found.');
                 }
@@ -350,6 +352,9 @@ export default function EditProjectPage() {
             formData.append('start_date', startDate);
             formData.append('end_date', endDate);
             formData.append('status', status || project.status);
+            contactOptions.forEach((opt, index) => {
+                formData.append(`contact_options[${index}]`, opt);
+            });
 
             allDocuments.forEach((doc, index) => {
                 if (doc.id && !doc.file) {
@@ -401,7 +406,7 @@ export default function EditProjectPage() {
 
             // 🔹 Replaced alert with toast
             showToast('Project updated successfully!');
-            router.push(`/general-contractor/project-details?id=${project.id}`);
+            router.back();
 
         } catch (err) {
             // 🔹 Replaced alert with toast
@@ -440,7 +445,7 @@ export default function EditProjectPage() {
                         <div className="container">
                             <div className="alert alert-danger d-flex align-items-center" role="alert">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16">
-                                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                                 </svg>
                                 <div>{error || 'Project not found.'}</div>
                             </div>
@@ -472,7 +477,7 @@ export default function EditProjectPage() {
                                         onClick={() => router.back()}
                                         className="icon"
                                         aria-label="Go back"
-                                        style={{background: 'none', border: 'none', padding: 0, cursor: 'pointer'}}
+                                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
                                     >
                                         <Image
                                             src="/assets/img/button-angle.svg"
@@ -493,7 +498,7 @@ export default function EditProjectPage() {
                                         <div className="col-auto">
                                             <select
                                                 className="form-control"
-                                                style={{minWidth: '200px'}}
+                                                style={{ minWidth: '200px' }}
                                                 value={status}
                                                 onChange={(e) => setStatus(e.target.value)}
                                             >
@@ -502,20 +507,6 @@ export default function EditProjectPage() {
                                             </select>
                                         </div>
                                     </div>
-                                    {/*<button*/}
-                                    {/*    type="button"*/}
-                                    {/*    className="icon delete"*/}
-                                    {/*    data-bs-toggle="modal"*/}
-                                    {/*    data-bs-target="#deleteProjectModal"*/}
-                                    {/*    style={{backgroundColor: '#DC2626 !important'}}*/}
-                                    {/*>*/}
-                                    {/*    <Image*/}
-                                    {/*        src="/assets/img/icons/delete.svg"*/}
-                                    {/*        width={24}*/}
-                                    {/*        height={24}*/}
-                                    {/*        alt="Delete Icon"*/}
-                                    {/*    />*/}
-                                    {/*</button>*/}
                                 </div>
                             </div>
                         </div>
@@ -527,33 +518,19 @@ export default function EditProjectPage() {
                                     {/* Category */}
                                     <div className="input-wrapper d-flex flex-column position-relative mb-4" ref={dropdownRef}>
                                         <label className="mb-1 fw-semibold">Category *</label>
-                                        <div className={`custom-select position-relative ${selectOpen ? 'open' : ''}`}>
-                                            <div className="select-selected" onClick={() => setSelectOpen(!selectOpen)}>
-                                                {selectedCategory
-                                                    ? categories.find(c => c.id === selectedCategory)?.name || 'Select category'
-                                                    : 'Select category'}
-                                            </div>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="16"
-                                                height="16"
-                                                fill="currentColor"
-                                                className="select-arrow"
-                                                viewBox="0 0 16 16"
-                                                style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}
+                                        <div className="input-wrapper d-flex flex-column position-relative">
+                                            <select
+                                                id="category-select2"
+                                                className="form-control"
+                                                value={selectedCategory}
                                             >
-                                                <path fillRule="evenodd" d="M1.646 5.646a.5.5 0 0 1 .708 0L8 11.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
-                                            </svg>
-                                            <ul className="select-options">
-                                                {categories.map(cat => (
-                                                    <li key={cat.id} onClick={() => {
-                                                        setSelectedCategory(cat.id);
-                                                        setSelectOpen(false);
-                                                    }}>
+                                                <option value="">Select category</option>
+                                                {categories.map((cat) => (
+                                                    <option key={cat.id} value={cat.id}>
                                                         {cat.name}
-                                                    </li>
+                                                    </option>
                                                 ))}
-                                            </ul>
+                                            </select>
                                         </div>
                                     </div>
 
@@ -579,6 +556,34 @@ export default function EditProjectPage() {
                                                 </div>
                                             </div>
                                         ))}
+
+                                        <div className="col-12 mb-4">
+                                            <div className="fw-semibold mb-2">Preferred Contact Method</div>
+                                            <div className="d-flex gap-3 flex-wrap">
+                                                {['email', 'phone', 'chat'].map(option => (
+                                                    <div key={option} className="form-check">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="form-check-input"
+                                                            id={`contact-${option}`}
+                                                            value={option}
+                                                            checked={contactOptions.includes(option)}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value;
+                                                                setContactOptions(prev =>
+                                                                    prev.includes(value)
+                                                                        ? prev.filter(v => v !== value)
+                                                                        : [...prev, value]
+                                                                );
+                                                            }}
+                                                        />
+                                                        <label htmlFor={`contact-${option}`} className="form-check-label text-capitalize">
+                                                            {option}
+                                                        </label>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
 
                                         <div className="col-12">
                                             <div className="label mb-1 fw-semibold">Description *</div>
@@ -706,7 +711,7 @@ export default function EditProjectPage() {
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v4h16v-4" />
                                                     </svg>
                                                 </div>
-                                                <p>Drag and drop files here<br/>or click to upload</p>
+                                                <p>Drag and drop files here<br />or click to upload</p>
                                                 <small>Supported: .pdf, .doc, .xml, .jpeg (Max 10MB)</small>
                                             </div>
                                             <input

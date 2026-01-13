@@ -954,7 +954,7 @@ export default function DashboardPage() {
                                 )}
                             </div>
                             {
-                                projects.length !== 0 && (
+                                projects.length >= 3 && (
                                     <Link href="/general-contractor/my-projects" className="btn bg-dark rounded-3 mx-auto d-block w-fit">
                                         <span className="text-white me-2">See All Projects</span>
                                         <Image src="/assets/img/icons/arrow-white.svg" width={12} height={12} alt="Icon" />

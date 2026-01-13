@@ -43,6 +43,19 @@ export default function PostAd() {
     const [estimateDueDate, setEstimateDueDate] = useState<Date | null>();
     const [startDate, setStartDate] = useState<Date | null>();
     const [endDate, setEndDate] = useState<Date | null>();
+    const [contactMethods, setContactMethods] = useState<{ [key: string]: boolean }>({
+        email: false,
+        phone: false,
+        chat: false,
+    });
+
+    // 🔹 Handle checkbox toggle
+    const handleCheckboxChange = (method: string) => {
+        setContactMethods(prev => ({
+            ...prev,
+            [method]: !prev[method],
+        }));
+    };
 
     // 🔹 Clean up object URLs
     useEffect(() => {
@@ -71,41 +84,6 @@ export default function PostAd() {
         setAllDocuments(prev =>
             prev.map(doc => (doc.id === id ? { ...doc, description: desc } : doc))
         );
-    };
-
-    const showSuccessToast = (message: string) => {
-        const toast = document.createElement('div');
-        toast.innerHTML = `
-            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 9999;
-                min-width: 300px;
-                background-color: #d4edda;
-                color: #155724;
-                border: 1px solid #c3e6cb;
-                border-radius: 8px;
-                padding: 12px 20px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                font-weight: 500;
-            ">
-                <span>${message}</span>
-                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
-            </div>
-        `;
-        document.body.appendChild(toast);
-        const timeoutId = setTimeout(() => {
-            if (toast.parentNode) toast.parentNode.removeChild(toast);
-        }, 4000);
-        const closeButton = toast.querySelector('.btn-close');
-        closeButton?.addEventListener('click', () => {
-            clearTimeout(timeoutId);
-            if (toast.parentNode) toast.parentNode.removeChild(toast);
-        });
     };
 
     const showErrorToast = (message: string) => {
@@ -280,6 +258,10 @@ export default function PostAd() {
         if (!endDate) newErrors.endDate = 'Project End Date is required.';
         if (!description.trim()) newErrors.description = 'Description is required.';
 
+        // ✅ Contact options validation
+        const selectedMethods = Object.keys(contactMethods).filter(k => contactMethods[k]);
+        if (selectedMethods.length === 0) newErrors.contact_options = 'Please select at least one contact method.';
+
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             const firstError = Object.values(newErrors)[0];
@@ -314,6 +296,9 @@ export default function PostAd() {
             formData.append('start_date', startDate ? format(startDate, 'yyyy-MM-dd') : '');
             formData.append('end_date', endDate ? format(endDate, 'yyyy-MM-dd') : '');
             formData.append('status', 'active');
+            selectedMethods.forEach((method, index) => {
+                formData.append(`contact_options[${index}]`, method);
+            });
 
             allDocuments.forEach((doc, index) => {
                 formData.append(`attachments[${index}][file]`, doc.file, doc.name);
@@ -357,6 +342,7 @@ export default function PostAd() {
                 return;
             }
 
+            router.back();
             setSelectedCategory('');
             setCity('');
             setState('');
@@ -366,6 +352,7 @@ export default function PostAd() {
             setEndDate(null);
             setDescription('');
             setAllDocuments([]);
+            setContactMethods({ email: false, phone: false, chat: false });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (error) {
             console.error('Network error:', error);
@@ -495,6 +482,27 @@ export default function PostAd() {
                                                 {errors.endDate && (
                                                     <span className="text-danger animate-slide-up">{errors.endDate}</span>
                                                 )}
+                                            </div>
+                                        </div>
+
+                                        <div className="col-12 mb-4">
+                                            <div className="fw-semibold mb-2">Preferred Contact Method</div>
+                                            <div className="d-flex gap-3 flex-wrap">
+                                                {['email', 'phone', 'chat'].map(option => (
+                                                    <div key={option} className="form-check">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={contactMethods[option]}
+                                                            onChange={() => handleCheckboxChange(option)}
+                                                            className="form-check-input"
+                                                            id={`contact-${option}`}
+                                                            value={option}
+                                                        />
+                                                        <label htmlFor={`contact-${option}`} className="form-check-label text-capitalize">
+                                                            {option}
+                                                        </label>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
 
