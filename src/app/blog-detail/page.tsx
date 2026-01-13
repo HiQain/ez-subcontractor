@@ -36,6 +36,7 @@ export default function BlogSinglePage() {
     const [slug, setSlug] = useState<string | null>(null);
     const [blog, setBlog] = useState<any>(null);
     const [featuredBlogs, setFeaturedBlogs] = useState<any[]>([]);
+    const [latestBlogs, setLatestBlogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     // 🔹 Get slug from URL
@@ -56,25 +57,33 @@ export default function BlogSinglePage() {
             try {
                 setLoading(true);
 
-                const [latestRes, featuredRes] = await Promise.all([
+                const [latestRes, featuredRes, newRes] = await Promise.all([
                     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/detail/${slug}`),
-                    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/featured`)
+                    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/featured`),
+                    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/latest`)
                 ]);
 
                 const latestJson = await latestRes.json();
                 const featuredJson = await featuredRes.json();
+                const newJson = await newRes.json();
 
                 if (latestJson.success) {
                     setBlog(latestJson.data || []);
                 }
 
                 if (featuredJson.success) {
-                    setFeaturedBlogs(featuredJson.data || []);
+                    setFeaturedBlogs((featuredJson.data || []).slice(0, 3));
                 }
+
+                if (newJson.success) {
+                    setLatestBlogs((newJson.data || []).slice(0, 3));
+                }
+
             } catch (error) {
                 console.error('Blogs fetch error:', error);
                 setBlog([]);
                 setFeaturedBlogs([]);
+                setLatestBlogs([]);
             } finally {
                 setLoading(false);
             }
@@ -189,6 +198,44 @@ export default function BlogSinglePage() {
                                         <p className="text-muted mt-3">No featured blogs</p>
                                     ) : (
                                         featuredBlogs.map((blog) => (
+                                            <div key={blog.id} className="feature-post">
+                                                <a style={{ cursor: 'pointer' }}
+                                                    onClick={() => {
+                                                        if (slug === blog.slug) return;
+                                                        router.back()
+                                                        setTimeout(() => {
+                                                            router.push(`/blog-detail?slug=${blog.slug}`)
+                                                        }, 50);
+                                                    }}
+                                                >
+                                                    <Image
+                                                        style={{ borderRadius: '10px' }}
+                                                        src={blog.featured_image}
+                                                        width={124}
+                                                        height={107}
+                                                        alt={blog.title}
+                                                    />
+                                                </a>
+
+                                                <div className="content">
+                                                    <div className="date">
+                                                        {formatBlogDate(blog.created_at)}
+                                                    </div>
+                                                    <Link href={`/blogs/${blog.slug}`} className="description">
+                                                        {getExcerpt(blog.content, 80)}
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                                <div className="latest-post">
+                                    <div className="feature-title">Latest</div>
+
+                                    {latestBlogs.length === 0 ? (
+                                        <p className="text-muted mt-3">No featured blogs</p>
+                                    ) : (
+                                        latestBlogs.map((blog) => (
                                             <div key={blog.id} className="feature-post">
                                                 <a style={{ cursor: 'pointer' }}
                                                     onClick={() => {

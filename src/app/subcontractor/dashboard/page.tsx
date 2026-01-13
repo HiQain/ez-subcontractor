@@ -538,7 +538,7 @@ export default function DashboardSubContractor() {
         <>
             <Header />
             <div className="sections overflow-hidden">
-                <section className="banner-sec trial position-static">
+                {/* <section className="banner-sec trial position-static">
                     <div className="container">
                         <div className="row g-4">
                             <div className="col-lg-6">
@@ -564,7 +564,6 @@ export default function DashboardSubContractor() {
                                             >
                                                 <div className="bg-white rounded-4 overflow-hidden border">
 
-                                                    {/* Image */}
                                                     <div style={{ height: '326px', position: 'relative', borderBottom: '1px solid #e9ecef' }}>
                                                         <Image
                                                             src={ad.image}
@@ -575,10 +574,8 @@ export default function DashboardSubContractor() {
                                                         />
                                                     </div>
 
-                                                    {/* Content below image */}
                                                     <div className="p-3">
 
-                                                        {/* Profile + Company */}
                                                         <div className="d-flex align-items-center gap-3 mb-2">
                                                             <Image
                                                                 src={
@@ -601,7 +598,6 @@ export default function DashboardSubContractor() {
                                                             </div>
                                                         </div>
 
-                                                        {/* Caption */}
                                                         {ad.description && (
                                                             <p className="mb-0 text-muted fs-14">
                                                                 {ad.description}
@@ -637,7 +633,6 @@ export default function DashboardSubContractor() {
                                             >
                                                 <div className="bg-white rounded-4 overflow-hidden border">
 
-                                                    {/* Image */}
                                                     <div style={{ height: '326px', position: 'relative', borderBottom: '1px solid #e9ecef' }}>
                                                         <Image
                                                             src={ad.image}
@@ -648,10 +643,8 @@ export default function DashboardSubContractor() {
                                                         />
                                                     </div>
 
-                                                    {/* Content below image */}
                                                     <div className="p-3">
 
-                                                        {/* Profile + Company */}
                                                         <div className="d-flex align-items-center gap-3 mb-2">
                                                             <Image
                                                                 src={
@@ -674,7 +667,6 @@ export default function DashboardSubContractor() {
                                                             </div>
                                                         </div>
 
-                                                        {/* Caption */}
                                                         {ad.description && (
                                                             <p className="mb-0 text-muted fs-14">
                                                                 {ad.description}
@@ -689,9 +681,9 @@ export default function DashboardSubContractor() {
                             </div>
                         </div>
                     </div>
-                </section>
+                </section> */}
 
-                <section className="filter-sec">
+                <section className="filter-sec mt-4">
                     <div className="container">
                         <div className="row g-4">
                             <div className="col-xl-3">
