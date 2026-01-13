@@ -8,14 +8,6 @@ import { useState } from 'react';
 import "../../styles/footer.css";
 
 export default function Footer() {
-    const [email, setEmail] = useState('');
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // You can add newsletter subscription logic here later
-        console.log('Subscribed with email:', email);
-        setEmail('');
-    };
 
     return (
         <footer
@@ -40,15 +32,15 @@ export default function Footer() {
                                 aria-label="Home"
                             >
                                 <Image
-                                    src="/assets/img/icons/footer-logo.webp"
-                                    width={175}
-                                    height={49}
+                                    src="/assets/img/icons/logo.svg"
+                                    width={350}
+                                    height={120}
                                     alt="EZ Subcontractor Logo"
 
                                     loading="lazy"
                                 />
                             </Link>
-                            <p className={'text-white'}>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text.</p>
+                            {/* <p className={'text-white'}>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text.</p> */}
                         </div>
 
                         {/* Quick Links – Updated to match new structure */}
