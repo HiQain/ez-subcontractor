@@ -234,7 +234,7 @@ export default function Header() {
                     {[
                         '/', '/home-general-contractor', '/home-subcontractor', '/home-affiliate'
                     ].includes(pathname) && (
-                            <ul className="navbar-nav ms-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
+                            <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
                                 <li className="nav-item">
                                     <Link className="nav-link" href="/">Home</Link>
                                 </li>
@@ -301,40 +301,6 @@ export default function Header() {
                                         className="nav-link dropdown-toggle"
                                         data-bs-toggle="dropdown"
                                         aria-expanded="false" href={'#'}>Blogs</Link>
-                                    <ul className="dropdown-menu">
-                                        <li>
-                                            <Link
-                                                href={'/home-general-contractor'}
-                                                className={`dropdown-item d-flex align-items-center`}>
-                                                General Contractor
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={'/home-subcontractor'}
-                                                className={`dropdown-item d-flex align-items-center`}>
-                                                Subcontractor
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={'/home-affiliate'}
-                                                className={`dropdown-item d-flex align-items-center `}>
-                                                Affiliate
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li className="nav-item dropdown">
-                                    <Link
-                                        className="nav-link dropdown-toggle"
-                                        href="#"
-                                        role="button"
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false"
-                                    >
-                                        Contractor
-                                    </Link>
                                     <ul className="dropdown-menu">
                                         <li>
                                             <Link
