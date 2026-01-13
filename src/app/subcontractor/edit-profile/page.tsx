@@ -363,6 +363,7 @@ export default function EditProfile() {
             }
 
             if (response.ok) {
+                localStorage.setItem('userZip', formData.zip);
                 showToast('Profile updated successfully!');
             } else {
                 showToast(data.message || 'Failed to update profile. Please try again.', 'error');
