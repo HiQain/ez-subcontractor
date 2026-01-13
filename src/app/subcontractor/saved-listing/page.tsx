@@ -19,6 +19,7 @@ interface Project {
     category: {
         name: string;
     };
+    contact_options: ('email' | 'phone' | 'chat')[];
     user: {
         id: number;
         name: string;
@@ -460,7 +461,7 @@ export default function SavedListingPage() {
                                                             </button>
                                                         ) : (
                                                             <div className="title text-capitalize">{project.city}, {project.state}</div>
-                                                        ) }
+                                                        )}
                                                         <div className="d-flex align-items-center gap-2">
                                                             <div className="date">{timeAgo(project.created_at)}</div>
                                                             <button
@@ -484,9 +485,8 @@ export default function SavedListingPage() {
 
                                                     <div className="description-wrapper mb-2 position-relative">
                                                         <p
-                                                            className={`description mb-0 ${
-                                                                expanded.includes(index) ? 'expanded' : 'collapsed'
-                                                            }`}
+                                                            className={`description mb-0 ${expanded.includes(index) ? 'expanded' : 'collapsed'
+                                                                }`}
                                                             style={{
                                                                 display: '-webkit-box',
                                                                 WebkitLineClamp: expanded.includes(index) ? 'unset' : 3,
@@ -512,88 +512,92 @@ export default function SavedListingPage() {
                                                     )}
 
                                                     {subscriptionId &&
-                                                    (
-                                                        <div className="bottom-bar">
-                                                            <div className="left">
-                                                                {project.user?.profile_image_url ? (
-                                                                    <Image
-                                                                        src={project.user?.profile_image_url}
-                                                                        width={40}
-                                                                        height={40}
-                                                                        alt="P Icon"
-                                                                        loading="lazy"
-                                                                        className="rounded-circle"
-                                                                    />
-                                                                ) : (
-                                                                    <Image
-                                                                        src="/assets/img/placeholder-round.png"
-                                                                        width={40}
-                                                                        height={40}
-                                                                        alt="P Icon"
-                                                                        loading="lazy"
-                                                                        className="rounded-circle"
-                                                                    />
-                                                                )}
-                                                                <p className="mb-0 fw-semibold">{project.user?.company_name || ''}</p>
-                                                            </div>
-                                                            <div className="d-flex gap-2">
-                                                                <button onClick={() => {
-                                                                    localStorage.setItem('project-id', String(project.id));
-                                                                    router.push('/subcontractor/project-details');
-                                                                }} className="btn btn-primary me-2 btn-sm py-1 px-4">
-                                                                    View More
-                                                                </button>
-                                                                {
-                                                                    project.user && (
-                                                                        <div className="social-icons">
-                                                                            {project.user?.email && (
-                                                                                <Link href={'mailto:'+ project.user?.email} className="icon">
-                                                                                    <Image
-                                                                                        src={`/assets/img/icons/message-white.svg`}
-                                                                                        width={20}
-                                                                                        height={20}
-                                                                                        alt="Social Icon"
-                                                                                        loading="lazy"
-                                                                                    />
-                                                                                </Link>
-                                                                            )}
+                                                        (
+                                                            <div className="bottom-bar">
+                                                                <div className="left">
+                                                                    {project.user?.profile_image_url ? (
+                                                                        <Image
+                                                                            src={project.user?.profile_image_url}
+                                                                            width={40}
+                                                                            height={40}
+                                                                            alt="P Icon"
+                                                                            loading="lazy"
+                                                                            className="rounded-circle"
+                                                                        />
+                                                                    ) : (
+                                                                        <Image
+                                                                            src="/assets/img/placeholder-round.png"
+                                                                            width={40}
+                                                                            height={40}
+                                                                            alt="P Icon"
+                                                                            loading="lazy"
+                                                                            className="rounded-circle"
+                                                                        />
+                                                                    )}
+                                                                    <p className="mb-0 fw-semibold">{project.user?.company_name || ''}</p>
+                                                                </div>
+                                                                <div className="d-flex gap-2">
+                                                                    <button onClick={() => {
+                                                                        localStorage.setItem('project-id', String(project.id));
+                                                                        router.push('/subcontractor/project-details');
+                                                                    }} className="btn btn-primary me-2 btn-sm py-1 px-4">
+                                                                        View More
+                                                                    </button>
+                                                                    {
+                                                                        project.user && (
+                                                                            <div className="social-icons">
+                                                                                {project.contact_options?.includes('email') && project.user?.email && (
+                                                                                    <Link href={'mailto:' + project.user?.email} className="icon">
+                                                                                        <Image
+                                                                                            src={`/assets/img/icons/message-white.svg`}
+                                                                                            width={20}
+                                                                                            height={20}
+                                                                                            alt="Social Icon"
+                                                                                            loading="lazy"
+                                                                                        />
+                                                                                    </Link>
+                                                                                )}
+                                                                                {
+                                                                                    project.contact_options?.includes('chat') && (
 
-                                                                            <Link href={{
-                                                                                pathname: '/messages',
-                                                                                query: {
-                                                                                    userId: project.user.id,
-                                                                                    name: project.user.name,
-                                                                                    email: project.user.email,
-                                                                                    phone: project.user.phone,
-                                                                                    companyName: project.user.company_name,
-                                                                                },
-                                                                            }} className="icon">
-                                                                                <Image
-                                                                                    src={`/assets/img/icons/chat.svg`}
-                                                                                    width={20}
-                                                                                    height={20}
-                                                                                    alt="Social Icon"
-                                                                                    loading="lazy"
-                                                                                />
-                                                                            </Link>
+                                                                                        <Link href={{
+                                                                                            pathname: '/messages',
+                                                                                            query: {
+                                                                                                userId: project.user.id,
+                                                                                                name: project.user.name,
+                                                                                                email: project.user.email,
+                                                                                                phone: project.user.phone,
+                                                                                                companyName: project.user.company_name,
+                                                                                            },
+                                                                                        }} className="icon">
+                                                                                            <Image
+                                                                                                src={`/assets/img/icons/chat.svg`}
+                                                                                                width={20}
+                                                                                                height={20}
+                                                                                                alt="Social Icon"
+                                                                                                loading="lazy"
+                                                                                            />
+                                                                                        </Link>
+                                                                                    )
+                                                                                }
 
-                                                                            {project.user?.phone && (
-                                                                                <Link href={'mailto:'+ project.user?.phone} className="icon">
-                                                                                    <Image
-                                                                                        src={`/assets/img/icons/call-white.svg`}
-                                                                                        width={20}
-                                                                                        height={20}
-                                                                                        alt="Social Icon"
-                                                                                        loading="lazy"
-                                                                                    />
-                                                                                </Link>
-                                                                            )}
-                                                                        </div>
-                                                                    )
-                                                                }
+                                                                                {project.contact_options?.includes('phone') && project.user?.phone && (
+                                                                                    <Link href={`tel:${project.user.phone}`} className="icon">
+                                                                                        <Image
+                                                                                            src={`/assets/img/icons/call-white.svg`}
+                                                                                            width={20}
+                                                                                            height={20}
+                                                                                            alt="Social Icon"
+                                                                                            loading="lazy"
+                                                                                        />
+                                                                                    </Link>
+                                                                                )}
+                                                                            </div>
+                                                                        )
+                                                                    }
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    )
+                                                        )
                                                     }
                                                 </div>
                                             ))

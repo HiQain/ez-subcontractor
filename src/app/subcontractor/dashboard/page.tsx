@@ -116,7 +116,7 @@ export default function DashboardSubContractor() {
         const icon = type === 'success' ? '✅' : '❌';
 
         toast.innerHTML = `
-            <div className="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
                 position: fixed;
                 top: 20px;
                 right: 20px;
@@ -134,7 +134,7 @@ export default function DashboardSubContractor() {
                 font-weight: 500;
             ">
                 <span>${icon} ${message}</span>
-                <button type="button" className="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
             </div>
         `;
         document.body.appendChild(toast);
@@ -417,6 +417,7 @@ export default function DashboardSubContractor() {
 
     // 🔹 Search debounce (unchanged)
     useEffect(() => {
+        if (!profileLoaded) return;
         if (searchTimeout.current) {
             clearTimeout(searchTimeout.current);
         }
@@ -426,13 +427,15 @@ export default function DashboardSubContractor() {
         return () => {
             if (searchTimeout.current) clearTimeout(searchTimeout.current);
         };
-    }, [searchTerm, zipCode, workRadius, categoryId]);
+    }, [searchTerm, zipCode, workRadius, categoryId, profileLoaded]);
 
     // 🔹 Initial load: Banner images + saved + projects
     useEffect(() => {
         if (!profileLoaded) return;
         fetchHorizontalAds();
         fetchVerticalAds();
+        fetchSavedProjects();
+        fetchprojects(true);
     }, [profileLoaded]);
 
     // 🔹 Truncation check (unchanged)
@@ -488,6 +491,43 @@ export default function DashboardSubContractor() {
         setWorkRadius(2);
         setCategoryId('');
         setPage(1);
+    };
+
+    const fetchSavedProjects = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects/my-saved`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: 'application/json',
+                    },
+                }
+            );
+
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                router.push('/auth/login');
+                return;
+            }
+
+            const data = await response.json();
+            if (!response.ok) return;
+
+            const projects = data?.data?.projects || [];
+
+            // 🔥 ONLY IDs — dashboard ko sirf itna hi chahiye
+            const savedIds = new Set<number>(
+                projects.map((p: any) => Number(p.id))
+            );
+
+            setSavedproject(savedIds);
+        } catch (err) {
+            console.error('Fetch saved projects error:', err);
+        }
     };
 
     const leftAds = horizontalAds.slice(0, Math.ceil(horizontalAds.length / 2));
@@ -977,7 +1017,7 @@ export default function DashboardSubContractor() {
                                                                             }
 
                                                                             {project.contact_options?.includes('phone') && project.user?.phone && (
-                                                                                <Link href={'mailto:' + project.user?.phone} className="icon">
+                                                                                <Link href={`tel:${project.user.phone}`} className="icon">
                                                                                     <Image
                                                                                         src={`/assets/img/icons/call-white.svg`}
                                                                                         width={20}
