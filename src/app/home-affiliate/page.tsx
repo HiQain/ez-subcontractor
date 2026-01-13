@@ -416,7 +416,12 @@ export default function HomePage() {
                                         HOW IT WORKS
                                     </Link>
                                     <h1 className="mb-4">{howItWorks.title}</h1>
-                                    <p className="mb-3 fw-medium">{howItWorks.description}</p>
+                                    <div
+                                        className="mb-3 fw-medium"
+                                        dangerouslySetInnerHTML={{
+                                            __html: howItWorks.description.replace(/\n/g, '<br />'),
+                                        }}
+                                    />
                                     <Link href="/auth/register/affiliate" className="btn btn-primary rounded-3 mt-3">
                                         Join as a Affiliate
                                     </Link>
