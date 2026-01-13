@@ -83,6 +83,18 @@ export default function BlogSinglePage() {
         fetchBlog();
     }, [slug]);
 
+    const getPrevNextBlogs = () => {
+        if (!featuredBlogs.length || !blog) return { prev: null, next: null };
+
+        const currentIndex = featuredBlogs.findIndex((b) => b.slug === blog.slug);
+        const prev = currentIndex > 0 ? featuredBlogs[currentIndex - 1] : null;
+        const next = currentIndex < featuredBlogs.length - 1 ? featuredBlogs[currentIndex + 1] : null;
+
+        return { prev, next };
+    };
+
+    const { prev, next } = getPrevNextBlogs();
+
     if (loading) {
         return (
             <>
@@ -209,10 +221,50 @@ export default function BlogSinglePage() {
                                     )}
                                 </div>
                             </div>
+                            <div className="d-flex justify-content-center mt-5 w-100">
+                                {/* Previous */}
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => {
+                                        if (prev) {
+                                            router.back()
+                                            setTimeout(() => {
+                                                router.push(`/blog-detail?slug=${prev.slug}`);
+                                            }, 50);
+                                        } else {
+                                            router.back();
+                                        }
+                                    }}
+                                >
+                                    &larr; Previous
+                                </button>
+
+                                {/* Next */}
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => {
+                                        if (next) {
+                                            router.back()
+                                            setTimeout(() => {
+                                                router.push(`/blog-detail?slug=${next.slug}`);
+                                            }, 50);
+                                        }
+                                    }}
+                                    disabled={!next}
+                                    style={{
+                                        opacity: !next ? 0.5 : 1,
+                                        cursor: !next ? 'not-allowed' : 'pointer',
+                                        marginLeft: '10px',
+                                    }}
+                                >
+                                    Next &rarr;
+                                </button>
+                            </div>
+
                         </div>
                     </div>
-                </section>
-            </div>
+                </section >
+            </div >
 
             <Footer />
         </>
