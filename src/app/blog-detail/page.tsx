@@ -4,12 +4,38 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import '../../styles/blog.css';
 
+const stripHtml = (html: string): string => {
+    if (typeof window === 'undefined') {
+        return html.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
+    }
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return (div.textContent || '').replace(/\s+/g, ' ').trim();
+};
+
+const getExcerpt = (html: string, limit = 140) => {
+    const text = stripHtml(html);
+    return text.length > limit ? text.slice(0, limit) + '...' : text;
+};
+
+const formatBlogDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric',
+    });
+};
+
 export default function BlogSinglePage() {
+    const router = useRouter();
     const [slug, setSlug] = useState<string | null>(null);
     const [blog, setBlog] = useState<any>(null);
+    const [featuredBlogs, setFeaturedBlogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     // 🔹 Get slug from URL
@@ -30,17 +56,25 @@ export default function BlogSinglePage() {
             try {
                 setLoading(true);
 
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/detail/${slug}`
-                );
+                const [latestRes, featuredRes] = await Promise.all([
+                    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/detail/${slug}`),
+                    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/featured`)
+                ]);
 
-                const json = await res.json();
+                const latestJson = await latestRes.json();
+                const featuredJson = await featuredRes.json();
 
-                if (json.success) {
-                    setBlog(json.data);
+                if (latestJson.success) {
+                    setBlog(latestJson.data || []);
+                }
+
+                if (featuredJson.success) {
+                    setFeaturedBlogs(featuredJson.data || []);
                 }
             } catch (error) {
-                console.error('Blog detail fetch error:', error);
+                console.error('Blogs fetch error:', error);
+                setBlog([]);
+                setFeaturedBlogs([]);
             } finally {
                 setLoading(false);
             }
@@ -98,7 +132,7 @@ export default function BlogSinglePage() {
                 <section className="blog-sec">
                     <div className="container">
                         <div className="row g-4">
-                            <div className="col-lg-12">
+                            <div className="col-lg-9">
 
                                 {/* Author + Date */}
                                 <div className="d-flex align-items-center justify-content-between mb-5">
@@ -134,6 +168,46 @@ export default function BlogSinglePage() {
                                     className="blog-single-description"
                                     dangerouslySetInnerHTML={{ __html: blog.content }}
                                 />
+                            </div>
+                            <div className="col-lg-3">
+                                <div className="featured-post mb-5">
+                                    <div className="feature-title">Featured</div>
+
+                                    {featuredBlogs.length === 0 ? (
+                                        <p className="text-muted mt-3">No featured blogs</p>
+                                    ) : (
+                                        featuredBlogs.map((blog) => (
+                                            <div key={blog.id} className="feature-post">
+                                                <a style={{ cursor: 'pointer' }}
+                                                    onClick={() => {
+                                                        if (slug === blog.slug) return;
+                                                        router.back()
+                                                        setTimeout(() => {
+                                                            router.push(`/blog-detail?slug=${blog.slug}`)
+                                                        }, 50);
+                                                    }}
+                                                >
+                                                    <Image
+                                                        style={{ borderRadius: '10px' }}
+                                                        src={blog.featured_image}
+                                                        width={124}
+                                                        height={107}
+                                                        alt={blog.title}
+                                                    />
+                                                </a>
+
+                                                <div className="content">
+                                                    <div className="date">
+                                                        {formatBlogDate(blog.created_at)}
+                                                    </div>
+                                                    <Link href={`/blogs/${blog.slug}`} className="description">
+                                                        {getExcerpt(blog.content, 80)}
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

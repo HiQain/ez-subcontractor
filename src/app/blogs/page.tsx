@@ -174,7 +174,12 @@ export default function PricingPage() {
                                     ) : (
                                         featuredBlogs.map((blog) => (
                                             <div key={blog.id} className="feature-post">
-                                                <Link href={''}>
+                                                <Link href={{
+                                                    pathname: '/blog-detail',
+                                                    query: {
+                                                        slug: blog.slug,
+                                                    },
+                                                }}>
                                                     <Image
                                                         style={{ borderRadius: '10px' }}
                                                         src={blog.featured_image}
