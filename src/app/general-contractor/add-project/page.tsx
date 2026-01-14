@@ -442,10 +442,6 @@ export default function PostAd() {
                                                         let _state = '';
 
                                                         components.forEach((comp: any) => {
-                                                            if (comp.types.includes('street_number')) {
-                                                                _street = comp.long_name + ' ' + _street;
-                                                            }
-
                                                             if (comp.types.includes('route')) {
                                                                 _street += comp.long_name;
                                                             }
@@ -495,9 +491,9 @@ export default function PostAd() {
                                     {/* Input Fields */}
                                     <div className="row g-4">
                                         {[
+                                            { label: 'Street', value: street, setter: setStreet, field: 'street', type: 'text', placeholder: 'Enter street' },
                                             { label: 'City', value: city, setter: setCity, field: 'city', type: 'text', placeholder: 'Enter city' },
                                             { label: 'State', value: state, setter: setState, field: 'state', type: 'text', placeholder: 'Enter state' },
-                                            { label: 'Street', value: street, setter: setStreet, field: 'street', type: 'text', placeholder: 'Enter street' },
                                         ].map((field, index) => (
                                             <div className="col-lg-4" key={index}>
                                                 <div className="input-wrapper">

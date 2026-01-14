@@ -555,10 +555,6 @@ export default function EditProjectPage() {
                                                         let _state = '';
 
                                                         components.forEach((comp: any) => {
-                                                            if (comp.types.includes('street_number')) {
-                                                                _street = comp.long_name + ' ' + _street;
-                                                            }
-
                                                             if (comp.types.includes('route')) {
                                                                 _street += comp.long_name;
                                                             }
@@ -604,9 +600,9 @@ export default function EditProjectPage() {
                                     {/* Fields */}
                                     <div className="row g-4">
                                         {[
+                                            { label: 'Street', value: street, setter: setStreet, type: 'text' },
                                             { label: 'City', value: city, setter: setCity, type: 'text' },
                                             { label: 'State', value: state, setter: setState, type: 'text' },
-                                            { label: 'Street', value: street, setter: setStreet, type: 'text' },
                                             { label: 'Estimate Due Date', value: estimateDueDate, setter: setEstimateDueDate, type: 'date' },
                                             { label: 'Project Start Date', value: startDate, setter: setStartDate, type: 'date' },
                                             { label: 'Project End Date', value: endDate, setter: setEndDate, type: 'date' },
