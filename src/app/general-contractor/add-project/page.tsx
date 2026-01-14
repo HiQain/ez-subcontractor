@@ -46,9 +46,8 @@ export default function PostAd() {
     const [startDate, setStartDate] = useState<Date | null>();
     const [endDate, setEndDate] = useState<Date | null>();
     const [contactMethods, setContactMethods] = useState<{ [key: string]: boolean }>({
-        email: false,
-        phone: false,
-        chat: false,
+        email: true,
+        phone: true,
     });
 
     // 🔹 Handle checkbox toggle
@@ -298,8 +297,12 @@ export default function PostAd() {
             formData.append('start_date', startDate ? format(startDate, 'yyyy-MM-dd') : '');
             formData.append('end_date', endDate ? format(endDate, 'yyyy-MM-dd') : '');
             formData.append('status', 'active');
+            // 🔹 Always send chat as default
+            formData.append('contact_options[0]', 'chat');
+
+            // 🔹 Send other selected methods (email, phone, etc.)
             selectedMethods.forEach((method, index) => {
-                formData.append(`contact_options[${index}]`, method);
+                formData.append(`contact_options[${index + 1}]`, method);
             });
 
             allDocuments.forEach((doc, index) => {
@@ -560,7 +563,7 @@ export default function PostAd() {
                                         <div className="col-12 mb-4">
                                             <div className="fw-semibold mb-2">Preferred Contact Method</div>
                                             <div className="d-flex gap-3 flex-wrap">
-                                                {['email', 'phone', 'chat'].map(option => (
+                                                {['email', 'phone'].map(option => (
                                                     <div key={option} className="form-check">
                                                         <input
                                                             type="checkbox"
