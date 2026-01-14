@@ -95,7 +95,7 @@ export default function DashboardSubContractor() {
     const [shouldShowSeeMore, setShouldShowSeeMore] = useState<boolean[]>([]);
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [zipCode, setZipCode] = useState('');
+    const [city, setCity] = useState('');
     const [workRadius, setWorkRadius] = useState(2);
     const [categoryId, setCategoryId] = useState<string>('');
     const [page, setPage] = useState(1);
@@ -188,15 +188,15 @@ export default function DashboardSubContractor() {
     };
 
     useEffect(() => {
-        const zip = localStorage.getItem('userZip');
+        const city = localStorage.getItem('userCity');
         const radius = localStorage.getItem('userRadius');
 
         setWorkRadius(radius && radius !== 'null' ? parseInt(radius) : 2);
 
-        if (zip && zip !== 'null' && zip !== 'undefined') {
-            setZipCode(zip);
+        if (city && city !== 'null' && city !== 'undefined') {
+            setCity(city);
         } else {
-            setZipCode('');
+            setCity('');
         }
     }, []);
 
@@ -308,7 +308,7 @@ export default function DashboardSubContractor() {
 
         const params = new URLSearchParams();
         if (searchTerm) params.append('search', searchTerm);
-        if (zipCode) params.append('zip', zipCode);
+        if (city) params.append('zip', city);
         params.append('radius', String(workRadius));
         if (categoryId) params.append('category_id', categoryId);
         params.append('page', String(currentPage));
@@ -427,7 +427,7 @@ export default function DashboardSubContractor() {
         return () => {
             if (searchTimeout.current) clearTimeout(searchTimeout.current);
         };
-    }, [searchTerm, zipCode, workRadius, categoryId, profileLoaded]);
+    }, [searchTerm, city, workRadius, categoryId, profileLoaded]);
 
     // 🔹 Initial load: Banner images + saved + projects
     useEffect(() => {
@@ -487,7 +487,7 @@ export default function DashboardSubContractor() {
     // 🔹 Reset filters (unchanged)
     const handleResetFilters = () => {
         setSearchTerm('');
-        setZipCode('');
+        setCity('');
         setWorkRadius(2);
         setCategoryId('');
         setPage(1);
@@ -699,13 +699,13 @@ export default function DashboardSubContractor() {
                                     />
                                 </div>
 
-                                <span className="d-block mb-2 fw-medium">Zip Code</span>
+                                <span className="d-block mb-2 fw-medium">City</span>
                                 <input
                                     type="text"
-                                    placeholder="29391"
+                                    placeholder="Enter city"
                                     className="form-control mb-3"
-                                    value={zipCode}
-                                    onChange={(e) => setZipCode(e.target.value)}
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
                                 />
 
                                 <div className="d-none">

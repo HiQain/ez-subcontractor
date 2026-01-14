@@ -18,7 +18,6 @@ interface ProfileData {
     role: string;
     city: string;
     state: string;
-    zipCode: string;
     workRadius: number;
     license_number: string;
     category: Specialization[];
@@ -169,7 +168,6 @@ export default function ProfilePage() {
                         role: data.data.role || '',
                         city: data.data.city || '',
                         state: data.data.state || '',
-                        zipCode: data.data.zip || '',
                         workRadius: data.data.work_radius || 0,
                         category: data.data.specializations || [],
                         average_rating: (parseFloat(data.data.average_rating) || 0).toString(),
@@ -412,9 +410,6 @@ export default function ProfilePage() {
                                                 <div className="content">
                                                     <div className="title fw-semibold fs-4 mb-2">{profile.fullName}</div>
                                                     <p className="mb-1 text-gray-light text-capitalize">{profile.role}</p>
-                                                    <p className="mb-1 text-gray-light">
-                                                        {profile.zipCode}
-                                                    </p>
                                                 </div>
                                             </div>
                                             <div className="right d-flex align-items-center gap-4 flex-wrap">
@@ -473,24 +468,12 @@ export default function ProfilePage() {
                                                 </div>
                                             </div>
 
-                                            <div className="text-gray-light fw-medium mb-2">Category</div>
-                                            <div className="d-flex align-items-center gap-2 flex-wrap mb-4">
-                                                {profile.category.map((cat) => (
-                                                    <div
-                                                        key={cat.id}
-                                                        className="fw-semibold bg-dark text-white fs-14 px-2 py-1 rounded-1"
-                                                    >
-                                                        {cat.title}
-                                                    </div>
-                                                ))}
-                                            </div>
-
                                             <div className="row g-2">
-                                                {profile.zipCode?.trim() && (
+                                                {profile.city?.trim() && (
                                                     <div className="col-xl-3 col-sm-6">
                                                         <div className="content">
-                                                            <div className="text-gray-light fw-medium mb-2">Zip Code</div>
-                                                            <div className="fw-semibold fs-18">{profile.zipCode}</div>
+                                                            <div className="text-gray-light fw-medium mb-2">City</div>
+                                                            <div className="fw-semibold fs-18">{profile.city}</div>
                                                         </div>
                                                     </div>
                                                 )}
@@ -512,6 +495,17 @@ export default function ProfilePage() {
                                                         </div>
                                                     </div>
                                                 )}
+                                            </div>
+                                            <div className="text-gray-light fw-medium mb-2 mt-4">Category</div>
+                                            <div className="d-flex align-items-center gap-2 flex-wrap">
+                                                {profile.category.map((cat) => (
+                                                    <div
+                                                        key={cat.id}
+                                                        className="fw-semibold bg-dark text-white fs-14 px-2 py-1 rounded-1"
+                                                    >
+                                                        {cat.title}
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>
