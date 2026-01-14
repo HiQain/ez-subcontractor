@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/job-single.css';
-import { Modal } from 'bootstrap';
 
 // 🔹 Helper: Extract file name from path
 const getFileName = (filePath: string): string => {
@@ -250,27 +249,30 @@ export default function ProjectDetailsPage() {
 
     // 🔹 Open modal programmatically (fallback if data-bs-* doesn't work)
     const openAttachmentsModal = () => {
-        const modalEl = document.getElementById('attachmentsModal');
-        if (!modalEl) return;
-
-        const modal = Modal.getOrCreateInstance(modalEl);
-        modal.show();
+        import('bootstrap').then(({ Modal }) => {
+            const modalEl = document.getElementById('attachmentsModal');
+            if (!modalEl) return;
+            const modal = Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        });
     };
 
     const openDeleteModal = () => {
-        const modalEl = document.getElementById('deleteProjectModal');
-        if (!modalEl) return;
-
-        const modal = Modal.getOrCreateInstance(modalEl);
-        modal.show();
+        import('bootstrap').then(({ Modal }) => {
+            const modalEl = document.getElementById('deleteProjectModal');
+            if (!modalEl) return;
+            const modal = Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        });
     };
 
     const closeDeleteModal = () => {
-        const modalEl = document.getElementById('deleteProjectModal');
-        if (!modalEl) return;
-
-        const modal = Modal.getInstance(modalEl);
-        modal?.hide();
+        import('bootstrap').then(({ Modal }) => {
+            const modalEl = document.getElementById('deleteProjectModal');
+            if (!modalEl) return;
+            const modal = Modal.getInstance(modalEl);
+            modal?.hide();
+        });
     };
 
     // 🔹 ✅ NEW: Delete project (matches dashboard logic)

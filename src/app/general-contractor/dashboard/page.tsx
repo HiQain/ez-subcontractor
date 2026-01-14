@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import '../../../styles/free-trial.css';
-import { Modal } from 'bootstrap';
 
 interface Project {
     id: number;
@@ -177,19 +176,23 @@ export default function DashboardPage() {
         setDeletingId(id);
         setDeleteError(null);
 
-        const modalEl = document.getElementById('deleteProjectModal');
-        if (!modalEl) return;
+        import('bootstrap').then(({ Modal }) => {
+            const modalEl = document.getElementById('deleteProjectModal');
+            if (!modalEl) return;
 
-        const modal = Modal.getOrCreateInstance(modalEl);
-        modal.show();
+            const modal = Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        });
     };
 
     const closeDeleteModal = () => {
-        const modalEl = document.getElementById('deleteProjectModal');
-        if (!modalEl) return;
+        import('bootstrap').then(({ Modal }) => {
+            const modalEl = document.getElementById('deleteProjectModal');
+            if (!modalEl) return;
 
-        const modal = Modal.getInstance(modalEl);
-        modal?.hide();
+            const modal = Modal.getInstance(modalEl);
+            modal?.hide();
+        });
     };
 
     const fetchProjects = async () => {
