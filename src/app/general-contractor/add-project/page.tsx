@@ -1,6 +1,5 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -12,6 +11,9 @@ import '../../../styles/post-detail.css';
 import 'react-quill/dist/quill.snow.css';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
+import { geocodeByPlaceId } from 'react-google-places-autocomplete';
+
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 interface Category {
@@ -35,7 +37,7 @@ export default function PostAd() {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [city, setCity] = useState('');
     const [state, setState] = useState('');
-    const [zip, setZip] = useState('');
+    const [street, setStreet] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -252,7 +254,7 @@ export default function PostAd() {
         if (!selectedCategory) newErrors.category = 'Please select a category.';
         if (!city.trim()) newErrors.city = 'City is required.';
         if (!state.trim()) newErrors.state = 'State is required.';
-        if (!zip.trim()) newErrors.zip = 'Zip Code is required.';
+        if (!street.trim()) newErrors.street = 'Street is required.';
         if (!estimateDueDate) newErrors.estimateDueDate = 'Estimate Due Date is required.';
         if (!startDate) newErrors.startDate = 'Project Start Date is required.';
         if (!endDate) newErrors.endDate = 'Project End Date is required.';
@@ -291,7 +293,7 @@ export default function PostAd() {
             formData.append('city', city);
             formData.append('state', state);
             formData.append('category_id', selectedCategory);
-            formData.append('zip', zip);
+            formData.append('street', street);
             formData.append('estimate_due_date', estimateDueDate ? format(estimateDueDate, 'yyyy-MM-dd') : '');
             formData.append('start_date', startDate ? format(startDate, 'yyyy-MM-dd') : '');
             formData.append('end_date', endDate ? format(endDate, 'yyyy-MM-dd') : '');
@@ -346,7 +348,7 @@ export default function PostAd() {
             setSelectedCategory('');
             setCity('');
             setState('');
-            setZip('');
+            setStreet('');
             setEstimateDueDate(null);
             setStartDate(null);
             setEndDate(null);
@@ -417,12 +419,82 @@ export default function PostAd() {
                                         )}
                                     </div>
 
+                                    <div className="col-lg-12 mb-4">
+                                        <div className="input-wrapper">
+                                            <div className="label mb-1 fw-semibold">
+                                                Project Address <span className="text-danger">*</span>
+                                            </div>
+                                            <GooglePlacesAutocomplete
+                                                apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}
+                                                selectProps={{
+                                                    placeholder: 'Start typing address...',
+                                                    onChange: async (place: any) => {
+                                                        if (!place?.value?.place_id) return;
+
+                                                        const results = await geocodeByPlaceId(place.value.place_id);
+                                                        const components = results[0].address_components;
+
+                                                        let _street = '';
+                                                        let _city = '';
+                                                        let _state = '';
+
+                                                        components.forEach((comp: any) => {
+                                                            if (comp.types.includes('street_number')) {
+                                                                _street = comp.long_name + ' ' + _street;
+                                                            }
+
+                                                            if (comp.types.includes('route')) {
+                                                                _street += comp.long_name;
+                                                            }
+
+                                                            if (comp.types.includes('locality')) {
+                                                                _city = comp.long_name;
+                                                            }
+
+                                                            if (comp.types.includes('administrative_area_level_1')) {
+                                                                _state = comp.short_name;
+                                                            }
+                                                        });
+
+                                                        setStreet(_street.trim());
+                                                        setCity(_city);
+                                                        setState(_state);
+
+                                                        clearError('street');
+                                                        clearError('city');
+                                                        clearError('state');
+                                                    },
+                                                    styles: {
+                                                        control: (base) => ({
+                                                            ...base,
+                                                            width: '100%',
+                                                            borderRadius: '10px',
+                                                            border: '1px solid #DADADA',
+                                                            padding: '4px',
+                                                            outline: 'none',
+                                                            fontSize: '14px',
+                                                            boxShadow: 'none',
+                                                            transition: 'all 0.3s ease',
+                                                            '&:hover': {
+                                                                border: '1px solid #C9DA2B',
+                                                            },
+                                                            '&.is-focused': {
+                                                                border: '1px solid #C9DA2B',
+                                                                boxShadow: 'none',
+                                                            },
+                                                        }),
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
                                     {/* Input Fields */}
                                     <div className="row g-4">
                                         {[
                                             { label: 'City', value: city, setter: setCity, field: 'city', type: 'text', placeholder: 'Enter city' },
                                             { label: 'State', value: state, setter: setState, field: 'state', type: 'text', placeholder: 'Enter state' },
-                                            { label: 'Zip Code', value: zip, setter: setZip, field: 'zip', type: 'text', placeholder: 'Enter ZIP' },
+                                            { label: 'Street', value: street, setter: setStreet, field: 'street', type: 'text', placeholder: 'Enter street' },
                                         ].map((field, index) => (
                                             <div className="col-lg-4" key={index}>
                                                 <div className="input-wrapper">
