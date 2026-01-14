@@ -299,13 +299,19 @@ export default function SavedListingPage() {
                 const newSet = new Set(prev);
                 if (isCurrentlySaved) {
                     newSet.delete(projectId);
-                    showToast('Project removed from saved list', 'success');
                 } else {
                     newSet.add(projectId);
-                    showToast('Project saved successfully!', 'success');
                 }
                 return newSet;
             });
+
+            if (isCurrentlySaved) {
+                // 🔥 REMOVE project from list
+                setProjects(prev => prev.filter(p => p.id !== projectId));
+                showToast('Project removed from saved list', 'success');
+            } else {
+                showToast('Project saved successfully!', 'success');
+            }
 
         } catch (err: any) {
             console.error(`${savedproject.has(projectId) ? 'Unsave' : 'Save'} project error:`, err);
