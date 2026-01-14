@@ -499,7 +499,7 @@ export default function PostAd() {
                                             <div className="col-lg-4" key={index}>
                                                 <div className="input-wrapper">
                                                     <div className="label mb-1 fw-semibold">
-                                                        {field.label}
+                                                        {field.label} <span className="text-danger">*</span>
                                                     </div>
                                                     <input
                                                         type={field.type}
