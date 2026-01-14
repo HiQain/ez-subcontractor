@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/job-single.css';
+import { Modal } from 'bootstrap';
 
 // 🔹 Helper: Extract file name from path
 const getFileName = (filePath: string): string => {
@@ -250,10 +251,26 @@ export default function ProjectDetailsPage() {
     // 🔹 Open modal programmatically (fallback if data-bs-* doesn't work)
     const openAttachmentsModal = () => {
         const modalEl = document.getElementById('attachmentsModal');
-        if (modalEl) {
-            const modal = new (window as any).bootstrap.Modal(modalEl);
-            modal.show();
-        }
+        if (!modalEl) return;
+
+        const modal = Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    };
+
+    const openDeleteModal = () => {
+        const modalEl = document.getElementById('deleteProjectModal');
+        if (!modalEl) return;
+
+        const modal = Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    };
+
+    const closeDeleteModal = () => {
+        const modalEl = document.getElementById('deleteProjectModal');
+        if (!modalEl) return;
+
+        const modal = Modal.getInstance(modalEl);
+        modal?.hide();
     };
 
     // 🔹 ✅ NEW: Delete project (matches dashboard logic)
@@ -292,7 +309,8 @@ export default function ProjectDetailsPage() {
 
             // ✅ Success
             showToast('Project deleted successfully!');
-            router.push('/general-contractor/my-projects');
+            closeDeleteModal();
+            router.back();
 
         } catch (err: any) {
             console.error('❌ Delete error:', err);
@@ -351,9 +369,8 @@ export default function ProjectDetailsPage() {
                                     <button
                                         type="button"
                                         className="icon delete"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#deleteProjectModal"
                                         style={{ backgroundColor: '#DC2626 !important' }}
+                                        onClick={openDeleteModal}
                                     >
                                         <Image
                                             src="/assets/img/icons/delete.svg"

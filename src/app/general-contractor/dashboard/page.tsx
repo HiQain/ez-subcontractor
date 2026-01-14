@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import '../../../styles/free-trial.css';
+import { Modal } from 'bootstrap';
 
 interface Project {
     id: number;
@@ -175,11 +176,20 @@ export default function DashboardPage() {
     const openDeleteModal = (id: number) => {
         setDeletingId(id);
         setDeleteError(null);
+
         const modalEl = document.getElementById('deleteProjectModal');
-        if (modalEl && (window as any).bootstrap) {
-            const modal = new (window as any).bootstrap.Modal(modalEl);
-            modal.show();
-        }
+        if (!modalEl) return;
+
+        const modal = Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    };
+
+    const closeDeleteModal = () => {
+        const modalEl = document.getElementById('deleteProjectModal');
+        if (!modalEl) return;
+
+        const modal = Modal.getInstance(modalEl);
+        modal?.hide();
     };
 
     const fetchProjects = async () => {
@@ -268,13 +278,11 @@ export default function DashboardPage() {
             // 🔹 Replaced alert with toast
             showToast('Project deleted successfully!');
 
-            const modalEl = document.getElementById('deleteProjectModal');
-            if (modalEl && (window as any).bootstrap) {
-                const modal = (window as any).bootstrap.Modal.getInstance(modalEl);
-                modal?.hide();
-            }
+            closeDeleteModal();
+
             fetchProjects();
-        } catch (err: any) {
+        }
+        catch (err: any) {
             console.error('Delete error:', err);
             setDeleteError(err.message || 'Failed to delete project.');
 
@@ -711,7 +719,9 @@ export default function DashboardPage() {
                                                         Edit
                                                     </button>
                                                     <button
+                                                        type="button"
                                                         className="btn bg-danger rounded-3 w-100 justify-content-center text-white"
+                                                        style={{ backgroundColor: '#DC2626 !important' }}
                                                         onClick={() => openDeleteModal(project.id)}
                                                     >
                                                         Delete
