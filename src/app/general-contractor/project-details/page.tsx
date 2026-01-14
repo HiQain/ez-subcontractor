@@ -405,9 +405,9 @@ export default function ProjectDetailsPage() {
 
                                     <div className="title text-black fs-5 fw-semibold mb-3">
                                         {[
+                                            project.street,
                                             project.city,
-                                            project.state,
-                                            project.street
+                                            project.state
                                         ].filter(Boolean).join(', ')}
                                     </div>
 

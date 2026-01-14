@@ -886,16 +886,16 @@ export default function DashboardSubContractor() {
                                                             }}
                                                         >
                                                             {[
+                                                                project.street,
                                                                 project.city,
-                                                                project.state,
-                                                                project.street
+                                                                project.state
                                                             ].filter(Boolean).join(', ')}
                                                         </button>
                                                     ) : (
                                                         <div className="title text-capitalize">{[
+                                                            project.street,
                                                             project.city,
-                                                            project.state,
-                                                            project.street
+                                                            project.state
                                                         ].filter(Boolean).join(', ')}</div>
                                                     )}
                                                     <div className="d-flex align-items-center gap-2">

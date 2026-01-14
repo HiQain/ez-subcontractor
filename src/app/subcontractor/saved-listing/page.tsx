@@ -56,7 +56,7 @@ export default function SavedListingPage() {
         const icon = type === 'success' ? '✅' : '❌';
 
         toast.innerHTML = `
-            <div className="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
                 position: fixed;
                 top: 20px;
                 right: 20px;
@@ -74,7 +74,7 @@ export default function SavedListingPage() {
                 font-weight: 500;
             ">
                 <span>${icon} ${message}</span>
-                <button type="button" className="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
             </div>
         `;
         document.body.appendChild(toast);
@@ -458,16 +458,16 @@ export default function SavedListingPage() {
                                                                 }}
                                                             >
                                                                 {[
+                                                                    project.street,
                                                                     project.city,
-                                                                    project.state,
-                                                                    project.street
+                                                                    project.state
                                                                 ].filter(Boolean).join(', ')}
                                                             </button>
                                                         ) : (
                                                             <div className="title text-capitalize">{[
+                                                                project.street,
                                                                 project.city,
-                                                                project.state,
-                                                                project.street
+                                                                project.state
                                                             ].filter(Boolean).join(', ')}</div>
                                                         )}
                                                         <div className="d-flex align-items-center gap-2">
