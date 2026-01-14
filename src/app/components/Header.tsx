@@ -232,7 +232,7 @@ export default function Header() {
                         )}
 
                     {[
-                        '/', '/home-general-contractor', '/home-subcontractor', '/home-affiliate'
+                        '/', '/home-general-contractor', '/home-subcontractor', '/home-affiliate', '/subscription', '/how-it-works', '/blogs', '/faq', '/terms-and-conditions', '/privacy-policy'
                     ].includes(pathname) && (
                             <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
                                 <li className="nav-item">
