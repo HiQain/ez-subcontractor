@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import 'react-quill/dist/quill.snow.css';
+import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
+import { geocodeByPlaceId } from 'react-google-places-autocomplete';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
@@ -61,7 +62,7 @@ export default function EditProjectPage() {
     const [description, setDescription] = useState('');
     const [city, setCity] = useState('');
     const [state, setState] = useState('');
-    const [zip, setZip] = useState('');
+    const [street, setStreet] = useState('');
     const [estimateDueDate, setEstimateDueDate] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -211,7 +212,7 @@ export default function EditProjectPage() {
                     setSelectedCategory(proj.category_id);
                     setCity(proj.city);
                     setState(proj.state);
-                    setZip(proj.zip);
+                    setStreet(proj.street);
                     setEstimateDueDate(proj.estimate_due_date);
                     setStartDate(proj.start_date);
                     setEndDate(proj.end_date);
@@ -347,7 +348,7 @@ export default function EditProjectPage() {
             formData.append('city', city);
             formData.append('state', state);
             formData.append('category_id', selectedCategory);
-            formData.append('zip', zip);
+            formData.append('street', street);
             formData.append('estimate_due_date', estimateDueDate);
             formData.append('start_date', startDate);
             formData.append('end_date', endDate);
@@ -517,7 +518,7 @@ export default function EditProjectPage() {
                                 <div className="col-lg-8">
                                     {/* Category */}
                                     <div className="input-wrapper d-flex flex-column position-relative mb-4" ref={dropdownRef}>
-                                        <label className="mb-1 fw-semibold">Category *</label>
+                                        <label className="mb-1 fw-semibold">Category <span className="text-danger">*</span></label>
                                         <div className="input-wrapper d-flex flex-column position-relative">
                                             <select
                                                 id="category-select2"
@@ -534,19 +535,85 @@ export default function EditProjectPage() {
                                         </div>
                                     </div>
 
+                                    <div className="col-lg-12 mb-4">
+                                        <div className="input-wrapper">
+                                            <div className="label mb-1 fw-semibold">
+                                                Project Address <span className="text-danger">*</span>
+                                            </div>
+                                            <GooglePlacesAutocomplete
+                                                apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}
+                                                selectProps={{
+                                                    placeholder: 'Start typing address...',
+                                                    onChange: async (place: any) => {
+                                                        if (!place?.value?.place_id) return;
+
+                                                        const results = await geocodeByPlaceId(place.value.place_id);
+                                                        const components = results[0].address_components;
+
+                                                        let _street = '';
+                                                        let _city = '';
+                                                        let _state = '';
+
+                                                        components.forEach((comp: any) => {
+                                                            if (comp.types.includes('street_number')) {
+                                                                _street = comp.long_name + ' ' + _street;
+                                                            }
+
+                                                            if (comp.types.includes('route')) {
+                                                                _street += comp.long_name;
+                                                            }
+
+                                                            if (comp.types.includes('locality')) {
+                                                                _city = comp.long_name;
+                                                            }
+
+                                                            if (comp.types.includes('administrative_area_level_1')) {
+                                                                _state = comp.short_name;
+                                                            }
+                                                        });
+
+                                                        setStreet(_street.trim());
+                                                        setCity(_city);
+                                                        setState(_state);
+                                                    },
+                                                    styles: {
+                                                        control: (base) => ({
+                                                            ...base,
+                                                            width: '100%',
+                                                            borderRadius: '10px',
+                                                            border: '1px solid #DADADA',
+                                                            padding: '4px',
+                                                            outline: 'none',
+                                                            fontSize: '14px',
+                                                            boxShadow: 'none',
+                                                            transition: 'all 0.3s ease',
+                                                            '&:hover': {
+                                                                border: '1px solid #C9DA2B',
+                                                            },
+                                                            '&.is-focused': {
+                                                                border: '1px solid #C9DA2B',
+                                                                boxShadow: 'none',
+                                                            },
+                                                        }),
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
                                     {/* Fields */}
                                     <div className="row g-4">
                                         {[
-                                            { label: 'City *', value: city, setter: setCity, type: 'text' },
-                                            { label: 'State *', value: state, setter: setState, type: 'text' },
-                                            { label: 'Zip Code *', value: zip, setter: setZip, type: 'text' },
-                                            { label: 'Estimate Due Date *', value: estimateDueDate, setter: setEstimateDueDate, type: 'date' },
-                                            { label: 'Project Start Date *', value: startDate, setter: setStartDate, type: 'date' },
-                                            { label: 'Project End Date *', value: endDate, setter: setEndDate, type: 'date' },
+                                            { label: 'City', value: city, setter: setCity, type: 'text' },
+                                            { label: 'State', value: state, setter: setState, type: 'text' },
+                                            { label: 'Street', value: street, setter: setStreet, type: 'text' },
+                                            { label: 'Estimate Due Date', value: estimateDueDate, setter: setEstimateDueDate, type: 'date' },
+                                            { label: 'Project Start Date', value: startDate, setter: setStartDate, type: 'date' },
+                                            { label: 'Project End Date', value: endDate, setter: setEndDate, type: 'date' },
                                         ].map((field, index) => (
                                             <div className="col-lg-4" key={index}>
                                                 <div className="input-wrapper">
-                                                    <div className="label mb-1 fw-semibold">{field.label}</div>
+                                                    <div className="label mb-1 fw-semibold">{field.label} <span className="text-danger">*</span></div>
                                                     <input
                                                         type={field.type}
                                                         value={field.value}
@@ -586,7 +653,7 @@ export default function EditProjectPage() {
                                         </div>
 
                                         <div className="col-12">
-                                            <div className="label mb-1 fw-semibold">Description *</div>
+                                            <div className="label mb-1 fw-semibold">Description <span className="text-danger">*</span></div>
                                             <div className="input-wrapper mb-5 d-block">
                                                 <ReactQuill
                                                     theme="snow"

@@ -29,7 +29,7 @@ interface Project {
     id: number;
     city: string;
     state: string;
-    zip: string;
+    street: string;
     description: string;
     start_date: string;
     end_date: string;
@@ -311,14 +311,17 @@ export default function ProjectSubcontractorDetailsPage() {
                                     </div>
 
                                     <div className="title text-black fs-5 fw-semibold mb-3">
-                                        {project.city}, {project.state}
+                                        {[
+                                            project.city,
+                                            project.state,
+                                            project.street
+                                        ].filter(Boolean).join(', ')}
                                     </div>
 
                                     <div
                                         className="mb-4"
                                         dangerouslySetInnerHTML={{ __html: project.description || '' }}
                                     />
-                                    {project.state}
 
                                     <div className="title text-black fs-5 fw-semibold mb-3">Project Details</div>
                                     <div className="estimated-wrapper">

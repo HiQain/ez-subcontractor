@@ -13,6 +13,7 @@ interface Project {
     id: number;
     city: string;
     state: string;
+    street: string;
     description: string;
     status: string;
     created_at: string;
@@ -27,7 +28,6 @@ interface Project {
         phone: string;
         company_name: string;
         profile_image_url: string;
-        zip: string;
     };
 }
 
@@ -530,9 +530,9 @@ export default function DashboardSubContractor() {
         }
     };
 
-    const leftAds = horizontalAds.slice(0, Math.ceil(horizontalAds.length / 2));
+    // const leftAds = horizontalAds.slice(0, Math.ceil(horizontalAds.length / 2));
 
-    const rightAds = horizontalAds.filter(ad => !leftAds.includes(ad));
+    // const rightAds = horizontalAds.filter(ad => !leftAds.includes(ad));
 
     return (
         <>
@@ -885,10 +885,18 @@ export default function DashboardSubContractor() {
                                                                 router.push('/subcontractor/project-details');
                                                             }}
                                                         >
-                                                            {project.city}, {project.state}
+                                                            {[
+                                                                project.city,
+                                                                project.state,
+                                                                project.street
+                                                            ].filter(Boolean).join(', ')}
                                                         </button>
                                                     ) : (
-                                                        <div className="title text-capitalize">{project.city}, {project.state}</div>
+                                                        <div className="title text-capitalize">{[
+                                                            project.city,
+                                                            project.state,
+                                                            project.street
+                                                        ].filter(Boolean).join(', ')}</div>
                                                     )}
                                                     <div className="d-flex align-items-center gap-2">
                                                         <div className="date">{formatTimeAgo(project.created_at)}</div>

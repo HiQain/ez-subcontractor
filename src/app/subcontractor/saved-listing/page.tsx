@@ -13,6 +13,7 @@ interface Project {
     id: number;
     city: string;
     state: string;
+    street: string;
     description: string;
     status: string;
     created_at: string;
@@ -27,7 +28,6 @@ interface Project {
         phone: string;
         company_name: string;
         profile_image_url: string;
-        zip: string;
     };
 }
 
@@ -457,10 +457,18 @@ export default function SavedListingPage() {
                                                                     router.push('/subcontractor/project-details');
                                                                 }}
                                                             >
-                                                                {project.city}, {project.state}
+                                                                {[
+                                                                    project.city,
+                                                                    project.state,
+                                                                    project.street
+                                                                ].filter(Boolean).join(', ')}
                                                             </button>
                                                         ) : (
-                                                            <div className="title text-capitalize">{project.city}, {project.state}</div>
+                                                            <div className="title text-capitalize">{[
+                                                                project.city,
+                                                                project.state,
+                                                                project.street
+                                                            ].filter(Boolean).join(', ')}</div>
                                                         )}
                                                         <div className="d-flex align-items-center gap-2">
                                                             <div className="date">{timeAgo(project.created_at)}</div>
