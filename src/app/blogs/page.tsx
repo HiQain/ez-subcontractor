@@ -122,9 +122,7 @@ export default function PricingPage() {
                                                 <Link
                                                     href={{
                                                         pathname: '/blog-detail',
-                                                        query: {
-                                                            slug: blog.slug,
-                                                        },
+                                                        query: { slug: blog.slug },
                                                     }}
                                                     className="blog-wrapper"
                                                     style={{
@@ -133,30 +131,53 @@ export default function PricingPage() {
                                                         backgroundPosition: 'center',
                                                         backgroundRepeat: 'no-repeat',
                                                         display: 'block',
+                                                        position: 'relative',
+                                                        borderRadius: '12px',
+                                                        overflow: 'hidden',
+                                                        height: '300px',
                                                     }}
                                                 >
-                                                    <div className="blog-content d-flex h-100 justify-content-end flex-column">
-                                                        <div className="description text-white fw-medium mb-2">
-                                                            {getExcerpt(blog.title)}
+                                                    <div className="blog-content d-flex h-100 justify-content-end flex-column" style={{ position: 'relative', height: '100%' }}>
+
+                                                        {/* Overlay behind text */}
+                                                        <div
+                                                            style={{
+                                                                position: 'absolute',
+                                                                bottom: 0,
+                                                                left: 0,
+                                                                right: 0,
+                                                                height: '90px',
+                                                                background: 'rgba(0,0,0,0.55)',
+                                                                zIndex: 1,
+                                                                borderRadius: '12px',
+                                                            }}
+                                                        />
+
+                                                        {/* Text and author info */}
+                                                        <div style={{ position: 'relative', zIndex: 2, padding: '10px 15px' }}>
+                                                            <div className="description text-white fw-medium mb-2">
+                                                                {getExcerpt(blog.title)}
+                                                            </div>
+
+                                                            <div className="d-flex align-items-center justify-content-between">
+                                                                <div className="blog-icon d-flex align-items-center gap-2">
+                                                                    <Image
+                                                                        src={blog.author.profile_image}
+                                                                        width={40}
+                                                                        height={40}
+                                                                        alt={blog.author.name}
+                                                                        style={{ borderRadius: '100px' }}
+                                                                    />
+                                                                    <span className="fw-semibold text-white">
+                                                                        {blog.author.name}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="date text-white fs-14">
+                                                                    {formatBlogDate(blog.created_at)}
+                                                                </div>
+                                                            </div>
                                                         </div>
 
-                                                        <div className="d-flex align-items-center justify-content-between">
-                                                            <div className="blog-icon d-flex align-items-center gap-2">
-                                                                <Image
-                                                                    src={blog.author.profile_image}
-                                                                    width={40}
-                                                                    height={40}
-                                                                    alt={blog.author.name}
-                                                                    style={{ borderRadius: '100px' }}
-                                                                />
-                                                                <span className="fw-semibold text-white">
-                                                                    {blog.author.name}
-                                                                </span>
-                                                            </div>
-                                                            <div className="date text-white fs-14">
-                                                                {formatBlogDate(blog.created_at)}
-                                                            </div>
-                                                        </div>
                                                     </div>
                                                 </Link>
                                             </div>
