@@ -305,8 +305,50 @@ export default function DashboardPage() {
             <section className="banner-sec trial review mb-5">
                 <div className="container">
                     {/* ✅ My Projects */}
-                    <div className="bar d-flex align-items-start gap-2 justify-content-between flex-wrap mb-4">
-                        <div className="fs-4 fw-semibold">My Projects</div>
+                    <div className="bar d-flex align-items-center gap-2 justify-content-between flex-wrap mb-4">
+                        <div>
+                            <div className="fs-4 fw-semibold mb-5">My Projects</div>
+                            <ul className="nav nav-tabs mb-5" role="tablist">
+                                <li className="nav-item" role="presentation">
+                                    <button
+                                        className={`nav-link ${activeTab === 'all' ? 'active' : ''}`}
+                                        type="button"
+                                        onClick={() => setActiveTab('all')}
+                                    >
+                                        All ({projects.length})
+                                    </button>
+                                </li>
+                                <li className="nav-item" role="presentation">
+                                    <button
+                                        className={`nav-link ${activeTab === 'hired' ? 'active' : ''}`}
+                                        type="button"
+                                        onClick={() => setActiveTab('hired')}
+                                    >
+                                        Hired (
+                                        {
+                                            projects.filter((p) => p.status.toLowerCase() === 'hired')
+                                                .length
+                                        }
+                                        )
+                                    </button>
+                                </li>
+                                <li className="nav-item" role="presentation">
+                                    <button
+                                        className={`nav-link ${activeTab === 'active' ? 'active' : ''}`}
+                                        type="button"
+                                        onClick={() => setActiveTab('active')}
+                                    >
+                                        Active (
+                                        {
+                                            projects.filter((p) => p.status.toLowerCase() === 'active')
+                                                .length
+                                        }
+                                        )
+                                    </button>
+                                </li>
+                                <div className="slider"></div>
+                            </ul>
+                        </div>
                         <div>
                             <button
                                 onClick={() => router.push('/general-contractor/add-project')}
@@ -324,47 +366,6 @@ export default function DashboardPage() {
                             </button>
                         </div>
                     </div>
-
-                    <ul className="nav nav-tabs mb-5" role="tablist">
-                        <li className="nav-item" role="presentation">
-                            <button
-                                className={`nav-link ${activeTab === 'all' ? 'active' : ''}`}
-                                type="button"
-                                onClick={() => setActiveTab('all')}
-                            >
-                                All ({projects.length})
-                            </button>
-                        </li>
-                        <li className="nav-item" role="presentation">
-                            <button
-                                className={`nav-link ${activeTab === 'hired' ? 'active' : ''}`}
-                                type="button"
-                                onClick={() => setActiveTab('hired')}
-                            >
-                                Hired (
-                                {
-                                    projects.filter((p) => p.status.toLowerCase() === 'hired')
-                                        .length
-                                }
-                                )
-                            </button>
-                        </li>
-                        <li className="nav-item" role="presentation">
-                            <button
-                                className={`nav-link ${activeTab === 'active' ? 'active' : ''}`}
-                                type="button"
-                                onClick={() => setActiveTab('active')}
-                            >
-                                Active (
-                                {
-                                    projects.filter((p) => p.status.toLowerCase() === 'active')
-                                        .length
-                                }
-                                )
-                            </button>
-                        </li>
-                        <div className="slider"></div>
-                    </ul>
 
                     <div className="row">
                         <div className="col-lg-9">
@@ -403,42 +404,47 @@ export default function DashboardPage() {
                                         <div key={street} className="mb-4">
 
                                             {/* 🔹 Street Heading */}
-                                            <h5 className="fw-semibold mb-3 text-dark">
-                                                {street}
-                                            </h5>
+                                            <h5 className="fw-semibold mb-3 text-custom-yellow">{street}</h5>
 
                                             <div className="row">
                                                 {streetProjects.map((project, index) => (
                                                     <div className="col-12" key={project.id}>
-                                                        <div className="project-card call-dark custom-card">
-                                                            <div className="bar d-flex align-items-center justify-content-between gap-2 flex-wrap mb-1">
+                                                        <div
+                                                            style={{
+                                                                borderBottom: '1px solid #dadada',
+                                                                marginBottom: '15px',
+                                                                padding: '10px 0',
+                                                            }}
+                                                        >
+                                                            {/* 🔹 Flex container: description + buttons */}
+                                                            <div className="d-flex flex-column flex-md-row align-items-start align-md-center justify-content-between gap-3">
 
-                                                                {/* LEFT SIDE */}
-                                                                <div className="d-flex align-items-center gap-2 flex-wrap">
-                                                                    <span
-                                                                        style={{
-                                                                            width: '10px',
-                                                                            height: '10px',
-                                                                            borderRadius: '50%',
-                                                                            backgroundColor: getStatusColor(project.status),
-                                                                            display: 'inline-block',
-                                                                        }}
-                                                                    />
+                                                                {/* 🔹 Description */}
+                                                                <p
+                                                                    className="description mb-2 mb-md-0 text-start"
+                                                                    style={{
+                                                                        flex: '1 1 70%',
+                                                                        wordBreak: 'break-word',
+                                                                        marginBottom: '0', // extra safeguard
+                                                                    }}
+                                                                >
+                                                                    {expandedCards.includes(index)
+                                                                        ? project.description
+                                                                        : project.description?.replace(/<[^>]*>/g, '').slice(0, 200) + '...'}
+                                                                </p>
 
-                                                                    <span className="fs-5 fw-semibold">
-                                                                        {project.category?.name}
-                                                                    </span>
-                                                                </div>
-
-                                                                {/* RIGHT SIDE BUTTONS */}
-                                                                <div className="d-flex align-items-center gap-1">
+                                                                {/* 🔹 Buttons */}
+                                                                <div
+                                                                    className="d-flex gap-2 flex-wrap justify-content-start justify-content-md-end mt-2 mt-md-0"
+                                                                    style={{ flex: '1 1 30%', minWidth: '150px' }}
+                                                                >
                                                                     <button
                                                                         className="btn btn-primary rounded-2"
                                                                         onClick={() => {
                                                                             localStorage.setItem('project-id', `${project.id}`);
                                                                             router.push('/general-contractor/project-details');
                                                                         }}
-                                                                        style={{ paddingRight: '12px', paddingLeft: '12px', paddingTop: '5px', paddingBottom: '5px' }}
+                                                                        style={{ padding: '5px 12px' }}
                                                                     >
                                                                         <EyeIcon active={true} />
                                                                     </button>
@@ -449,28 +455,30 @@ export default function DashboardPage() {
                                                                             localStorage.setItem('project-id', `${project.id}`);
                                                                             router.push('/general-contractor/edit-project');
                                                                         }}
-                                                                        style={{ paddingRight: '12px', paddingLeft: '12px', paddingTop: '5px', paddingBottom: '5px' }}
+                                                                        style={{ padding: '5px 12px' }}
                                                                     >
-                                                                        <Image src="/assets/img/icons/edit.svg" width={24} height={24} alt="Delete" />
+                                                                        <Image
+                                                                            src="/assets/img/icons/edit.svg"
+                                                                            width={24}
+                                                                            height={24}
+                                                                            alt="Edit"
+                                                                        />
                                                                     </button>
 
                                                                     <button
                                                                         className="btn bg-danger rounded-2 text-white"
                                                                         onClick={() => openDeleteModal(project.id)}
-                                                                        style={{ paddingRight: '12px', paddingLeft: '12px', paddingTop: '5px', paddingBottom: '5px' }}
+                                                                        style={{ padding: '5px 12px' }}
                                                                     >
-                                                                        <Image src="/assets/img/icons/delete.svg" width={24} height={24} alt="Delete" />
+                                                                        <Image
+                                                                            src="/assets/img/icons/delete.svg"
+                                                                            width={24}
+                                                                            height={24}
+                                                                            alt="Delete"
+                                                                        />
                                                                     </button>
                                                                 </div>
                                                             </div>
-
-                                                            <p className="description mb-0">
-                                                                {expandedCards.includes(index)
-                                                                    ? project.description
-                                                                    : project.description
-                                                                        ?.replace(/<[^>]*>/g, '')
-                                                                        .slice(0, 150) + '...'}
-                                                            </p>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -604,22 +612,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-
-// 🔹 Status helpers
-const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-        case 'hired': return '#007AFF';
-        case 'active': return '#61BA47';
-        case 'pending': return '#FF9500';
-        case 'completed': return '#8E8E93';
-        case 'cancelled': return '#FF3B30';
-        default: return '#8E8E93';
-    }
-};
-
-const getStatusBg = (status: string) => `${getStatusColor(status)}10`;
-
-const getStatusLabel = (status: string) => {
-    const s = status.toLowerCase();
-    return s.charAt(0).toUpperCase() + s.slice(1);
-};
