@@ -88,7 +88,6 @@ export default function HomePage() {
         fetchGallery();
     }, []);
 
-
     const accountTypes = [
         {
             id: 'general-contractor',
@@ -259,16 +258,6 @@ export default function HomePage() {
         return 'Just now';
     };
 
-    // 🔹 Expand/Collapse by project id
-    const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
-    const toggleExpand = (id: number) => {
-        setExpandedCards(prev => {
-            const newSet = new Set(prev);
-            newSet.has(id) ? newSet.delete(id) : newSet.add(id);
-            return newSet;
-        });
-    };
-
     // 🔹 Handle role selection
     const handleSelection = (typeId: string) => {
         setSelectedType(typeId);
@@ -311,6 +300,7 @@ export default function HomePage() {
         arrows: false,
         dots: true,
         infinite: true,
+        autoplay: true,
         speed: 600,
     };
 
