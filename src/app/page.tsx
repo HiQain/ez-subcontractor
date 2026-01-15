@@ -440,7 +440,12 @@ export default function HomePage() {
                                                             {formatTimeAgo(project.created_at)}
                                                         </div>
                                                     </div>
-                                                    <div className="title text-black fs-5 fw-semibold mb-3">
+                                                    <div className="title text-black fs-5 mb-3"
+                                                        style={{
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            whiteSpace: 'nowrap'
+                                                        }}>
                                                         {[
                                                             project.street,
                                                             project.city,
