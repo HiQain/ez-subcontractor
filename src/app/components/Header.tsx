@@ -176,8 +176,8 @@ export default function Header() {
                                     </Link>
                                 </li>
                                 <li className="nav-item">
-                                    <Link className="nav-link" href="/general-contractor/my-projects">
-                                        My Projects
+                                    <Link className="nav-link" href="/general-contractor/reviews">
+                                        Ratings
                                     </Link>
                                 </li>
                             </ul>

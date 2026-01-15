@@ -1,8 +1,7 @@
 // app/reviews/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -29,6 +28,60 @@ export default function ReviewsPage() {
     const [contractors, setContractors] = useState<Contractor[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const listRef = useRef<HTMLUListElement>(null);
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState<Contractor[]>([]);
+    const [showList, setShowList] = useState(false);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+    const [currentContractor, setCurrentContractor] = useState<Contractor | null>(null);
+    const [selectedRating, setSelectedRating] = useState<number>(0);
+    const [comment, setComment] = useState<string>('');
+    const [ratingLoading, setRatingLoading] = useState(false);
+    const [ratingError, setRatingError] = useState<string | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        const icon = type === 'success' ? '✅' : '❌';
+
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+                border-radius: 8px;
+                padding: 12px 20px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            ">
+                <span>${icon} ${message}</span>
+                <button type="button" class="btn-close" style="font-size: 14px; margin-left: auto;" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        const timeoutId = setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
+
+        const closeButton = toast.querySelector('.btn-close');
+        closeButton?.addEventListener('click', () => {
+            clearTimeout(timeoutId);
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+    };
 
     // ✅ Updated options - All Ratings followed by 5 Star to 1 Star
     const options = ['All Ratings', '5 Star', '4 Star', '3 Star', '2 Star', '1 Star'];
@@ -56,54 +109,55 @@ export default function ReviewsPage() {
         });
     };
 
+    const fetchContractors = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError('Authentication required.');
+                return;
+            }
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/contractors/latest-rated`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                    },
+                }
+            );
+
+            if (response.status === 401) {
+                setError('Session expired. Please log in again.');
+                localStorage.removeItem('token');
+                return;
+            }
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message?.[0] || 'Failed to load contractors');
+            }
+
+            if (data?.success) {
+                // ✅ Sort contractors by rating when initially loaded
+                setContractors(sortContractorsByRating(data.data));
+            } else {
+                throw new Error('Invalid response format');
+            }
+        } catch (err: any) {
+            console.error('Fetch error:', err);
+            setError(err.message || 'Failed to load contractors.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // 🔹 Fetch contractors
     useEffect(() => {
-        const fetchContractors = async () => {
-            setLoading(true);
-            setError(null);
-
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    setError('Authentication required.');
-                    return;
-                }
-
-                const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}common/contractors/latest-rated`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Accept': 'application/json',
-                        },
-                    }
-                );
-
-                if (response.status === 401) {
-                    setError('Session expired. Please log in again.');
-                    localStorage.removeItem('token');
-                    return;
-                }
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.message?.[0] || 'Failed to load contractors');
-                }
-
-                if (data?.success) {
-                    // ✅ Sort contractors by rating when initially loaded
-                    setContractors(sortContractorsByRating(data.data));
-                } else {
-                    throw new Error('Invalid response format');
-                }
-            } catch (err: any) {
-                console.error('Fetch error:', err);
-                setError(err.message || 'Failed to load contractors.');
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchContractors();
     }, []);
 
@@ -122,6 +176,121 @@ export default function ReviewsPage() {
     const formatDate = (dateStr: string) => {
         const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
         return new Date(dateStr).toLocaleDateString('en-US', options);
+    };
+
+    const debouncedFetch = useCallback(
+        debounce(async (searchTerm: string) => {
+            if (!searchTerm.trim()) {
+                setResults([]);
+                setShowList(false);
+                return;
+            }
+
+            setSearchLoading(true);
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}common/contractors?role=subcontractor&page=1&perPage=20&search=${encodeURIComponent(searchTerm)}`,
+                    {
+                        headers: {
+                            'Authorization': token ? `Bearer ${token}` : '',
+                            'Accept': 'application/json',
+                        },
+                    }
+                );
+
+                const data = await res.json();
+                // ✅ Extract contractors from nested data.data
+                const contractors = data?.data?.data || [];
+                console.log(contractors);
+                setResults(contractors);
+                setShowList(true);
+            } catch (error) {
+                console.error('Search failed:', error);
+                setResults([]);
+
+                // 🔹 Show error toast
+                showToast('Search failed. Please try again.', 'error');
+            } finally {
+                setSearchLoading(false);
+            }
+        }, 300),
+        []
+    );
+
+    useEffect(() => {
+        debouncedFetch(query);
+    }, [query, debouncedFetch]);
+
+    // 🔹 Close dropdown on outside click
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (
+                listRef.current &&
+                !listRef.current.contains(e.target as Node) &&
+                inputRef.current &&
+                !inputRef.current.contains(e.target as Node)
+            ) {
+                setShowList(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleRateSubcontractor = async () => {
+        if (!currentContractor || selectedRating === 0) return;
+        setRatingLoading(true);
+        setRatingError(null);
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error('Not authenticated');
+
+            const formData = new FormData();
+            formData.append('rated_user_id', currentContractor.id.toString());
+            formData.append('rating', selectedRating.toString());
+            formData.append('comment', comment.trim());
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/rating/add`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: formData,
+                }
+            );
+
+            const data = await response.json();
+            console.log(data);
+
+            if (!response.ok) {
+                throw new Error(data.message?.[0] || 'Failed to submit rating');
+            }
+
+            // ✅ Success!
+            // 🔹 Replaced alert with toast
+            showToast('Rating submitted successfully!');
+
+            setIsRatingModalOpen(false);
+            setCurrentContractor(null);
+            setSelectedRating(0);
+            setComment('');
+            fetchContractors();
+
+            // Optional: Refresh contractor list or update average_rating locally
+            // You could refetch contractors here if needed
+        } catch (err: any) {
+            console.error('Rating error:', err);
+            setRatingError(err.message || 'Failed to submit rating. Please try again.');
+
+            // 🔹 Show error toast
+            showToast(err.message || 'Failed to submit rating. Please try again.', 'error');
+        } finally {
+            setRatingLoading(false);
+        }
     };
 
     return (
@@ -178,6 +347,111 @@ export default function ReviewsPage() {
                                             ))}
                                         </ul>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 🔍 Rate a Subcontractor with Search */}
+                        <div className="review-wrapper mb-4">
+                            <div className="d-flex align-items-center text-center text-md-start flex-column flex-md-row gap-3 justify-content-between filter-sec p-0">
+                                <div>
+                                    <div className="fs-3 fw-semibold">Rate a Subcontractor</div>
+                                </div>
+                                <div className="search-wrapper position-relative w-100" style={{ maxWidth: '400px' }}>
+                                    <div className="form-wrapper mb-0 d-flex align-items-center py-0 me-0">
+                                        <input
+                                            ref={inputRef}
+                                            type="text"
+                                            value={query}
+                                            onChange={(e) => setQuery(e.target.value)}
+                                            onFocus={() => query.trim() && setShowList(true)}
+                                            placeholder="Search subcontractor by name or company"
+                                            className="form-control pe-5 shadow-none"
+                                            style={{ paddingRight: '32px', height: '40px' }}
+                                        />
+                                        <div style={{ position: 'absolute', right: '10px', pointerEvents: 'none' }}>
+                                            {searchLoading ? (
+                                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+                                            ) : (
+                                                <Image
+                                                    src="/assets/img/icons/search-gray.svg"
+                                                    width={18}
+                                                    height={18}
+                                                    alt="Search Icon"
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                    {(showList || searchLoading) && results.length > 0 && (
+                                        <ul
+                                            ref={listRef}
+                                            className="list bg-white shadow-sm px-2 py-1 rounded-4 position-absolute w-100 z-1"
+                                            style={{ maxHeight: '300px', overflowY: 'auto', marginTop: '4px', top: '40px' }}
+                                        >
+                                            {results.map((item) => (
+                                                <li
+                                                    key={item.id}
+                                                    className="d-flex justify-content-between align-items-center bg-gray p-2 my-1 rounded-3 gap-2"
+                                                >
+                                                    <span className="d-flex align-items-center gap-2">
+                                                        {item.profile_image_url ? (
+                                                            <Image
+                                                                className="avatar rounded-circle"
+                                                                src={item.profile_image_url}
+                                                                width={40}
+                                                                height={40}
+                                                                alt="Search Icon"
+                                                            />
+                                                        ) : (
+                                                            <Image
+                                                                className="avatar rounded-circle"
+                                                                src="/assets/img/profile-placeholder.webp"
+                                                                width={40}
+                                                                height={40}
+                                                                alt="Search Icon"
+                                                            />
+                                                        )}
+                                                        <span>
+                                                            <span className="name d-block fw-medium text-truncate">{item.name}</span>
+                                                            <span
+                                                                className="company d-block fs-12 fw-bold text-truncate"
+                                                                style={{ color: '#8F9B1F' }}
+                                                            >
+                                                                {item.company_name || '—'}
+                                                            </span>
+                                                            <span className="address d-block fs-12">
+                                                                {item.city && item.state
+                                                                    ? `${item.city}, ${item.state}`
+                                                                    : ''}
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-outline-dark btn-sm fs-12 py-1 px-3"
+                                                        onClick={() => {
+                                                            setCurrentContractor(item);
+                                                            setIsRatingModalOpen(true);
+                                                            setSelectedRating(0);
+                                                            setComment('');
+                                                            setRatingError(null);
+                                                        }}
+                                                    >
+                                                        Rate
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                    {showList && !searchLoading && results.length === 0 && query.trim() && (
+                                        <ul
+                                            ref={listRef}
+                                            className="list bg-white shadow-sm px-2 py-1 rounded-4 position-absolute w-100 z-1"
+                                            style={{ marginTop: '4px' }}
+                                        >
+                                            <li className="p-2 text-center text-muted">No subcontractors found</li>
+                                        </ul>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -302,7 +576,127 @@ export default function ReviewsPage() {
                 </div>
             </section>
 
+            {/* Rating Modal */}
+            {isRatingModalOpen && currentContractor && (
+                <div className="modal-backdrop show" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}></div>
+            )}
+            {isRatingModalOpen && currentContractor && (
+                <div
+                    className="modal show d-block"
+                    style={{
+                        position: 'fixed',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 1060,
+                        maxWidth: '400px',
+                        width: '90%',
+                        height: '330px',
+                        backgroundColor: 'white',
+                        borderRadius: '12px',
+                        padding: '20px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    }}
+                >
+                    <div className="modal-header border-0 mb-0 py-0 px-0">
+                        <h5 className="modal-title text-center w-100 mb-0 py-0 px-0">Rate Now</h5>
+                        <button
+                            type="button"
+                            className="btn-close shadow-none"
+                            onClick={() => {
+                                setIsRatingModalOpen(false);
+                                setCurrentContractor(null);
+                                setSelectedRating(0);
+                                setComment('');
+                                setRatingError(null);
+                            }}
+                            aria-label="Close"
+                        ></button>
+                    </div>
+                    <div className="modal-body text-center">
+                        {/* Avatar */}
+                        <img
+                            src="/assets/img/placeholder-round.png"
+                            alt="Contractor"
+                            className="rounded-circle mb-1"
+                            style={{ width: '60px', height: '60px', objectFit: 'cover' }}
+                        />
+                        <h6 className="mb-1 text-capitalize">{currentContractor.name}</h6>
+                        <h6 className="mb-1 text-capitalize mb-3 text-primary">{currentContractor.company_name}</h6>
+                        {/* Star Rating */}
+                        <div className="d-flex justify-content-center align-items-center gap-1 mb-4">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                    key={star}
+                                    type="button"
+                                    className="border-0 bg-transparent p-0"
+                                    onClick={() => setSelectedRating(star)}
+                                    onMouseEnter={() => { }}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <Image
+                                        src={
+                                            star <= selectedRating
+                                                ? '/assets/img/start1.svg'
+                                                : star <= selectedRating + 0.5
+                                                    ? '/assets/img/star2.svg'
+                                                    : '/assets/img/star-empty.svg'
+                                        }
+                                        width={32}
+                                        height={32}
+                                        alt={`Star ${star}`}
+                                        className="mx-1"
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                        {ratingError && (
+                            <div className="alert alert-danger mt-2 p-2 mb-3 text-start">
+                                {ratingError}
+                            </div>
+                        )}
+                        {/* Buttons */}
+                        <div className="d-flex gap-2">
+                            <button
+                                className="btn btn-outline-dark justify-content-center w-50 rounded-2"
+                                onClick={() => {
+                                    setIsRatingModalOpen(false);
+                                    setCurrentContractor(null);
+                                    setSelectedRating(0);
+                                    setComment('');
+                                    setRatingError(null);
+                                }}
+                                disabled={ratingLoading}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="btn btn-primary w-50 justify-content-center rounded-2"
+                                style={{ height: 50 }}
+                                onClick={handleRateSubcontractor}
+                                disabled={ratingLoading || selectedRating === 0}
+                            >
+                                {ratingLoading ? (
+                                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                ) : (
+                                    'Done'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <Footer />
         </div>
     );
+}
+
+function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
+    let timeout: NodeJS.Timeout;
+    return (...args: Parameters<F>): Promise<ReturnType<F>> => {
+        clearTimeout(timeout);
+        return new Promise((resolve) => {
+            timeout = setTimeout(() => resolve(func(...args)), waitFor);
+        });
+    };
 }
