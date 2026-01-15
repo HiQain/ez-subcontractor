@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import '../../../styles/free-trial.css';
+import Slider from 'react-slick';
 
 interface Project {
     id: number;
@@ -20,57 +21,42 @@ interface Project {
     };
 }
 
-// interface Ad {
-//     id: number;
-//     orientation: 'horizontal' | 'vertical';
-//     description: string;
-//     image: string;
-//     redirect_url: string;
-//     advertiser: {
-//         name: string;
-//         company_name: string;
-//         profile_image_url: string;
-//     };
-// }
+interface Ad {
+    id: number;
+    orientation: 'horizontal' | 'vertical';
+    description: string;
+    image: string;
+    redirect_url: string;
+    advertiser: {
+        name: string;
+        company_name: string;
+        profile_image_url: string;
+    };
+}
+
+const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 600,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: false,
+    autoplay: true,
+    autoplaySpeed: 4000,
+    pauseOnHover: true,
+};
 
 export default function DashboardPage() {
     const router = useRouter();
+    const leftSliderRef = useRef<Slider | null>(null);
     const [expandedCards, setExpandedCards] = useState<number[]>([]);
+    const [verticalAds, setVerticalAds] = useState<Ad[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [deleteError, setDeleteError] = useState<string | null>(null);
-
-    // const [adsLoading, setAdsLoading] = useState(true);
-    // const [adsError, setAdsError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('all');
-    // const [horizontalAds, setHorizontalAds] = useState<Ad[]>([]);
-
-    // const leftSliderRef = useRef<Slider | null>(null);
-
-    // const sliderSettings = {
-    //     dots: true,
-    //     infinite: true,
-    //     speed: 600,
-    //     slidesToShow: 1,
-    //     slidesToScroll: 1,
-    //     arrows: false,
-    //     autoplay: true,
-    //     autoplaySpeed: 4000,
-    //     pauseOnHover: true,
-    // };
-    // const sliderSettingsRight = {
-    //     dots: false,
-    //     infinite: true,
-    //     speed: 600,
-    //     slidesToShow: 1,
-    //     slidesToScroll: 1,
-    //     arrows: false,
-    //     autoplay: true,
-    //     autoplaySpeed: 4000,
-    //     pauseOnHover: true,
-    // };
 
     // 🔹 Show non-blocking thank-you toast
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -113,37 +99,6 @@ export default function DashboardPage() {
             clearTimeout(timeoutId);
             if (toast.parentNode) toast.parentNode.removeChild(toast);
         });
-    };
-
-    // const fetchHorizontalAds = async () => {
-    //     setAdsLoading(true);
-    //     setAdsError(null);
-
-    //     try {
-    //         const res = await fetch(
-    //             `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads?type=horizontal`,
-    //             { headers: { Accept: 'application/json' } }
-    //         );
-
-    //         const json = await res.json();
-    //         if (!res.ok) throw new Error('Failed to load ads');
-
-    //         setHorizontalAds(json.data || []);
-    //     } catch (err) {
-    //         setAdsError('Failed to load ads');
-    //     } finally {
-    //         setAdsLoading(false);
-    //     }
-    // };
-
-    // 🔹 Toggle card expansion
-
-    const toggleCard = (index: number) => {
-        setExpandedCards(prev =>
-            prev.includes(index)
-                ? prev.filter(i => i !== index)
-                : [...prev, index]
-        );
     };
 
     // 🔹 Open delete modal
@@ -271,13 +226,25 @@ export default function DashboardPage() {
         }
     };
 
-    // useEffect(() => {
-    //     fetchHorizontalAds();
-    // }, []);
+    const fetchVerticalAds = async () => {
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}affiliate/ads?type=vertical`,
+                { headers: { Accept: 'application/json' } }
+            );
 
-    // const leftAds = horizontalAds.slice(0, Math.ceil(horizontalAds.length / 2));
+            const json = await res.json();
+            if (!res.ok) throw new Error('Failed');
 
-    // const rightAds = horizontalAds.filter(ad => !leftAds.includes(ad));
+            setVerticalAds(json.data || []);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    useEffect(() => {
+        fetchVerticalAds();
+    }, []);
 
     const getFilteredProjects = () => {
         if (activeTab === 'all') return projects;
@@ -308,164 +275,28 @@ export default function DashboardPage() {
         <div className="sections overflow-hidden">
             <Header />
 
-            {/* <section className="banner-sec trial position-static">
-                <div className="container">
-                    <div className="row g-4">
-                        <div className="col-lg-6">
-                            {adsLoading ? (
-                                <div
-                                    className="d-flex align-items-center justify-content-center bg-light rounded-4"
-                                    style={{ height: '352px' }}
-                                >
-                                    <div className="spinner-border text-primary" role="status">
-                                        <span className="visually-hidden">Loading banner...</span>
-                                    </div>
-                                </div>
-                            ) : adsError ? (
-                                <div className="alert alert-warning">{adsError}</div>
-                            ) : (
-                                <Slider {...sliderSettingsRight}>
-                                    {leftAds.map(ad => (
-                                        <a
-                                            key={ad.id}
-                                            href={ad.redirect_url}
-                                            target="_blank"
-                                            className="d-block text-decoration-none text-dark"
-                                        >
-                                            <div className="bg-white rounded-4 overflow-hidden border">
-
-                                                <div style={{ height: '326px', position: 'relative', borderBottom: '1px solid #e9ecef' }}>
-                                                    <Image
-                                                        src={ad.image}
-                                                        alt="Ad"
-                                                        fill
-                                                        className="img-fluid"
-                                                        style={{ objectFit: 'cover' }}
-                                                    />
-                                                </div>
-
-                                                <div className="p-3">
-
-                                                    <div className="d-flex align-items-center gap-3 mb-2">
-                                                        <Image
-                                                            src={
-                                                                ad.advertiser.profile_image_url ||
-                                                                '/assets/img/profile-placeholder.webp'
-                                                            }
-                                                            width={40}
-                                                            height={40}
-                                                            className="rounded-circle"
-                                                            alt=""
-                                                            style={{ objectFit: 'cover' }}
-                                                        />
-                                                        <div>
-                                                            <p className="mb-0 fw-bold">
-                                                                {ad.advertiser.company_name}
-                                                            </p>
-                                                            <p className="mb-0 text-muted fs-13">
-                                                                {ad.advertiser.name}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    {ad.description && (
-                                                        <p className="mb-0 text-muted fs-14">
-                                                            {ad.description}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </a>
-                                    ))}
-                                </Slider>
-                            )}
-                        </div>
-                        <div className="col-lg-6">
-                            {adsLoading ? (
-                                <div
-                                    className="d-flex align-items-center justify-content-center bg-light rounded-4"
-                                    style={{ height: '352px' }}
-                                >
-                                    <div className="spinner-border text-primary" role="status">
-                                        <span className="visually-hidden">Loading banner...</span>
-                                    </div>
-                                </div>
-                            ) : adsError ? (
-                                <div className="alert alert-warning">{adsError}</div>
-                            ) : (
-                                <Slider {...sliderSettingsRight}>
-                                    {rightAds.map(ad => (
-                                        <a
-                                            key={ad.id}
-                                            href={ad.redirect_url}
-                                            target="_blank"
-                                            className="d-block text-decoration-none text-dark"
-                                        >
-                                            <div className="bg-white rounded-4 overflow-hidden border">
-
-                                                <div style={{ height: '326px', position: 'relative', borderBottom: '1px solid #e9ecef' }}>
-                                                    <Image
-                                                        src={ad.image}
-                                                        alt="Ad"
-                                                        fill
-                                                        className="img-fluid"
-                                                        style={{ objectFit: 'cover' }}
-                                                    />
-                                                </div>
-
-                                                <div className="p-3">
-
-                                                    <div className="d-flex align-items-center gap-3 mb-2">
-                                                        <Image
-                                                            src={
-                                                                ad.advertiser.profile_image_url ||
-                                                                '/assets/img/profile-placeholder.webp'
-                                                            }
-                                                            width={40}
-                                                            height={40}
-                                                            className="rounded-circle"
-                                                            alt=""
-                                                            style={{ objectFit: 'cover' }}
-                                                        />
-                                                        <div>
-                                                            <p className="mb-0 fw-bold">
-                                                                {ad.advertiser.company_name}
-                                                            </p>
-                                                            <p className="mb-0 text-muted fs-13">
-                                                                {ad.advertiser.name}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    {ad.description && (
-                                                        <p className="mb-0 text-muted fs-14">
-                                                            {ad.description}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </a>
-                                    ))}
-                                </Slider>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </section> */}
-
             {/* My Projects & Rate Subcontractor */}
             <section className="banner-sec trial review mb-5">
                 <div className="container">
                     {/* ✅ My Projects */}
-                    <div className="bar d-flex align-items-center gap-2 justify-content-between flex-wrap mb-4">
+                    <div className="bar d-flex align-items-start gap-2 justify-content-between flex-wrap mb-4">
                         <div className="fs-4 fw-semibold">My Projects</div>
-                        <button
-                            onClick={() => router.push('/general-contractor/add-project')}
-                            className="btn btn-primary rounded-3 d-flex align-items-center gap-2"
-                        >
-                            <Image src="/assets/img/icons/plus.svg" width={12} height={12} alt="Icon" />
-                            <span>Add Project</span>
-                        </button>
+                        <div>
+                            <button
+                                onClick={() => router.push('/general-contractor/add-project')}
+                                className="btn btn-primary rounded-3 d-flex align-items-center gap-2 px-4 py-2 fs-4"
+                            >
+                                <Image src="/assets/img/icons/plus.svg" width={14} height={14} alt="Icon" />
+                                <span>Add Project</span>
+                            </button>
+                            <button
+                                onClick={() => router.push('/general-contractor/reviews')}
+                                className="btn btn-warning rounded-3 d-flex align-items-center gap-2 px-4 py-2 fs-4 mt-5"
+                                style={{ backgroundColor: '#ffc107', borderColor: '#ffc107' }}
+                            >
+                                <span>Rate Subcontractor</span>
+                            </button>
+                        </div>
                     </div>
 
                     <ul className="nav nav-tabs mb-5" role="tablist">
@@ -509,109 +340,188 @@ export default function DashboardPage() {
                         <div className="slider"></div>
                     </ul>
 
-                    <div className="col-lg-8">
-                        {loading ? (
-                            <div className="text-center py-5">
-                                <div className="spinner-border text-primary" role="status">
-                                    <span className="visually-hidden">Loading...</span>
+                    <div className="row">
+                        <div className="col-lg-9">
+                            {loading ? (
+                                <div className="text-center py-5">
+                                    <div className="spinner-border text-primary" role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p className="mt-3">Loading your recent projects...</p>
                                 </div>
-                                <p className="mt-3">Loading your recent projects...</p>
-                            </div>
-                        ) : error ? (
-                            <div className="alert alert-warning d-flex align-items-center" role="alert">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
-                                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                                </svg>
-                                <div>{error}</div>
-                            </div>
-                        ) : filteredProjects.length === 0 ? (
-                            <div className="text-center py-5">
-                                <Image
-                                    src="/assets/img/post.webp"
-                                    width={120}
-                                    height={120}
-                                    alt="No projects"
-                                    className="mb-3"
-                                />
-                                <p className="fs-5 text-muted">
-                                    {activeTab === 'all'
-                                        ? 'You don’t have any projects yet.'
-                                        : `No ${activeTab} projects found.`}
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="mb-4">
-                                {Object.entries(groupedProjects).map(([street, streetProjects]) => (
-                                    <div key={street} className="mb-5">
+                            ) : error ? (
+                                <div className="alert alert-warning d-flex align-items-center" role="alert">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
+                                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                                    </svg>
+                                    <div>{error}</div>
+                                </div>
+                            ) : filteredProjects.length === 0 ? (
+                                <div className="text-center py-5">
+                                    <Image
+                                        src="/assets/img/post.webp"
+                                        width={120}
+                                        height={120}
+                                        alt="No projects"
+                                        className="mb-3"
+                                    />
+                                    <p className="fs-5 text-muted">
+                                        {activeTab === 'all'
+                                            ? 'You don’t have any projects yet.'
+                                            : `No ${activeTab} projects found.`}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="mb-4">
+                                    {Object.entries(groupedProjects).map(([street, streetProjects]) => (
+                                        <div key={street} className="mb-4">
 
-                                        {/* 🔹 Street Heading */}
-                                        <h5 className="fw-semibold mb-3 text-dark">
-                                            {street}
-                                        </h5>
+                                            {/* 🔹 Street Heading */}
+                                            <h5 className="fw-semibold mb-3 text-dark">
+                                                {street}
+                                            </h5>
 
-                                        <div className="row g-3">
-                                            {streetProjects.map((project, index) => (
-                                                <div className="col-12" key={project.id}>
-                                                    <div className="project-card call-dark custom-card">
-                                                        <div className="bar d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
-                                                            <div className="fs-5 fw-semibold">
-                                                                {project.category?.name}
+                                            <div className="row">
+                                                {streetProjects.map((project, index) => (
+                                                    <div className="col-12" key={project.id}>
+                                                        <div className="project-card call-dark custom-card">
+                                                            <div className="bar d-flex align-items-center justify-content-between gap-2 flex-wrap mb-1">
+
+                                                                {/* LEFT SIDE */}
+                                                                <div className="d-flex align-items-center gap-2 flex-wrap">
+                                                                    <span
+                                                                        style={{
+                                                                            width: '10px',
+                                                                            height: '10px',
+                                                                            borderRadius: '50%',
+                                                                            backgroundColor: getStatusColor(project.status),
+                                                                            display: 'inline-block',
+                                                                        }}
+                                                                    />
+
+                                                                    <span className="fs-5 fw-semibold">
+                                                                        {project.category?.name}
+                                                                    </span>
+                                                                </div>
+
+                                                                {/* RIGHT SIDE BUTTONS */}
+                                                                <div className="d-flex align-items-center gap-1">
+                                                                    <button
+                                                                        className="btn btn-primary rounded-2"
+                                                                        onClick={() => {
+                                                                            localStorage.setItem('project-id', `${project.id}`);
+                                                                            router.push('/general-contractor/project-details');
+                                                                        }}
+                                                                        style={{ paddingRight: '12px', paddingLeft: '12px', paddingTop: '5px', paddingBottom: '5px' }}
+                                                                    >
+                                                                        V
+                                                                    </button>
+
+                                                                    <button
+                                                                        className="btn bg-dark rounded-2 text-white"
+                                                                        onClick={() => {
+                                                                            localStorage.setItem('project-id', `${project.id}`);
+                                                                            router.push('/general-contractor/edit-project');
+                                                                        }}
+                                                                        style={{ paddingRight: '12px', paddingLeft: '12px', paddingTop: '5px', paddingBottom: '5px' }}
+                                                                    >
+                                                                        E
+                                                                    </button>
+
+                                                                    <button
+                                                                        className="btn bg-danger rounded-2 text-white"
+                                                                        onClick={() => openDeleteModal(project.id)}
+                                                                        style={{ paddingRight: '12px', paddingLeft: '12px', paddingTop: '5px', paddingBottom: '5px' }}
+                                                                    >
+                                                                        D
+                                                                    </button>
+                                                                </div>
                                                             </div>
-                                                            <span
-                                                                className="btn p-1 ps-3 pe-3"
-                                                                style={{
-                                                                    backgroundColor: getStatusBg(project.status),
-                                                                    color: getStatusColor(project.status),
-                                                                }}
-                                                            >
-                                                                {getStatusLabel(project.status)}
-                                                            </span>
-                                                        </div>
 
-                                                        <p className="description mb-3">
-                                                            {expandedCards.includes(index)
-                                                                ? project.description
-                                                                : project.description
-                                                                    ?.replace(/<[^>]*>/g, '')
-                                                                    .slice(0, 150) + '...'}
-                                                        </p>
-
-                                                        <div className="buttons d-flex align-items-center gap-2 flex-wrap-md">
-                                                            <button
-                                                                className="btn btn-primary rounded-3 w-100"
-                                                                onClick={() => {
-                                                                    localStorage.setItem('project-id', `${project.id}`);
-                                                                    router.push('/general-contractor/project-details');
-                                                                }}
-                                                            >
-                                                                View Details
-                                                            </button>
-
-                                                            <button
-                                                                className="btn bg-dark rounded-3 w-100 text-white"
-                                                                onClick={() => {
-                                                                    localStorage.setItem('project-id', `${project.id}`);
-                                                                    router.push('/general-contractor/edit-project');
-                                                                }}
-                                                            >
-                                                                Edit
-                                                            </button>
-
-                                                            <button
-                                                                className="btn bg-danger rounded-3 w-100 text-white"
-                                                                onClick={() => openDeleteModal(project.id)}
-                                                            >
-                                                                Delete
-                                                            </button>
+                                                            <p className="description mb-0">
+                                                                {expandedCards.includes(index)
+                                                                    ? project.description
+                                                                    : project.description
+                                                                        ?.replace(/<[^>]*>/g, '')
+                                                                        .slice(0, 150) + '...'}
+                                                            </p>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div className="col-lg-3">
+                            <div className="slider overflow-hidden rounded-4">
+                                <Slider ref={leftSliderRef} {...sliderSettings}>
+                                    {verticalAds.map(ad => (
+                                        <a
+                                            key={ad.id}
+                                            href={ad.redirect_url}
+                                            target="_blank"
+                                            className="d-block px-1 text-decoration-none text-dark"
+                                        >
+                                            <div className="bg-white rounded-4 overflow-hidden border h-100">
+
+                                                {/* Image */}
+                                                <div
+                                                    style={{
+                                                        height: '326px',
+                                                        position: 'relative',
+                                                        borderBottom: '1px solid #e9ecef'
+                                                    }}
+                                                >
+                                                    <Image
+                                                        src={ad.image}
+                                                        alt="Ad"
+                                                        fill
+                                                        className="img-fluid"
+                                                        style={{ objectFit: 'cover' }}
+                                                    />
+                                                </div>
+
+                                                {/* Content BELOW image (vertical style preserved) */}
+                                                <div className="p-3">
+
+                                                    {/* Profile + Company */}
+                                                    <div className="d-flex align-items-center gap-2 mb-2">
+                                                        <Image
+                                                            src={
+                                                                ad.advertiser.profile_image_url ||
+                                                                '/assets/img/profile-placeholder.webp'
+                                                            }
+                                                            width={35}
+                                                            height={35}
+                                                            className="rounded-circle"
+                                                            alt=""
+                                                            style={{ objectFit: 'cover' }}
+                                                        />
+                                                        <div>
+                                                            <p className="mb-0 fw-bold fs-14">
+                                                                {ad.advertiser.company_name}
+                                                            </p>
+                                                            <p className="mb-0 text-muted fs-13">
+                                                                {ad.advertiser.name}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Caption (separate, niche) */}
+                                                    {ad.description && (
+                                                        <p className="mb-0 text-muted fs-14">
+                                                            {ad.description}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </a>
+                                    ))}
+                                </Slider>
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             </section>
