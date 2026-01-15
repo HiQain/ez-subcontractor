@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 interface Project {
     id: number;
     city: string;
+    street: string;
     state: string;
     description: string;
     status: string;
@@ -213,14 +214,9 @@ export default function HomePage() {
             let fetchedProjects: Project[] = data?.data?.data || [];
 
             // ✅ 1. Limit to 6 (client-side safety)
-            fetchedProjects = fetchedProjects.reverse().slice(0, 6);
+            fetchedProjects = fetchedProjects.slice(0, 6);
 
-            // ✅ 2. Sort by newest first (created_at DESC)
-            const sortedProjects = fetchedProjects.sort((a, b) =>
-                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-            );
-
-            setProjects(sortedProjects);
+            setProjects(fetchedProjects);
         } catch (err: any) {
             console.error('Fetch projects error:', err);
             // Optionally set error state
@@ -447,7 +443,11 @@ export default function HomePage() {
                                                         </div>
                                                     </div>
                                                     <div className="title text-black fs-5 fw-semibold mb-3">
-                                                        {project.city}, {project.state}
+                                                        {[
+                                                            project.street,
+                                                            project.city,
+                                                            project.state
+                                                        ].filter(Boolean).join(', ')}
                                                     </div>
                                                     <div className="description mb-3 text-truncate3 fw-normal">
                                                         {stripHtml(project.description)}
