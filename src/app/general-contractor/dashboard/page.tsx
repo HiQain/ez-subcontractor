@@ -271,6 +271,32 @@ export default function DashboardPage() {
     const filteredProjects = getFilteredProjects();
     const groupedProjects = groupProjectsByStreet(filteredProjects);
 
+    const EyeIcon = ({ active }: { active: boolean }) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`eye-icon ${active ? 'active' : ''}`}
+        >
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+            <line
+                className="slash"
+                x1="2"
+                y1="2"
+                x2="22"
+                y2="22"
+                style={{ stroke: active ? 'none' : 'currentColor' }}
+            ></line>
+        </svg>
+    );
+
     return (
         <div className="sections overflow-hidden">
             <Header />
@@ -414,7 +440,7 @@ export default function DashboardPage() {
                                                                         }}
                                                                         style={{ paddingRight: '12px', paddingLeft: '12px', paddingTop: '5px', paddingBottom: '5px' }}
                                                                     >
-                                                                        V
+                                                                        <EyeIcon active={true} />
                                                                     </button>
 
                                                                     <button
@@ -425,7 +451,7 @@ export default function DashboardPage() {
                                                                         }}
                                                                         style={{ paddingRight: '12px', paddingLeft: '12px', paddingTop: '5px', paddingBottom: '5px' }}
                                                                     >
-                                                                        E
+                                                                        <Image src="/assets/img/icons/edit.svg" width={24} height={24} alt="Delete" />
                                                                     </button>
 
                                                                     <button
@@ -433,7 +459,7 @@ export default function DashboardPage() {
                                                                         onClick={() => openDeleteModal(project.id)}
                                                                         style={{ paddingRight: '12px', paddingLeft: '12px', paddingTop: '5px', paddingBottom: '5px' }}
                                                                     >
-                                                                        D
+                                                                        <Image src="/assets/img/icons/delete.svg" width={24} height={24} alt="Delete" />
                                                                     </button>
                                                                 </div>
                                                             </div>
