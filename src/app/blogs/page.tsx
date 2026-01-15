@@ -156,7 +156,7 @@ export default function PricingPage() {
                                                         {/* Text and author info */}
                                                         <div style={{ position: 'relative', zIndex: 2, padding: '10px 15px' }}>
                                                             <div className="description text-white fw-medium mb-2">
-                                                                {getExcerpt(blog.title)}
+                                                                {getExcerpt(blog.title.length >= 40 ? `${blog.title.slice(0, 40)} ...` : blog.title)}
                                                             </div>
 
                                                             <div className="d-flex align-items-center justify-content-between">
