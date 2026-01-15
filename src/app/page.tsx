@@ -193,14 +193,12 @@ export default function HomePage() {
         try {
             setLoading(true);
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects?limit=6`,
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/projects?limit=100`, // fetch more projects
                 {
                     method: 'GET',
                     headers: {
                         Accept: 'application/json',
                     },
-                    // Optional: prevent caching
-                    // next: { revalidate: 300 },
                 }
             );
 
@@ -213,13 +211,13 @@ export default function HomePage() {
 
             let fetchedProjects: Project[] = data?.data?.data || [];
 
-            // ✅ 1. Limit to 6 (client-side safety)
-            fetchedProjects = fetchedProjects.slice(0, 6);
+            // ✅ Pick 8 random projects
+            const shuffled = fetchedProjects.sort(() => 0.5 - Math.random());
+            const randomProjects = shuffled.slice(0, 8);
 
-            setProjects(fetchedProjects);
+            setProjects(randomProjects);
         } catch (err: any) {
             console.error('Fetch projects error:', err);
-            // Optionally set error state
         } finally {
             setLoading(false);
         }
