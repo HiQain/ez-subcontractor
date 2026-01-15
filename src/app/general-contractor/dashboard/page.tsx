@@ -10,6 +10,7 @@ import '../../../styles/free-trial.css';
 interface Project {
     id: number;
     city: string;
+    street: string;
     state: string;
     description: string;
     status: string;
@@ -287,7 +288,21 @@ export default function DashboardPage() {
         return [];
     };
 
+    const groupProjectsByStreet = (projects: Project[]) => {
+        return projects.reduce<Record<string, Project[]>>((acc, project) => {
+            const street = project.street || 'Unknown Street';
+
+            if (!acc[street]) {
+                acc[street] = [];
+            }
+
+            acc[street].push(project);
+            return acc;
+        }, {});
+    };
+
     const filteredProjects = getFilteredProjects();
+    const groupedProjects = groupProjectsByStreet(filteredProjects);
 
     return (
         <div className="sections overflow-hidden">
@@ -453,7 +468,7 @@ export default function DashboardPage() {
                         </button>
                     </div>
 
-                    <ul className="nav nav-tabs mb-4" role="tablist">
+                    <ul className="nav nav-tabs mb-5" role="tablist">
                         <li className="nav-item" role="presentation">
                             <button
                                 className={`nav-link ${activeTab === 'all' ? 'active' : ''}`}
@@ -494,106 +509,110 @@ export default function DashboardPage() {
                         <div className="slider"></div>
                     </ul>
 
-                    {loading ? (
-                        <div className="text-center py-5">
-                            <div className="spinner-border text-primary" role="status">
-                                <span className="visually-hidden">Loading...</span>
+                    <div className="col-lg-8">
+                        {loading ? (
+                            <div className="text-center py-5">
+                                <div className="spinner-border text-primary" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </div>
+                                <p className="mt-3">Loading your recent projects...</p>
                             </div>
-                            <p className="mt-3">Loading your recent projects...</p>
-                        </div>
-                    ) : error ? (
-                        <div className="alert alert-warning d-flex align-items-center" role="alert">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
-                                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                            </svg>
-                            <div>{error}</div>
-                        </div>
-                    ) : filteredProjects.length === 0 ? (
-                        <div className="text-center py-5">
-                            <Image
-                                src="/assets/img/post.webp"
-                                width={120}
-                                height={120}
-                                alt="No projects"
-                                className="mb-3"
-                            />
-                            <p className="fs-5 text-muted">
-                                {activeTab === 'all'
-                                    ? 'You don’t have any projects yet.'
-                                    : `No ${activeTab} projects found.`}
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="row g-3 mb-4">
-                            {filteredProjects.map((project, index) => (
-                                <div className="col-lg-6" key={project.id}>
-                                    <div className="project-card call-dark custom-card">
-                                        <div className="bar d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
-                                            <div className="fs-5 fw-semibold">
-                                                {project.category?.name || `${project.city}, ${project.state}`}
-                                            </div>
-                                            <span
-                                                className="btn p-1 ps-3 pe-3"
-                                                style={{
-                                                    backgroundColor: getStatusBg(project.status),
-                                                    color: getStatusColor(project.status),
-                                                }}
-                                            >
-                                                {getStatusLabel(project.status)}
-                                            </span>
-                                        </div>
-                                        <p className="description mb-3">
-                                            {expandedCards.includes(index)
-                                                ? project.description
-                                                : project.description?.replace(/<[^>]*>/g, '').slice(0, 150) + '...'}
-                                        </p>
-                                        <button
-                                            className="see-more-btn mb-3 d-block d-none"
-                                            onClick={() => toggleCard(index)}
-                                        >
-                                            {expandedCards.includes(index) ? 'See less' : 'See more'}
-                                        </button>
-                                        <div className="buttons d-flex align-items-center gap-2 flex-wrap-md">
-                                            <button
-                                                className="btn btn-primary rounded-3 w-100 justify-content-center"
-                                                onClick={() => {
-                                                    localStorage.setItem(
-                                                        'project-id',
-                                                        `${project.id}`
-                                                    );
-                                                    router.push(
-                                                        '/general-contractor/project-details'
-                                                    );
-                                                }}
-                                            >
-                                                View Details
-                                            </button>
-                                            <button
-                                                className="btn bg-dark rounded-3 w-100 justify-content-center text-white"
-                                                onClick={() => {
-                                                    localStorage.setItem(
-                                                        'project-id',
-                                                        `${project.id}`
-                                                    );
-                                                    router.push('/general-contractor/edit-project');
-                                                }}
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="btn bg-danger rounded-3 w-100 justify-content-center text-white"
-                                                style={{ backgroundColor: '#DC2626 !important' }}
-                                                onClick={() => openDeleteModal(project.id)}
-                                            >
-                                                Delete
-                                            </button>
+                        ) : error ? (
+                            <div className="alert alert-warning d-flex align-items-center" role="alert">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
+                                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                                </svg>
+                                <div>{error}</div>
+                            </div>
+                        ) : filteredProjects.length === 0 ? (
+                            <div className="text-center py-5">
+                                <Image
+                                    src="/assets/img/post.webp"
+                                    width={120}
+                                    height={120}
+                                    alt="No projects"
+                                    className="mb-3"
+                                />
+                                <p className="fs-5 text-muted">
+                                    {activeTab === 'all'
+                                        ? 'You don’t have any projects yet.'
+                                        : `No ${activeTab} projects found.`}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="mb-4">
+                                {Object.entries(groupedProjects).map(([street, streetProjects]) => (
+                                    <div key={street} className="mb-5">
+
+                                        {/* 🔹 Street Heading */}
+                                        <h5 className="fw-semibold mb-3 text-dark">
+                                            {street}
+                                        </h5>
+
+                                        <div className="row g-3">
+                                            {streetProjects.map((project, index) => (
+                                                <div className="col-12" key={project.id}>
+                                                    <div className="project-card call-dark custom-card">
+                                                        <div className="bar d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
+                                                            <div className="fs-5 fw-semibold">
+                                                                {project.category?.name}
+                                                            </div>
+                                                            <span
+                                                                className="btn p-1 ps-3 pe-3"
+                                                                style={{
+                                                                    backgroundColor: getStatusBg(project.status),
+                                                                    color: getStatusColor(project.status),
+                                                                }}
+                                                            >
+                                                                {getStatusLabel(project.status)}
+                                                            </span>
+                                                        </div>
+
+                                                        <p className="description mb-3">
+                                                            {expandedCards.includes(index)
+                                                                ? project.description
+                                                                : project.description
+                                                                    ?.replace(/<[^>]*>/g, '')
+                                                                    .slice(0, 150) + '...'}
+                                                        </p>
+
+                                                        <div className="buttons d-flex align-items-center gap-2 flex-wrap-md">
+                                                            <button
+                                                                className="btn btn-primary rounded-3 w-100"
+                                                                onClick={() => {
+                                                                    localStorage.setItem('project-id', `${project.id}`);
+                                                                    router.push('/general-contractor/project-details');
+                                                                }}
+                                                            >
+                                                                View Details
+                                                            </button>
+
+                                                            <button
+                                                                className="btn bg-dark rounded-3 w-100 text-white"
+                                                                onClick={() => {
+                                                                    localStorage.setItem('project-id', `${project.id}`);
+                                                                    router.push('/general-contractor/edit-project');
+                                                                }}
+                                                            >
+                                                                Edit
+                                                            </button>
+
+                                                            <button
+                                                                className="btn bg-danger rounded-3 w-100 text-white"
+                                                                onClick={() => openDeleteModal(project.id)}
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </section>
             {/* Delete Modal */}
