@@ -3,7 +3,7 @@
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import '../../../styles/profile.css';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import SidebarSubcontractor from "../../components/SidebarAffiliate";
 

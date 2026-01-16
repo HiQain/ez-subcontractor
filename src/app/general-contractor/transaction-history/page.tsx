@@ -3,14 +3,16 @@
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import '../../../styles/profile.css';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import SidebarSubcontractor from "../../components/SidebarSubcontractor";
+import Image from 'next/image';
+import Link from 'next/link';
 
 interface Category {
     id: number;
     title: string;
 }
+
 interface Transaction {
     id: number;
     subscription_id: string;
@@ -29,6 +31,7 @@ interface Transaction {
 }
 
 export default function TransactionsPage() {
+    const pathname = usePathname();
     const router = useRouter();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(false);
@@ -36,6 +39,13 @@ export default function TransactionsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
     const [logoutLoading, setLogoutLoading] = useState(false);
+
+    const links = [
+        { href: '/general-contractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/user.svg' },
+        { href: '/general-contractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
+        { href: '/general-contractor/my-subscription', label: 'My Subscription', icon: '/assets/img/icons/subscription.svg' },
+        { href: '/general-contractor/transaction-history', label: 'Transaction History', icon: '/assets/img/icons/transactions.svg' },
+    ];
 
     // ✅ Fetch transactions from API
     useEffect(() => {
@@ -139,7 +149,66 @@ export default function TransactionsPage() {
                         <div className="row g-4">
 
                             <div className="col-xl-3">
-                                <SidebarSubcontractor onLogout={handleLogout} />
+                                <div className="sidebar">
+                                    <div className="main-wrapper bg-dark p-0">
+                                        <div className="buttons-wrapper">
+                                            {links.map((link) => (
+                                                <Link
+                                                    key={link.href}
+                                                    href={link.href}
+                                                    className={`custom-btn ${pathname === link.href ? 'active' : ''}`}
+                                                >
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        <Image
+                                                            src={link.icon}
+                                                            width={20}
+                                                            height={20}
+                                                            alt="Icon"
+                                                        />
+                                                        <span className="text-white">{link.label}</span>
+                                                    </div>
+                                                    <Image
+                                                        src="/assets/img/icons/angle-right.svg"
+                                                        width={15}
+                                                        height={9}
+                                                        alt="Arrow"
+                                                        style={{ objectFit: 'contain' }}
+                                                    />
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="bottom-bar">
+                                        <div className="buttons-wrapper">
+                                            <button
+                                                onClick={handleLogout}
+                                                disabled={logoutLoading}
+                                                className="custom-btn bg-danger w-100 border-0"
+                                                style={{ borderColor: '#DC2626' }}
+                                            >
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <Image
+                                                        src="/assets/img/icons/logout.svg"
+                                                        width={20}
+                                                        height={20}
+                                                        alt="Logout Icon"
+                                                    />
+                                                    <span className="text-white">
+                                                        {logoutLoading ? 'Logging out...' : 'Logout'}
+                                                    </span>
+                                                </div>
+                                                <Image
+                                                    src="/assets/img/icons/angle-right.svg"
+                                                    width={15}
+                                                    height={9}
+                                                    alt="Arrow"
+                                                    style={{ objectFit: 'contain' }}
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Right Bar */}
@@ -187,7 +256,7 @@ export default function TransactionsPage() {
                                                             filteredTransactions.map((tx, index) => (
                                                                 <tr key={tx.id}>
                                                                     <td>{index + 1}</td>
-                                                                    <td>{`${tx.transaction_id.slice(0, 14)}...`}</td>
+                                                                    <td>{tx.transaction_id ? `${tx.transaction_id.slice(0, 14)}...` : '—'}</td>
                                                                     <td>{tx.plan.name}</td>
                                                                     <td>****{tx.card_last4}</td>
                                                                     <td>{new Date(tx.created_at).toLocaleDateString()}</td>
@@ -217,39 +286,8 @@ export default function TransactionsPage() {
                                             )}
                                         </div>
                                     </div>
-
-                                    {/* Pagination - keep static for now */}
-                                    {/* <div className="data-table-pagination">
-                                        <div className="rows-per-page">
-                                            <div className="custom-select" tabIndex={0}>
-                                                <span className="custom-select__label">Rows per page:</span>
-                                                <span className="custom-select__selected-value">14</span>
-                                                <svg
-                                                    className="custom-select__icon"
-                                                    width="14"
-                                                    height="14"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                >
-                                                    <polyline points="6 9 12 15 18 9"></polyline>
-                                                </svg>
-                                                <ul className="custom-select__options">
-                                                    <li className="custom-select__option" data-value="7">7</li>
-                                                    <li className="custom-select__option custom-select__option--selected" data-value="14">14</li>
-                                                    <li className="custom-select__option" data-value="20">20</li>
-                                                    <li className="custom-select__option" data-value="50">50</li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div> */}
                                 </div>
                             </div>
-                            {/* Right Bar End */}
-
                         </div>
                     </div>
                 </section>

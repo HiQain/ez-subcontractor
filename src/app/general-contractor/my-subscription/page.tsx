@@ -181,6 +181,7 @@ export default function SubscriptionPage() {
         { href: '/general-contractor/edit-profile', label: 'Edit Profile', icon: '/assets/img/icons/user.svg' },
         { href: '/general-contractor/change-password', label: 'Change Password', icon: '/assets/img/icons/lock.svg' },
         { href: '/general-contractor/my-subscription', label: 'My Subscription', icon: '/assets/img/icons/subscription.svg' },
+        { href: '/general-contractor/transaction-history', label: 'Transaction History', icon: '/assets/img/icons/transactions.svg' },
     ];
 
     return (
