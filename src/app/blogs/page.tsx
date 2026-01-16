@@ -193,29 +193,39 @@ export default function PricingPage() {
                                         <p className="text-muted mt-3">No featured blogs</p>
                                     ) : (
                                         featuredBlogs.map((blog) => (
-                                            <div key={blog.id} className="feature-post">
-                                                <Link href={{
-                                                    pathname: '/blog-detail',
-                                                    query: {
-                                                        slug: blog.slug,
-                                                    },
-                                                }}>
-                                                    <Image
-                                                        style={{ borderRadius: '10px' }}
-                                                        src={blog.featured_image}
-                                                        width={124}
-                                                        height={107}
-                                                        alt={blog.title}
-                                                    />
+                                            <div className="feature-post d-flex gap-3 align-items-start">
+                                                <Link
+                                                    href={{
+                                                        pathname: '/blog-detail',
+                                                        query: { slug: blog.slug },
+                                                    }}
+                                                >
+                                                    <div
+                                                        style={{
+                                                            width: '124px',
+                                                            height: '107px',
+                                                            position: 'relative',
+                                                            flexShrink: 0,
+                                                        }}
+                                                    >
+                                                        <Image
+                                                            src={blog.featured_image}
+                                                            alt={blog.title}
+                                                            fill
+                                                            style={{ objectFit: 'cover', borderRadius: '10px' }}
+                                                        />
+                                                    </div>
                                                 </Link>
 
                                                 <div className="content">
-                                                    <div className="date">
+                                                    <div className="date mb-1">
                                                         {formatBlogDate(blog.created_at)}
                                                     </div>
-                                                    <Link href={`/blogs/${blog.slug}`} className="description">
+                                                    <div
+                                                        className="description text-decoration-none"
+                                                    >
                                                         {getExcerpt(blog.content, 80)}
-                                                    </Link>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))

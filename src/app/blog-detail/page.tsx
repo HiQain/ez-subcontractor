@@ -198,7 +198,7 @@ export default function BlogSinglePage() {
                                         <p className="text-muted mt-3">No featured blogs</p>
                                     ) : (
                                         featuredBlogs.map((blog) => (
-                                            <div key={blog.id} className="feature-post">
+                                            <div key={blog.id} className="feature-post d-flex gap-3 align-items-start">
                                                 <a style={{ cursor: 'pointer' }}
                                                     onClick={() => {
                                                         if (slug === blog.slug) return;
@@ -208,22 +208,32 @@ export default function BlogSinglePage() {
                                                         }, 50);
                                                     }}
                                                 >
-                                                    <Image
-                                                        style={{ borderRadius: '10px' }}
-                                                        src={blog.featured_image}
-                                                        width={124}
-                                                        height={107}
-                                                        alt={blog.title}
-                                                    />
+                                                    <div
+                                                        style={{
+                                                            width: '124px',
+                                                            height: '107px',
+                                                            position: 'relative',
+                                                            flexShrink: 0,
+                                                        }}
+                                                    >
+                                                        <Image
+                                                            src={blog.featured_image}
+                                                            alt={blog.title}
+                                                            fill
+                                                            style={{ objectFit: 'cover', borderRadius: '10px' }}
+                                                        />
+                                                    </div>
                                                 </a>
 
                                                 <div className="content">
-                                                    <div className="date">
+                                                    <div className="date mb-1">
                                                         {formatBlogDate(blog.created_at)}
                                                     </div>
-                                                    <Link href={`/blogs/${blog.slug}`} className="description">
+                                                    <div
+                                                        className="description text-decoration-none"
+                                                    >
                                                         {getExcerpt(blog.content, 80)}
-                                                    </Link>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))
@@ -236,7 +246,7 @@ export default function BlogSinglePage() {
                                         <p className="text-muted mt-3">No featured blogs</p>
                                     ) : (
                                         latestBlogs.map((blog) => (
-                                            <div key={blog.id} className="feature-post">
+                                            <div key={blog.id} className="feature-post d-flex gap-3 align-items-start">
                                                 <a style={{ cursor: 'pointer' }}
                                                     onClick={() => {
                                                         if (slug === blog.slug) return;
@@ -246,22 +256,32 @@ export default function BlogSinglePage() {
                                                         }, 50);
                                                     }}
                                                 >
-                                                    <Image
-                                                        style={{ borderRadius: '10px' }}
-                                                        src={blog.featured_image}
-                                                        width={124}
-                                                        height={107}
-                                                        alt={blog.title}
-                                                    />
+                                                    <div
+                                                        style={{
+                                                            width: '124px',
+                                                            height: '107px',
+                                                            position: 'relative',
+                                                            flexShrink: 0,
+                                                        }}
+                                                    >
+                                                        <Image
+                                                            src={blog.featured_image}
+                                                            alt={blog.title}
+                                                            fill
+                                                            style={{ objectFit: 'cover', borderRadius: '10px' }}
+                                                        />
+                                                    </div>
                                                 </a>
 
                                                 <div className="content">
-                                                    <div className="date">
+                                                    <div className="date mb-1">
                                                         {formatBlogDate(blog.created_at)}
                                                     </div>
-                                                    <Link href={`/blogs/${blog.slug}`} className="description">
+                                                    <div
+                                                        className="description text-decoration-none"
+                                                    >
                                                         {getExcerpt(blog.content, 80)}
-                                                    </Link>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))
