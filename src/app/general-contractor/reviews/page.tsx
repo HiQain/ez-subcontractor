@@ -40,6 +40,8 @@ export default function ReviewsPage() {
     const [comment, setComment] = useState<string>('');
     const [ratingLoading, setRatingLoading] = useState(false);
     const [ratingError, setRatingError] = useState<string | null>(null);
+    const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
+    const [profileLoaded, setProfileLoaded] = useState(false);
 
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
         const toast = document.createElement('div');
@@ -158,8 +160,10 @@ export default function ReviewsPage() {
 
     // 🔹 Fetch contractors
     useEffect(() => {
-        fetchContractors();
-    }, []);
+        if (profileLoaded && subscriptionId) {
+            fetchContractors();
+        }
+    }, [profileLoaded, subscriptionId]);
 
     // 🔹 Filter and sort contractors
     const filteredContractors = contractors.filter(contractor => {
@@ -293,288 +297,351 @@ export default function ReviewsPage() {
         }
     };
 
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+
+        const fetchProfile = async () => {
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}common/get-profile`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: 'application/json',
+                        },
+                    }
+                );
+
+                if (!response.ok) throw new Error('Failed to fetch profile');
+
+                const data = await response.json();
+                const subId = data?.data?.subscription_id || null;
+
+                if (subId) {
+                    localStorage.setItem('subscription', subId);
+                    setSubscriptionId(subId);
+                }
+
+            } catch (err) {
+                console.error('Profile fetch error:', err);
+            } finally {
+                setProfileLoaded(true);
+            }
+        };
+
+        if (token) fetchProfile();
+        else setProfileLoaded(true);
+    }, []);
+
     return (
         <div className="sections overflow-hidden">
             <Header />
 
-            <section className="banner-sec profile review">
-                <div className="container">
-                    <div className="review-wrapper p-0 shadow-none">
-                        <div className="d-flex align-items-center gap-3 justify-content-between right-bar p-0 mb-5 flex-wrap">
-                            <div className="icon-wrapper d-flex align-items-center gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => router.back()}
-                                    className="icon"
-                                    aria-label="Go back"
-                                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-                                >
-                                    <Image
-                                        src="/assets/img/button-angle.svg"
-                                        width={10}
-                                        height={15}
-                                        alt="Back"
-                                    />
-                                </button>
-                                <span className="fs-4 fw-semibold">Ratings</span>
-                            </div>
-
-                            <div className="d-flex align-items-center gap-2">
-                                <div style={{ whiteSpace: 'nowrap' }} className="fw-medium">
-                                    <span>Filter by:</span>
-                                </div>
-                                <div className="input-wrapper d-flex flex-column position-relative w-100">
-                                    <div
-                                        style={{ minWidth: '200px' }}
-                                        className={`custom-select p-0 w-100 ${isOpen ? 'open' : ''}`}
-                                        onClick={() => setIsOpen(!isOpen)}
-                                    >
-                                        <div style={{ maxWidth: '200px' }} className="select-selected w-100">
-                                            {selected}
-                                        </div>
-                                        <i className="bi bi-chevron-down select-arrow"></i>
-                                        <ul className="select-options">
-                                            {options.map((option, index) => (
-                                                <li
-                                                    key={index}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation(); // prevent parent click
-                                                        handleSelect(option);
-                                                    }}
-                                                >
-                                                    {option}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 🔍 Rate a Subcontractor with Search */}
-                        <div className="review-wrapper mb-4">
-                            <div className="d-flex align-items-center text-center text-md-start flex-column flex-md-row gap-3 justify-content-between filter-sec p-0">
-                                <div>
-                                    <div className="fs-3 fw-semibold">Rate a Subcontractor</div>
-                                </div>
-                                <div className="search-wrapper position-relative w-100" style={{ maxWidth: '400px' }}>
-                                    <div className="form-wrapper mb-0 d-flex align-items-center py-0 me-0">
-                                        <input
-                                            ref={inputRef}
-                                            type="text"
-                                            value={query}
-                                            onChange={(e) => setQuery(e.target.value)}
-                                            onFocus={() => query.trim() && setShowList(true)}
-                                            placeholder="Search subcontractor by name or company"
-                                            className="form-control pe-5 shadow-none"
-                                            style={{ paddingRight: '32px', height: '40px' }}
-                                        />
-                                        <div style={{ position: 'absolute', right: '10px', pointerEvents: 'none' }}>
-                                            {searchLoading ? (
-                                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
-                                            ) : (
+            {
+                profileLoaded ? (
+                    subscriptionId ? (
+                        <section className="banner-sec profile review">
+                            <div className="container">
+                                <div className="review-wrapper p-0 shadow-none">
+                                    <div className="d-flex align-items-center gap-3 justify-content-between right-bar p-0 mb-5 flex-wrap">
+                                        <div className="icon-wrapper d-flex align-items-center gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => router.back()}
+                                                className="icon"
+                                                aria-label="Go back"
+                                                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                                            >
                                                 <Image
-                                                    src="/assets/img/icons/search-gray.svg"
-                                                    width={18}
-                                                    height={18}
-                                                    alt="Search Icon"
+                                                    src="/assets/img/button-angle.svg"
+                                                    width={10}
+                                                    height={15}
+                                                    alt="Back"
                                                 />
-                                            )}
+                                            </button>
+                                            <span className="fs-4 fw-semibold">Ratings</span>
+                                        </div>
+
+                                        <div className="d-flex align-items-center gap-2">
+                                            <div style={{ whiteSpace: 'nowrap' }} className="fw-medium">
+                                                <span>Filter by:</span>
+                                            </div>
+                                            <div className="input-wrapper d-flex flex-column position-relative w-100">
+                                                <div
+                                                    style={{ minWidth: '200px' }}
+                                                    className={`custom-select p-0 w-100 ${isOpen ? 'open' : ''}`}
+                                                    onClick={() => setIsOpen(!isOpen)}
+                                                >
+                                                    <div style={{ maxWidth: '200px' }} className="select-selected w-100">
+                                                        {selected}
+                                                    </div>
+                                                    <i className="bi bi-chevron-down select-arrow"></i>
+                                                    <ul className="select-options">
+                                                        {options.map((option, index) => (
+                                                            <li
+                                                                key={index}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation(); // prevent parent click
+                                                                    handleSelect(option);
+                                                                }}
+                                                            >
+                                                                {option}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    {(showList || searchLoading) && results.length > 0 && (
-                                        <ul
-                                            ref={listRef}
-                                            className="list bg-white shadow-sm px-2 py-1 rounded-4 position-absolute w-100 z-1"
-                                            style={{ maxHeight: '300px', overflowY: 'auto', marginTop: '4px', top: '40px' }}
-                                        >
-                                            {results.map((item) => (
-                                                <li
-                                                    key={item.id}
-                                                    className="d-flex justify-content-between align-items-center bg-gray p-2 my-1 rounded-3 gap-2"
-                                                >
-                                                    <span className="d-flex align-items-center gap-2">
-                                                        {item.profile_image_url ? (
-                                                            <Image
-                                                                className="avatar rounded-circle"
-                                                                src={item.profile_image_url}
-                                                                width={40}
-                                                                height={40}
-                                                                alt="Search Icon"
-                                                            />
+
+                                    {/* 🔍 Rate a Subcontractor with Search */}
+                                    <div className="review-wrapper mb-4">
+                                        <div className="d-flex align-items-center text-center text-md-start flex-column flex-md-row gap-3 justify-content-between filter-sec p-0">
+                                            <div>
+                                                <div className="fs-3 fw-semibold">Rate a Subcontractor</div>
+                                            </div>
+                                            <div className="search-wrapper position-relative w-100" style={{ maxWidth: '400px' }}>
+                                                <div className="form-wrapper mb-0 d-flex align-items-center py-0 me-0">
+                                                    <input
+                                                        ref={inputRef}
+                                                        type="text"
+                                                        value={query}
+                                                        onChange={(e) => setQuery(e.target.value)}
+                                                        onFocus={() => query.trim() && setShowList(true)}
+                                                        placeholder="Search subcontractor by name or company"
+                                                        className="form-control pe-5 shadow-none"
+                                                        style={{ paddingRight: '32px', height: '40px' }}
+                                                    />
+                                                    <div style={{ position: 'absolute', right: '10px', pointerEvents: 'none' }}>
+                                                        {searchLoading ? (
+                                                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
                                                         ) : (
                                                             <Image
-                                                                className="avatar rounded-circle"
-                                                                src="/assets/img/profile-placeholder.webp"
-                                                                width={40}
-                                                                height={40}
+                                                                src="/assets/img/icons/search-gray.svg"
+                                                                width={18}
+                                                                height={18}
                                                                 alt="Search Icon"
                                                             />
                                                         )}
-                                                        <span>
-                                                            <span className="name d-block fw-medium text-truncate">{item.name}</span>
-                                                            <span
-                                                                className="company d-block fs-12 fw-bold text-truncate"
-                                                                style={{ color: '#8F9B1F' }}
-                                                            >
-                                                                {item.company_name || '—'}
-                                                            </span>
-                                                            <span className="address d-block fs-12">
-                                                                {item.city && item.state
-                                                                    ? `${item.city}, ${item.state}`
-                                                                    : ''}
-                                                            </span>
-                                                        </span>
-                                                    </span>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-outline-dark btn-sm fs-12 py-1 px-3"
-                                                        onClick={() => {
-                                                            setCurrentContractor(item);
-                                                            setIsRatingModalOpen(true);
-                                                            setSelectedRating(0);
-                                                            setComment('');
-                                                            setRatingError(null);
-                                                        }}
+                                                    </div>
+                                                </div>
+                                                {(showList || searchLoading) && results.length > 0 && (
+                                                    <ul
+                                                        ref={listRef}
+                                                        className="list bg-white shadow-sm px-2 py-1 rounded-4 position-absolute w-100 z-1"
+                                                        style={{ maxHeight: '300px', overflowY: 'auto', marginTop: '4px', top: '40px' }}
                                                     >
-                                                        Rate
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                    {showList && !searchLoading && results.length === 0 && query.trim() && (
-                                        <ul
-                                            ref={listRef}
-                                            className="list bg-white shadow-sm px-2 py-1 rounded-4 position-absolute w-100 z-1"
-                                            style={{ marginTop: '4px' }}
-                                        >
-                                            <li className="p-2 text-center text-muted">No subcontractors found</li>
-                                        </ul>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* ✅ Review Cards — now correctly filtered and sorted */}
-                        <div className="review-card-s1 p-0 bg-transparent">
-                            {loading ? (
-                                <div className="text-center py-5">
-                                    <div className="spinner-border text-primary" role="status">
-                                        <span className="visually-hidden">Loading...</span>
+                                                        {results.map((item) => (
+                                                            <li
+                                                                key={item.id}
+                                                                className="d-flex justify-content-between align-items-center bg-gray p-2 my-1 rounded-3 gap-2"
+                                                            >
+                                                                <span className="d-flex align-items-center gap-2">
+                                                                    {item.profile_image_url ? (
+                                                                        <Image
+                                                                            className="avatar rounded-circle"
+                                                                            src={item.profile_image_url}
+                                                                            width={40}
+                                                                            height={40}
+                                                                            alt="Search Icon"
+                                                                        />
+                                                                    ) : (
+                                                                        <Image
+                                                                            className="avatar rounded-circle"
+                                                                            src="/assets/img/profile-placeholder.webp"
+                                                                            width={40}
+                                                                            height={40}
+                                                                            alt="Search Icon"
+                                                                        />
+                                                                    )}
+                                                                    <span>
+                                                                        <span className="name d-block fw-medium text-truncate">{item.name}</span>
+                                                                        <span
+                                                                            className="company d-block fs-12 fw-bold text-truncate"
+                                                                            style={{ color: '#8F9B1F' }}
+                                                                        >
+                                                                            {item.company_name || '—'}
+                                                                        </span>
+                                                                        <span className="address d-block fs-12">
+                                                                            {item.city && item.state
+                                                                                ? `${item.city}, ${item.state}`
+                                                                                : ''}
+                                                                        </span>
+                                                                    </span>
+                                                                </span>
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-outline-dark btn-sm fs-12 py-1 px-3"
+                                                                    onClick={() => {
+                                                                        setCurrentContractor(item);
+                                                                        setIsRatingModalOpen(true);
+                                                                        setSelectedRating(0);
+                                                                        setComment('');
+                                                                        setRatingError(null);
+                                                                    }}
+                                                                >
+                                                                    Rate
+                                                                </button>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                                {showList && !searchLoading && results.length === 0 && query.trim() && (
+                                                    <ul
+                                                        ref={listRef}
+                                                        className="list bg-white shadow-sm px-2 py-1 rounded-4 position-absolute w-100 z-1"
+                                                        style={{ marginTop: '4px' }}
+                                                    >
+                                                        <li className="p-2 text-center text-muted">No subcontractors found</li>
+                                                    </ul>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p className="mt-3">Loading contractors...</p>
-                                </div>
-                            ) : error ? (
-                                <div className="alert alert-warning d-flex align-items-center" role="alert">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
-                                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                                    </svg>
-                                    <div>{error}</div>
-                                </div>
-                            ) : (
-                                <div className="row g-4 mb-5">
-                                    {sortedFilteredContractors.length > 0 ? (
-                                        sortedFilteredContractors.map((contractor) => (
-                                            <div className="col-lg-4 col-md-6" key={contractor.id}>
-                                                <div className="review-inner-card">
-                                                    <div className="top d-flex align-items-center gap-2 justify-content-between flex-wrap mb-2">
-                                                        <div className="icon-wrapper d-flex align-items-center gap-2">
-                                                            {contractor.profile_image_url ? (
-                                                                <Image
-                                                                    className="avatar rounded-circle"
-                                                                    src={contractor.profile_image_url}
-                                                                    width={40}
-                                                                    height={40}
-                                                                    alt="Search Icon"
-                                                                />
-                                                            ) : (
-                                                                <Image
-                                                                    className="avatar rounded-circle"
-                                                                    src="/assets/img/profile-placeholder.webp"
-                                                                    width={40}
-                                                                    height={40}
-                                                                    alt="Search Icon"
-                                                                />
-                                                            )}
-                                                            <div className="content">
-                                                                <div className="fw-semibold fs-14 mb-1 text-capitalize">{contractor.name}</div>
-                                                                <div style={{ color: '#8F9B1F' }} className="fw-semibold fs-14">
-                                                                    {contractor.company_name || 'Unknown Company'}
+
+                                    {/* ✅ Review Cards — now correctly filtered and sorted */}
+                                    <div className="review-card-s1 p-0 bg-transparent">
+                                        {loading ? (
+                                            <div className="text-center py-5">
+                                                <div className="spinner-border text-primary" role="status">
+                                                    <span className="visually-hidden">Loading...</span>
+                                                </div>
+                                                <p className="mt-3">Loading contractors...</p>
+                                            </div>
+                                        ) : error ? (
+                                            <div className="alert alert-warning d-flex align-items-center" role="alert">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
+                                                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                                                </svg>
+                                                <div>{error}</div>
+                                            </div>
+                                        ) : (
+                                            <div className="row g-4 mb-5">
+                                                {sortedFilteredContractors.length > 0 ? (
+                                                    sortedFilteredContractors.map((contractor) => (
+                                                        <div className="col-lg-4 col-md-6" key={contractor.id}>
+                                                            <div className="review-inner-card">
+                                                                <div className="top d-flex align-items-center gap-2 justify-content-between flex-wrap mb-2">
+                                                                    <div className="icon-wrapper d-flex align-items-center gap-2">
+                                                                        {contractor.profile_image_url ? (
+                                                                            <Image
+                                                                                className="avatar rounded-circle"
+                                                                                src={contractor.profile_image_url}
+                                                                                width={40}
+                                                                                height={40}
+                                                                                alt="Search Icon"
+                                                                            />
+                                                                        ) : (
+                                                                            <Image
+                                                                                className="avatar rounded-circle"
+                                                                                src="/assets/img/profile-placeholder.webp"
+                                                                                width={40}
+                                                                                height={40}
+                                                                                alt="Search Icon"
+                                                                            />
+                                                                        )}
+                                                                        <div className="content">
+                                                                            <div className="fw-semibold fs-14 mb-1 text-capitalize">{contractor.name}</div>
+                                                                            <div style={{ color: '#8F9B1F' }} className="fw-semibold fs-14">
+                                                                                {contractor.company_name || 'Unknown Company'}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="date fs-12 text-gray-light">
+                                                                        {formatDate(contractor.created_at)}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="bottom d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                                                                    <div className="fs-12 fw-medium">
+                                                                        {contractor.city && contractor.state
+                                                                            ? `${contractor.city}, ${contractor.state}`
+                                                                            : ''}
+                                                                    </div>
+                                                                    <div className="right d-flex align-items-center gap-2 flex-wrap">
+                                                                        <div className="rating-icons d-flex align-items-center gap-1">
+                                                                            {Array(5)
+                                                                                .fill(0)
+                                                                                .map((_, j) => {
+                                                                                    const starValue = j + 1;
+                                                                                    const rating = parseFloat(contractor.average_rating) || 0;
+                                                                                    const isFull = starValue <= Math.floor(rating);
+                                                                                    const isHalf = !isFull && starValue <= rating + 0.5;
+
+                                                                                    return (
+                                                                                        <Image
+                                                                                            key={j}
+                                                                                            src={
+                                                                                                isFull
+                                                                                                    ? '/assets/img/start1.svg'
+                                                                                                    : isHalf
+                                                                                                        ? '/assets/img/star2.svg'
+                                                                                                        : '/assets/img/star-empty.svg'
+                                                                                            }
+                                                                                            width={14}
+                                                                                            height={14}
+                                                                                            alt="Star Icon"
+                                                                                            loading="lazy"
+                                                                                        />
+                                                                                    );
+                                                                                })}
+                                                                        </div>
+                                                                        <div className="content">
+                                                                            <div className="fs-12">{parseFloat(contractor.average_rating).toFixed(1)}/5</div>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div className="date fs-12 text-gray-light">
-                                                            {formatDate(contractor.created_at)}
+                                                    ))
+                                                ) : (
+                                                    <div className="col-12">
+                                                        <div className="text-center py-4">
+                                                            <Image
+                                                                src="/assets/img/post.webp"
+                                                                width={120}
+                                                                height={120}
+                                                                alt="No contractors"
+                                                                className="mb-3"
+                                                            />
+                                                            <p className="text-muted">
+                                                                {filterRating
+                                                                    ? `No subcontractors with ${filterRating}-star ratings found.`
+                                                                    : 'No subcontractors found.'}
+                                                            </p>
                                                         </div>
                                                     </div>
-
-                                                    <div className="bottom d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                                                        <div className="fs-12 fw-medium">
-                                                            {contractor.city && contractor.state
-                                                                ? `${contractor.city}, ${contractor.state}`
-                                                                : ''}
-                                                        </div>
-                                                        <div className="right d-flex align-items-center gap-2 flex-wrap">
-                                                            <div className="rating-icons d-flex align-items-center gap-1">
-                                                                {Array(5)
-                                                                    .fill(0)
-                                                                    .map((_, j) => {
-                                                                        const starValue = j + 1;
-                                                                        const rating = parseFloat(contractor.average_rating) || 0;
-                                                                        const isFull = starValue <= Math.floor(rating);
-                                                                        const isHalf = !isFull && starValue <= rating + 0.5;
-
-                                                                        return (
-                                                                            <Image
-                                                                                key={j}
-                                                                                src={
-                                                                                    isFull
-                                                                                        ? '/assets/img/start1.svg'
-                                                                                        : isHalf
-                                                                                            ? '/assets/img/star2.svg'
-                                                                                            : '/assets/img/star-empty.svg'
-                                                                                }
-                                                                                width={14}
-                                                                                height={14}
-                                                                                alt="Star Icon"
-                                                                                loading="lazy"
-                                                                            />
-                                                                        );
-                                                                    })}
-                                                            </div>
-                                                            <div className="content">
-                                                                <div className="fs-12">{parseFloat(contractor.average_rating).toFixed(1)}/5</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                )}
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="col-12">
-                                            <div className="text-center py-4">
-                                                <Image
-                                                    src="/assets/img/post.webp"
-                                                    width={120}
-                                                    height={120}
-                                                    alt="No contractors"
-                                                    className="mb-3"
-                                                />
-                                                <p className="text-muted">
-                                                    {filterRating
-                                                        ? `No subcontractors with ${filterRating}-star ratings found.`
-                                                        : 'No subcontractors found.'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        </section>
+                    )
+                        : (
+                            /* ===== NO SUBSCRIPTION ===== */
+                            <div className="text-center py-5">
+                                <Image src="/assets/img/post.webp" width={120} height={120} alt="No subscription" />
+                                <p className="text-muted mt-3">
+                                    You need a subscription to rate and view contractor reviews.
+                                </p>
+                                <button
+                                    className="btn btn-primary mt-3"
+                                    onClick={() => router.push('/subscription-list')}
+                                >
+                                    View Plans
+                                </button>
+                            </div>
+                        )
+                ) : (
+                    /* ===== PROFILE LOADING ===== */
+                    <div className="d-flex justify-content-center py-5 align-items-center" style={{ height: '300px' }}>
+                        <div className="spinner-border text-primary" />
                     </div>
-                </div>
-            </section>
+                )
+            }
 
             {/* Rating Modal */}
             {isRatingModalOpen && currentContractor && (
