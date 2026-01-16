@@ -33,6 +33,8 @@ export default function ChatPage() {
   const [chatUserEmail, setChatUserEmail] = useState<string | null>(null);
   const [chatUserPhone, setChatUserPhone] = useState<string | null>(null);
   const [chatUserCompanyName, setChatUserCompanyName] = useState<string | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -259,6 +261,85 @@ export default function ChatPage() {
     router.replace('/messages');
 
   }, [chatUserId, results, router]);
+
+  useEffect(() => {
+    const userRole = localStorage.getItem('role');
+
+    if (userRole === 'general_contractor') {
+      const token = localStorage.getItem('token');
+
+      const fetchProfile = async () => {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}common/get-profile`,
+            {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/json',
+              },
+            }
+          );
+
+          if (!response.ok) throw new Error('Failed to fetch profile');
+
+          const data = await response.json();
+          const subId = data?.data?.subscription_id || null;
+
+          setSubscriptionId(subId);
+        } catch (err) {
+          console.error('Profile fetch error:', err);
+        } finally {
+          setProfileLoaded(true);
+        }
+      };
+      fetchProfile();
+    } else {
+      setProfileLoaded(true);
+    }
+  }, [router]);
+
+  if (!profileLoaded) {
+    return (
+      <>
+        <Header />
+        <div
+          className="d-flex flex-column justify-content-center align-items-center text-center"
+          style={{ height: 'calc(90vh - 80px)' }}
+        >
+          <div className="spinner-border text-primary" />
+        </div>
+      </>
+    );
+  }
+
+  if (!subscriptionId && localStorage.getItem('role') === 'general_contractor') {
+    return (
+      <>
+        <Header />
+        <div
+          className="d-flex flex-column justify-content-center align-items-center text-center"
+          style={{ height: 'calc(90vh - 80px)' }}
+        >
+          <Image
+            src="/assets/img/post.webp"
+            width={120}
+            height={120}
+            alt="No subscription"
+          />
+          <p className="text-muted mt-3">
+            You need a subscription to rate and view contractor reviews.
+          </p>
+          <button
+            className="btn btn-primary mt-3"
+            onClick={() => router.push('/subscription-list')}
+          >
+            View Plans
+          </button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <div className="sections overflow-hidden">
