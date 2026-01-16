@@ -395,7 +395,7 @@ export default function HomePage() {
                 </Slider>
             </section>
 
-            <section style={{
+            <section id="howsItsWorks" style={{
                 background: `url('/assets/img/regular-bg.webp') center /cover no-repeat`,
             }} className="hero-sec about position-static">
                 <div className="container">
@@ -438,7 +438,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            <section className="pricing-sec">
+            <section id="plans" className="pricing-sec">
                 <div className="container">
                     <h2 className="main-title text-center fw-bold mb-3">Our Plans</h2>
                     <p className="text-center mb-5">Choose Your Plan and Start Getting Project Leads Today</p>
@@ -461,7 +461,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            <section className="blog-sec">
+            <section id="blogs" className="blog-sec">
                 <div className="container">
                     <h2 className="main-title text-center fw-bold mb-3">Our Blogs</h2>
                     <p className="text-center mb-5">

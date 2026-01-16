@@ -246,21 +246,21 @@ export default function Header() {
                                     <ul className="dropdown-menu">
                                         <li>
                                             <Link
-                                                href={'/home-general-contractor'}
+                                                href={'/home-general-contractor#plans'}
                                                 className={`dropdown-item d-flex align-items-center`}>
                                                 General Contractor
                                             </Link>
                                         </li>
                                         <li>
                                             <Link
-                                                href={'/home-subcontractor'}
+                                                href={'/home-subcontractor#plans'}
                                                 className={`dropdown-item d-flex align-items-center`}>
                                                 Subcontractor
                                             </Link>
                                         </li>
                                         <li>
                                             <Link
-                                                href={'/home-affiliate'}
+                                                href={'/home-affiliate#plans'}
                                                 className={`dropdown-item d-flex align-items-center`}>
                                                 Affiliate
                                             </Link>
@@ -275,21 +275,21 @@ export default function Header() {
                                     <ul className="dropdown-menu">
                                         <li>
                                             <Link
-                                                href={'/home-general-contractor'}
+                                                href={'/home-general-contractor#howsItsWorks'}
                                                 className={`dropdown-item d-flex align-items-center`}>
                                                 General Contractor
                                             </Link>
                                         </li>
                                         <li>
                                             <Link
-                                                href={'/home-subcontractor'}
+                                                href={'/home-subcontractor#howsItsWorks'}
                                                 className={`dropdown-item d-flex align-items-center`}>
                                                 Subcontractor
                                             </Link>
                                         </li>
                                         <li>
                                             <Link
-                                                href={'/home-affiliate'}
+                                                href={'/home-affiliate#howsItsWorks'}
                                                 className={`dropdown-item d-flex align-items-center`}>
                                                 Affiliate
                                             </Link>
@@ -304,21 +304,21 @@ export default function Header() {
                                     <ul className="dropdown-menu">
                                         <li>
                                             <Link
-                                                href={'/home-general-contractor'}
+                                                href={'/home-general-contractor#blogs'}
                                                 className={`dropdown-item d-flex align-items-center`}>
                                                 General Contractor
                                             </Link>
                                         </li>
                                         <li>
                                             <Link
-                                                href={'/home-subcontractor'}
+                                                href={'/home-subcontractor#blogs'}
                                                 className={`dropdown-item d-flex align-items-center`}>
                                                 Subcontractor
                                             </Link>
                                         </li>
                                         <li>
                                             <Link
-                                                href={'/home-affiliate'}
+                                                href={'/home-affiliate#blogs'}
                                                 className={`dropdown-item d-flex align-items-center `}>
                                                 Affiliate
                                             </Link>
