@@ -482,7 +482,7 @@ export default function HomePage() {
                                     <Link
                                         href={{
                                             pathname: "/blog-detail",
-                                            query: { slug: blog.slug },
+                                            query: { slug: blog.slug, role: "affiliate" },
                                         }}
                                         className="text-decoration-none text-dark d-block h-100"
                                     >

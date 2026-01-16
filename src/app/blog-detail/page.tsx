@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import '../../styles/blog.css';
@@ -34,9 +33,11 @@ const formatBlogDate = (dateString: string) => {
 export default function BlogSinglePage() {
     const router = useRouter();
     const [slug, setSlug] = useState<string | null>(null);
+    const [role, setRole] = useState<string | null>(null);
     const [blog, setBlog] = useState<any>(null);
     const [featuredBlogs, setFeaturedBlogs] = useState<any[]>([]);
     const [latestBlogs, setLatestBlogs] = useState<any[]>([]);
+    const [forPage, setForPage] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     // 🔹 Get slug from URL
@@ -45,8 +46,10 @@ export default function BlogSinglePage() {
 
         const params = new URLSearchParams(window.location.search);
         const slugParam = params.get('slug');
+        const roleParam = params.get('role');
 
         setSlug(slugParam);
+        setRole(roleParam);
     }, []);
 
     // 🔹 Fetch blog detail via API
@@ -60,7 +63,7 @@ export default function BlogSinglePage() {
                 const [latestRes, featuredRes, newRes] = await Promise.all([
                     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/detail/${slug}`),
                     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/featured`),
-                    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/latest`)
+                    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}data/blogs/latest?type=${role}`)
                 ]);
 
                 const latestJson = await latestRes.json();
@@ -77,6 +80,7 @@ export default function BlogSinglePage() {
 
                 if (newJson.success) {
                     setLatestBlogs((newJson.data || []).slice(0, 3));
+                    setForPage(newJson.data || []);
                 }
 
             } catch (error) {
@@ -84,6 +88,7 @@ export default function BlogSinglePage() {
                 setBlog([]);
                 setFeaturedBlogs([]);
                 setLatestBlogs([]);
+                setForPage([]);
             } finally {
                 setLoading(false);
             }
@@ -93,11 +98,16 @@ export default function BlogSinglePage() {
     }, [slug]);
 
     const getPrevNextBlogs = () => {
-        if (!featuredBlogs.length || !blog) return { prev: null, next: null };
+        if (!forPage.length || !blog) return { prev: null, next: null };
 
-        const currentIndex = featuredBlogs.findIndex((b) => b.slug === blog.slug);
-        const prev = currentIndex > 0 ? featuredBlogs[currentIndex - 1] : null;
-        const next = currentIndex < featuredBlogs.length - 1 ? featuredBlogs[currentIndex + 1] : null;
+        const sortedBlogs = [...forPage].sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+
+        const currentIndex = sortedBlogs.findIndex((b) => b.slug === blog.slug);
+
+        const prev = currentIndex > 0 ? sortedBlogs[currentIndex - 1] : null;
+        const next = currentIndex < sortedBlogs.length - 1 ? sortedBlogs[currentIndex + 1] : null;
 
         return { prev, next };
     };
@@ -296,7 +306,7 @@ export default function BlogSinglePage() {
                                         if (prev) {
                                             router.back()
                                             setTimeout(() => {
-                                                router.push(`/blog-detail?slug=${prev.slug}`);
+                                                router.push(`/blog-detail?slug=${prev.slug}&role=${role}`);
                                             }, 5);
                                         }
                                     }}
@@ -317,7 +327,7 @@ export default function BlogSinglePage() {
                                         if (next) {
                                             router.back()
                                             setTimeout(() => {
-                                                router.push(`/blog-detail?slug=${next.slug}`);
+                                                router.push(`/blog-detail?slug=${next.slug}&role=${role}`);
                                             }, 5);
                                         }
                                     }}
