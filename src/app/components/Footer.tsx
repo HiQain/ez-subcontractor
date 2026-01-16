@@ -116,7 +116,22 @@ export default function Footer() {
                             <div className="footer-title">Other</div>
                             <ul className="footer-links m-0 p-0">
 
-                                <li><Link href="/faq">FAQs</Link></li>
+                                <li className="footer-dropdown">
+                                    <button
+                                        className="footer-dropdown-btn"
+                                        onClick={() => toggleDropdown('faq')}
+                                    >
+                                        FAQs
+                                    </button>
+
+                                    {openDropdown === 'faq' && (
+                                        <ul className="footer-submenu">
+                                            <li><Link href="/home-general-contractor#faq">General Contractor</Link></li>
+                                            <li><Link href="/home-subcontractor#faq">Subcontractor</Link></li>
+                                            <li><Link href="/home-affiliate#faq">Affiliate</Link></li>
+                                        </ul>
+                                    )}
+                                </li>
                                 <li><Link href="/terms-and-conditions">Terms & Conditions</Link></li>
                                 <li><Link href="/privacy-policy">Privacy Policy</Link></li>
                             </ul>

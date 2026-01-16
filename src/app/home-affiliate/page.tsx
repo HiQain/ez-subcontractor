@@ -565,7 +565,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            <section className="hero-sec faqs position-static">
+            <section id="faq" className="hero-sec faqs position-static">
                 <div className="container py-5">
                     <div className="row g-4">
                         <div className="col-lg-5">
