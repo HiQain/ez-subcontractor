@@ -8,6 +8,11 @@ import { useState } from 'react';
 import "../../styles/footer.css";
 
 export default function Footer() {
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+    const toggleDropdown = (key: string) => {
+        setOpenDropdown(prev => (prev === key ? null : key));
+    };
 
     return (
         <footer
@@ -47,10 +52,62 @@ export default function Footer() {
                         <div className="col-6 col-lg-2 offset-lg-1 col-sm-6">
                             <div className="footer-title">Menu</div>
                             <ul className="footer-links m-0 p-0">
+
                                 <li><Link href="/">Home</Link></li>
-                                <li><Link href="/subscription">Free Trial</Link></li>
-                                <li><Link href="/how-it-works">How It Works</Link></li>
-                                <li><Link href="/blogs">Blogs</Link></li>
+                                {/* Free Trial */}
+                                <li className="footer-dropdown">
+                                    <button
+                                        className="footer-dropdown-btn"
+                                        onClick={() => toggleDropdown('trial')}
+                                    >
+                                        Free Trial
+                                    </button>
+
+                                    {openDropdown === 'trial' && (
+                                        <ul className="footer-submenu">
+                                            <li><Link href="/home-general-contractor#plans">General Contractor</Link></li>
+                                            <li><Link href="/home-subcontractor#plans">Subcontractor</Link></li>
+                                            <li><Link href="/home-affiliate#plans">Affiliate</Link></li>
+                                        </ul>
+                                    )}
+                                </li>
+
+                                {/* How It Works */}
+                                <li className="footer-dropdown">
+                                    <button
+                                        className="footer-dropdown-btn"
+                                        onClick={() => toggleDropdown('how')}
+                                    >
+                                        How It Works
+                                    </button>
+
+                                    {openDropdown === 'how' && (
+                                        <ul className="footer-submenu">
+                                            <li><Link href="/home-general-contractor#howsItsWorks">General Contractor</Link></li>
+                                            <li><Link href="/home-subcontractor#howsItsWorks">Subcontractor</Link></li>
+                                            <li><Link href="/home-affiliate#howsItsWorks">Affiliate</Link></li>
+                                        </ul>
+                                    )}
+                                </li>
+
+                                {/* Blogs */}
+                                <li className="footer-dropdown">
+                                    <button
+                                        className="footer-dropdown-btn"
+                                        onClick={() => toggleDropdown('blogs')}
+                                    >
+                                        Blogs
+                                    </button>
+
+                                    {openDropdown === 'blogs' && (
+                                        <ul className="footer-submenu">
+                                            <li><Link href="/home-general-contractor#blogs">General Contractor</Link></li>
+                                            <li><Link href="/home-subcontractor#blogs">Subcontractor</Link></li>
+                                            <li><Link href="/home-affiliate#blogs">Affiliate</Link></li>
+                                        </ul>
+                                    )}
+                                </li>
+
                             </ul>
                         </div>
 
