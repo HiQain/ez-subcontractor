@@ -89,7 +89,7 @@ export default function HomePage() {
                 const json = await res.json();
 
                 if (json.success && Array.isArray(json.data)) {
-                    setBlogs(json.data.slice(0, 3)); // sirf latest 3
+                    setBlogs(json.data.slice(0, 6));
                 } else {
                     setBlogs([]);
                 }
