@@ -297,7 +297,7 @@ export default function BlogSinglePage() {
                                             router.back()
                                             setTimeout(() => {
                                                 router.push(`/blog-detail?slug=${prev.slug}`);
-                                            }, 50);
+                                            }, 5);
                                         }
                                     }}
                                     disabled={!prev}
@@ -318,7 +318,7 @@ export default function BlogSinglePage() {
                                             router.back()
                                             setTimeout(() => {
                                                 router.push(`/blog-detail?slug=${next.slug}`);
-                                            }, 50);
+                                            }, 5);
                                         }
                                     }}
                                     disabled={!next}
