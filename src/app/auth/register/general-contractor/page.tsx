@@ -208,13 +208,18 @@ export default function RegisterPage() {
 
             if (response.ok) {
                 const token = data.data?.token;
+                const user = data.data?.user;
 
                 if (token) {
                     localStorage.setItem('token', token);
                     localStorage.setItem('role', 'general_contractor');
 
                     setTimeout(() => {
-                        router.push('/subscription-list');
+                        if (user.is_subscription) {
+                            router.push('/general-contractor/dashboard');
+                        } else {
+                            router.push('/subscription-list');
+                        }
                     }, 1500);
                 } else {
                     showToast('Registration succeeded, but no token received.', 'error');
