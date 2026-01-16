@@ -440,11 +440,12 @@ export default function HomePage() {
                                                             {formatTimeAgo(project.created_at)}
                                                         </div>
                                                     </div>
-                                                    <div className="title text-black fs-5 mb-3"
+                                                    <div className="title text-black mb-3"
                                                         style={{
                                                             overflow: 'hidden',
                                                             textOverflow: 'ellipsis',
-                                                            whiteSpace: 'nowrap'
+                                                            whiteSpace: 'nowrap',
+                                                            fontSize: '1.1rem',
                                                         }}>
                                                         {[
                                                             project.street,
@@ -477,8 +478,18 @@ export default function HomePage() {
                                                             {project.category.name}
                                                         </div>
                                                     </div>
-                                                    <div className="title text-black fs-5 fw-semibold mb-3">
-                                                        {project.city}, {project.state}
+                                                    <div className="title text-black mb-3"
+                                                        style={{
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            whiteSpace: 'nowrap',
+                                                            fontSize: '1.1rem',
+                                                        }}>
+                                                        {[
+                                                            project.street,
+                                                            project.city,
+                                                            project.state
+                                                        ].filter(Boolean).join(', ')}
                                                     </div>
                                                     <div className="description mb-3 text-truncate fw-normal">
                                                         {stripHtml(project.description)}
