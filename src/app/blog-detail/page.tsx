@@ -288,7 +288,7 @@ export default function BlogSinglePage() {
                                     )}
                                 </div>
                             </div>
-                            <div className="d-flex justify-content-center mt-5 w-100">
+                            <div className="d-flex justify-content-between mt-5 w-100">
                                 {/* Previous */}
                                 <button
                                     className="btn btn-primary"
@@ -298,9 +298,13 @@ export default function BlogSinglePage() {
                                             setTimeout(() => {
                                                 router.push(`/blog-detail?slug=${prev.slug}`);
                                             }, 50);
-                                        } else {
-                                            router.back();
                                         }
+                                    }}
+                                    disabled={!prev}
+                                    style={{
+                                        opacity: !prev ? 0.5 : 1,
+                                        cursor: !prev ? 'not-allowed' : 'pointer',
+                                        marginLeft: '10px',
                                     }}
                                 >
                                     &larr; Previous
