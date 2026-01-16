@@ -705,61 +705,61 @@ export default function HomePage() {
                                 <div key={blog.id} className="col-lg-4 col-md-6">
                                     <Link
                                         href={{
-                                            pathname: '/blog-detail',
+                                            pathname: "/blog-detail",
                                             query: { slug: blog.slug },
                                         }}
-                                        className="blog-wrapper"
-                                        style={{
-                                            background: `url('${blog.featured_image}')`,
-                                            backgroundSize: 'cover',
-                                            backgroundPosition: 'center',
-                                            backgroundRepeat: 'no-repeat',
-                                            display: 'block',
-                                            position: 'relative',
-                                            borderRadius: '12px',
-                                            overflow: 'hidden',
-                                            height: '400px',
-                                        }}
+                                        className="text-decoration-none text-dark d-block h-100"
                                     >
-                                        <div className="blog-content d-flex h-100 justify-content-end flex-column" style={{ position: 'relative', height: '100%' }}>
+                                        <div className="blog-card border rounded-4 overflow-hidden h-100 bg-white">
 
-                                            {/* Overlay behind text */}
+                                            {/* 🔹 Image */}
                                             <div
+                                                className="blog-image"
                                                 style={{
-                                                    position: 'absolute',
-                                                    bottom: 0,
-                                                    left: 0,
-                                                    right: 0,
-                                                    height: '90px',
-                                                    background: 'rgba(0,0,0,0.55)',
-                                                    zIndex: 1,
-                                                    borderRadius: '12px',
+                                                    height: "260px",
+                                                    position: "relative",
+                                                    borderBottom: "1px solid #e9ecef",
                                                 }}
-                                            />
+                                            >
+                                                <Image
+                                                    src={blog.featured_image}
+                                                    alt={blog.title}
+                                                    fill
+                                                    className="img-fluid"
+                                                    style={{ objectFit: "cover" }}
+                                                />
+                                            </div>
 
-                                            {/* Text and author info */}
-                                            <div style={{ position: 'relative', zIndex: 2, padding: '10px 15px' }}>
-                                                <div className="description text-white fw-medium mb-2">
-                                                    {getExcerpt(blog.title.length >= 40 ? `${blog.title.slice(0, 40)} ...` : blog.title)}
+                                            {/* 🔹 Content BELOW image */}
+                                            <div className="p-3">
+
+                                                {/* Author */}
+                                                <div className="d-flex align-items-center gap-2 mb-2">
+                                                    <Image
+                                                        src={
+                                                            blog.author?.profile_image ||
+                                                            "/assets/img/profile-placeholder.webp"
+                                                        }
+                                                        width={36}
+                                                        height={36}
+                                                        className="rounded-circle"
+                                                        alt={blog.author?.name}
+                                                        style={{ objectFit: "cover" }}
+                                                    />
+                                                    <div>
+                                                        <p className="mb-0 fw-bold fs-14">
+                                                            {blog.author?.name}
+                                                        </p>
+                                                        <p className="mb-0 text-muted fs-13">
+                                                            {formatBlogDate(blog.created_at)}
+                                                        </p>
+                                                    </div>
                                                 </div>
 
-                                                <div className="d-flex align-items-center justify-content-between">
-                                                    <div className="blog-icon d-flex align-items-center gap-2">
-                                                        <Image
-                                                            src={blog.author.profile_image}
-                                                            width={40}
-                                                            height={40}
-                                                            alt={blog.author.name}
-                                                            style={{ borderRadius: '100px' }}
-                                                        />
-                                                        <span className="fw-semibold text-white">
-                                                            {blog.author.name}
-                                                        </span>
-                                                    </div>
-                                                    <div className="date text-white fs-14">
-                                                        {formatBlogDate(blog.created_at)}
-                                                    </div>
-                                                </div>
+                                                {/* Blog Title */}
+                                                <p className="fw-semibold fs-15 mb-0">
+                                                    {getExcerpt(blog.title, 90)}
+                                                </p>
                                             </div>
                                         </div>
                                     </Link>
