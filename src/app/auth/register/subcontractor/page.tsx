@@ -26,7 +26,7 @@ export default function RegisterPage() {
         password: 'Password123!',
         password_confirmation: 'Password123!',
         license_number: '',
-        zip: '',
+        city: '',
         work_radius: 25,
         category: '',
     });
@@ -312,7 +312,6 @@ export default function RegisterPage() {
         }
 
         if (formData.work_radius === 0) newErrors.work_radius = 'Work Radius is required';
-        if (!formData.zip.trim()) newErrors.zip = 'Zip Code is required';
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -325,8 +324,8 @@ export default function RegisterPage() {
         // ✅ Build payload
         const role = localStorage.getItem('role') || accountType.replace('-', '_');
         const fcmToken = localStorage.getItem("fcmToken");
-        if (formData.zip?.trim()) {
-            localStorage.setItem('userZip', formData.zip);
+        if (formData.city?.trim()) {
+            localStorage.setItem('userCity', formData.city);
         }
         localStorage.setItem('userRadius', formData.work_radius.toString());
 
@@ -338,7 +337,7 @@ export default function RegisterPage() {
             password: formData.password,
             password_confirmation: formData.password_confirmation,
             license_number: formData.license_number,
-            zip: formData.zip,
+            city: formData.city,
             work_radius: formData.work_radius || 0,
             category: formData.category || '1',
             role: 'subcontractor',
@@ -663,24 +662,16 @@ export default function RegisterPage() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column mb-3">
-                                                <label htmlFor="zip" className="mb-1 fw-semibold">Zip Code</label>
+                                                <label htmlFor="city" className="mb-1 fw-semibold">City</label>
                                                 <input
                                                     type="text"
-                                                    id="zip"
-                                                    name="zip"
-                                                    placeholder="12345"
-                                                    value={formData.zip}
-                                                    onChange={(e) => {
-                                                        const value = e.target.value.replace(/\D/g, '').slice(0, 5);
-                                                        setFormData(prev => ({
-                                                            ...prev,
-                                                            zip: value
-                                                        }));
-                                                    }}
+                                                    id="city"
+                                                    name="city"
+                                                    placeholder="Enter City"
+                                                    value={formData.city}
+                                                    onChange={handleChange}
                                                     className="form-control"
                                                     disabled={isLoading}
-                                                    inputMode="numeric"
-                                                    maxLength={5}
                                                 />
                                             </div>
 
