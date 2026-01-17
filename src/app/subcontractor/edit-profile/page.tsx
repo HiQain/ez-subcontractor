@@ -83,7 +83,7 @@ export default function EditProfile() {
         profile_image: DEFAULT_PROFILE_IMAGE,
         company_name: '',
         license_number: '',
-        city: '',
+        zip: '',
         work_radius: '',
         category: [] as Specialization[],
         email: '',
@@ -113,7 +113,7 @@ export default function EditProfile() {
                     profile_image: data.data.profile_image || DEFAULT_PROFILE_IMAGE,
                     company_name: data.data.company_name || '',
                     license_number: data.data.license_number || '',
-                    city: data.data.city || '',
+                    zip: data.data.zip || '',
                     work_radius: data.data.work_radius || 0,
                     category: data.data.specializations || [],
                     email: data.data.email || '',
@@ -147,7 +147,7 @@ export default function EditProfile() {
                         profile_image: data.data.profile_image || DEFAULT_PROFILE_IMAGE,
                         company_name: data.data.company_name || '',
                         license_number: data.data.license_number || '',
-                        city: data.data.city || '',
+                        zip: data.data.zip || '',
                         work_radius: data.data.work_radius || 0,
                         category: data.data.specializations || [],
                         email: data.data.email || '',
@@ -349,7 +349,7 @@ export default function EditProfile() {
                     phone: formData.phone,
                     company_name: formData.company_name,
                     license_number: formData.license_number,
-                    city: formData.city,
+                    zip: formData.zip,
                     work_radius: formData.work_radius,
                 }),
             });
@@ -363,7 +363,7 @@ export default function EditProfile() {
             }
 
             if (response.ok) {
-                localStorage.setItem('userCity', formData.city);
+                localStorage.setItem('userZip', formData.zip);
                 showToast('Profile updated successfully!');
             } else {
                 showToast(data.message || 'Failed to update profile. Please try again.', 'error');
@@ -576,16 +576,16 @@ export default function EditProfile() {
                                                 </div>
 
                                                 <div className="input-wrapper d-flex flex-column">
-                                                    <label htmlFor="city" className="mb-1 fw-semibold">
-                                                        City
+                                                    <label htmlFor="zip" className="mb-1 fw-semibold">
+                                                        ZIP Code
                                                     </label>
                                                     <input
                                                         type="text"
-                                                        id="city"
-                                                        name="city"
+                                                        id="zip"
+                                                        name="zip"
                                                         className="form-control"
-                                                        placeholder="Enter City"
-                                                        value={formData.city}
+                                                        placeholder="12345"
+                                                        value={formData.zip}
                                                         onChange={handleChange}
                                                     />
                                                 </div>

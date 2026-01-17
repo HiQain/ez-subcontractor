@@ -182,7 +182,7 @@ export default function LoginPage() {
                 localStorage.setItem('role', user.role);
                 localStorage.setItem('userName', user.name || '');
                 localStorage.setItem('userEmail', trimmedEmail);
-                localStorage.setItem('userCity', user.city);
+                localStorage.setItem('userZip', user.zip);
                 localStorage.setItem('userRadius', user.work_radius);
                 if (user.role === 'subcontractor' && user.specializations?.length > 0) {
                     const cat = {
