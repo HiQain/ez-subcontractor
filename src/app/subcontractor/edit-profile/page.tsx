@@ -84,7 +84,7 @@ export default function EditProfile() {
         company_name: '',
         license_number: '',
         zip: '',
-        work_radius: '',
+        work_radius: 25,
         category: [] as Specialization[],
         email: '',
     });
@@ -364,6 +364,7 @@ export default function EditProfile() {
 
             if (response.ok) {
                 localStorage.setItem('userZip', formData.zip);
+                localStorage.setItem('userRadius', formData.work_radius.toString());
                 showToast('Profile updated successfully!');
             } else {
                 showToast(data.message || 'Failed to update profile. Please try again.', 'error');
@@ -602,6 +603,35 @@ export default function EditProfile() {
                                                         placeholder="223546"
                                                         value={formData.license_number}
                                                         onChange={handleChange}
+                                                    />
+                                                </div>
+
+                                                <div className="input-wrapper d-flex flex-column">
+                                                    <label htmlFor="license_number" className="mb-1 fw-semibold">
+                                                        Work Radius (miles)
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        id="work_radius"
+                                                        name="work_radius"
+                                                        placeholder="0"
+                                                        min="0"
+                                                        max={500}
+                                                        step="1"
+                                                        value={formData.work_radius}
+                                                        onChange={(e) => {
+                                                            const value = Math.max(0, Number(e.target.value || 0));
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                work_radius: value
+                                                            }));
+                                                        }}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === '-' || e.key === '+') {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
+                                                        className="form-control"
                                                     />
                                                 </div>
 

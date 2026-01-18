@@ -16,7 +16,7 @@ interface ProfileData {
     profile_image: string;
     companyName: string;
     role: string;
-    city: string;
+    zipCode: string;
     state: string;
     workRadius: number;
     license_number: string;
@@ -166,7 +166,7 @@ export default function ProfilePage() {
                         companyName: data.data.company_name || '',
                         profile_image: data.data.profile_image || '/assets/img/profile-placeholder.webp',
                         role: data.data.role || '',
-                        city: data.data.city || '',
+                        zipCode: data.data.zip || '',
                         state: data.data.state || '',
                         workRadius: data.data.work_radius || 0,
                         category: data.data.specializations || [],
@@ -469,11 +469,11 @@ export default function ProfilePage() {
                                             </div>
 
                                             <div className="row g-2">
-                                                {profile.city?.trim() && (
+                                                {profile.zipCode?.trim() && (
                                                     <div className="col-xl-3 col-sm-6">
                                                         <div className="content">
-                                                            <div className="text-gray-light fw-medium mb-2">City</div>
-                                                            <div className="fw-semibold fs-18">{profile.city}</div>
+                                                            <div className="text-gray-light fw-medium mb-2">ZipCode</div>
+                                                            <div className="fw-semibold fs-18">{profile.zipCode}</div>
                                                         </div>
                                                     </div>
                                                 )}
