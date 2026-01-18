@@ -49,6 +49,9 @@ export default function PostAd() {
         email: true,
         phone: true,
     });
+    const [zipCode, setZipCode] = useState('');
+    const [latitude, setLatitude] = useState<number | null>(null);
+    const [longitude, setLongitude] = useState<number | null>(null);
 
     // 🔹 Handle checkbox toggle
     const handleCheckboxChange = (method: string) => {
@@ -293,6 +296,9 @@ export default function PostAd() {
             formData.append('state', state);
             formData.append('category_id', selectedCategory);
             formData.append('street', street);
+            formData.append('zip_code', zipCode || '');
+            formData.append('latitude', latitude ? latitude.toString() : '');
+            formData.append('longitude', longitude ? longitude.toString() : '');
             formData.append('estimate_due_date', estimateDueDate ? format(estimateDueDate, 'yyyy-MM-dd') : '');
             formData.append('start_date', startDate ? format(startDate, 'yyyy-MM-dd') : '');
             formData.append('end_date', endDate ? format(endDate, 'yyyy-MM-dd') : '');
@@ -440,6 +446,7 @@ export default function PostAd() {
                                                         let _street = '';
                                                         let _city = '';
                                                         let _state = '';
+                                                        let _zip = '';
 
                                                         components.forEach((comp: any) => {
                                                             if (comp.types.includes('route')) {
@@ -453,11 +460,21 @@ export default function PostAd() {
                                                             if (comp.types.includes('administrative_area_level_1')) {
                                                                 _state = comp.short_name;
                                                             }
+
+                                                            if (comp.types.includes('postal_code')) {
+                                                                _zip = comp.long_name;
+                                                            }
                                                         });
+
+                                                        const lat = results[0].geometry.location.lat();
+                                                        const lng = results[0].geometry.location.lng();
 
                                                         setStreet(_street.trim());
                                                         setCity(_city);
                                                         setState(_state);
+                                                        setZipCode(_zip);
+                                                        setLatitude(lat);
+                                                        setLongitude(lng);
 
                                                         clearError('street');
                                                         clearError('city');

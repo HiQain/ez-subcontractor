@@ -71,6 +71,9 @@ export default function EditProjectPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [status, setStatus] = useState<string>('');
     const [contactOptions, setContactOptions] = useState<string[]>([]);
+    const [zipCode, setZipCode] = useState('');
+    const [latitude, setLatitude] = useState<number | null>(null);
+    const [longitude, setLongitude] = useState<number | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -213,6 +216,9 @@ export default function EditProjectPage() {
                     setCity(proj.city);
                     setState(proj.state);
                     setStreet(proj.street);
+                    setZipCode(proj.zip);
+                    setLatitude(proj.lat || null);
+                    setLongitude(proj.long || null);
                     setEstimateDueDate(proj.estimate_due_date);
                     setStartDate(proj.start_date);
                     setEndDate(proj.end_date);
@@ -349,6 +355,9 @@ export default function EditProjectPage() {
             formData.append('state', state);
             formData.append('category_id', selectedCategory);
             formData.append('street', street);
+            formData.append('zip', zipCode);
+            formData.append('latitude', latitude ? String(latitude) : '');
+            formData.append('longitude', longitude ? String(longitude) : '');
             formData.append('estimate_due_date', estimateDueDate);
             formData.append('start_date', startDate);
             formData.append('end_date', endDate);
@@ -553,6 +562,7 @@ export default function EditProjectPage() {
                                                         let _street = '';
                                                         let _city = '';
                                                         let _state = '';
+                                                        let _zip = '';
 
                                                         components.forEach((comp: any) => {
                                                             if (comp.types.includes('route')) {
@@ -566,11 +576,21 @@ export default function EditProjectPage() {
                                                             if (comp.types.includes('administrative_area_level_1')) {
                                                                 _state = comp.short_name;
                                                             }
+
+                                                            if (comp.types.includes('postal_code')) {
+                                                                _zip = comp.long_name;
+                                                            }
                                                         });
+
+                                                        const lat = results[0].geometry.location.lat();
+                                                        const lng = results[0].geometry.location.lng();
 
                                                         setStreet(_street.trim());
                                                         setCity(_city);
                                                         setState(_state);
+                                                        setZipCode(_zip);
+                                                        setLatitude(lat);
+                                                        setLongitude(lng);
                                                     },
                                                     styles: {
                                                         control: (base) => ({
