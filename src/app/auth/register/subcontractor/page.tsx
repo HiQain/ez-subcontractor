@@ -312,6 +312,7 @@ export default function RegisterPage() {
         }
 
         if (formData.work_radius === 0) newErrors.work_radius = 'Work Radius is required';
+        if (!formData.zip.trim()) newErrors.zip = 'Zip Code is required';
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -662,7 +663,7 @@ export default function RegisterPage() {
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column mb-3">
-                                                <label htmlFor="zip" className="mb-1 fw-semibold">Zip Code</label>
+                                                <label htmlFor="zip" className="mb-1 fw-semibold">Zip Code <span className="text-danger">*</span></label>
                                                 <input
                                                     type="text"
                                                     id="zip"
