@@ -240,10 +240,15 @@ export default function PostAd() {
 
     const handleChangeEstimateDueDate = (date: Date | null) => {
         setEstimateDueDate(date);
+        setStartDate(null);
+        setEndDate(null);
+        clearError('estimateDueDate');
     };
 
     const handleChangeStartDate = (date: Date | null) => {
         setStartDate(date);
+        setEndDate(null);
+        clearError('startDate');
     };
 
     const handleChangeEndDate = (date: Date | null) => {
@@ -265,6 +270,14 @@ export default function PostAd() {
         // ✅ Contact options validation
         const selectedMethods = Object.keys(contactMethods).filter(k => contactMethods[k]);
         if (selectedMethods.length === 0) newErrors.contact_options = 'Please select at least one contact method.';
+
+        if (estimateDueDate && startDate && startDate <= estimateDueDate) {
+            newErrors.startDate = 'Start Date must be after Estimate Due Date.';
+        }
+
+        if (startDate && endDate && endDate <= startDate) {
+            newErrors.endDate = 'End Date must be after Start Date.';
+        }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -550,7 +563,12 @@ export default function PostAd() {
                                                 <DatePicker
                                                     selected={startDate}
                                                     onChange={handleChangeStartDate}
-                                                    minDate={new Date()}
+                                                    minDate={
+                                                        estimateDueDate
+                                                            ? new Date(estimateDueDate.getTime() + 24 * 60 * 60 * 1000)
+                                                            : new Date()
+                                                    }
+                                                    disabled={!estimateDueDate}
                                                 />
                                                 {errors.startDate && (
                                                     <span className="text-danger animate-slide-up">{errors.startDate}</span>
@@ -564,7 +582,11 @@ export default function PostAd() {
                                                 <DatePicker
                                                     selected={endDate}
                                                     onChange={handleChangeEndDate}
-                                                    minDate={new Date()}
+                                                    minDate={
+                                                        startDate
+                                                            ? new Date(startDate.getTime() + 24 * 60 * 60 * 1000)
+                                                            : undefined
+                                                    }
                                                     disabled={!startDate}
                                                 />
                                                 {errors.endDate && (
@@ -574,7 +596,7 @@ export default function PostAd() {
                                         </div>
 
                                         <div className="col-12 mb-4">
-                                            <div className="fw-semibold mb-2">Preferred Contact Method</div>
+                                            <div className="fw-semibold mb-2">Preferred Contact Method <span className="text-danger">*</span></div>
                                             <div className="d-flex gap-3 flex-wrap">
                                                 {['email', 'phone'].map(option => (
                                                     <div key={option} className="form-check">
@@ -714,7 +736,7 @@ export default function PostAd() {
                                 {/* RIGHT SIDE */}
                                 <div className="col-lg-4">
                                     <div className="attachment-wrapper">
-                                        <div className="fw-semibold mb-3">Attachment</div>
+                                        <div className="fw-semibold mb-3">Attachments</div>
                                         <div
                                             className="attachment-box"
                                             id="dropZone"
