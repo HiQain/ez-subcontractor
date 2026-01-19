@@ -401,7 +401,7 @@ export default function HomePage() {
                 <div className="container">
                     {howItWorks ? (
                         <div className="row g-4">
-                            <div className="col-lg-6 order-lg-2">
+                            <div className="col-lg-6 order-2 order-lg-2">
                                 <Image
                                     src={howItWorks.image}
                                     width={708}
@@ -410,7 +410,7 @@ export default function HomePage() {
                                     className="img-fluid w-100 hero-img"
                                 />
                             </div>
-                            <div className="col-lg-6 order-lg-1">
+                            <div className="col-lg-6 order-1 order-lg-1">
                                 <div className="content-wrapper d-flex flex-column h-100 justify-content-center">
                                     <Link href="#" className="btn btn-outline-dark mb-4">
                                         HOW IT WORKS
