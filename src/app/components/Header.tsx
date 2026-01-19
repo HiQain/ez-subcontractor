@@ -420,7 +420,7 @@ export default function Header() {
                             </ul>
                         </div>
                         <Link
-                            href={`/ ${role === 'general_contractor' ? 'general-contractor' : role} /profile`}
+                            href={`/${role === 'general_contractor' ? 'general-contractor' : role}/profile`}
                             className="nav-link icon"
                             aria-label="Profile"
                         >
