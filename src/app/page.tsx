@@ -296,6 +296,29 @@ export default function HomePage() {
         infinite: true,
         autoplay: true,
         speed: 600,
+
+        appendDots: (dots: React.ReactNode) => (
+            <div
+                style={{
+                    position: 'static',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginTop: '12px',
+                }}
+            >
+                <ul
+                    style={{
+                        margin: 0,
+                        padding: 0,
+                        display: 'flex',
+                        gap: '8px',
+                    }}
+                >
+                    {dots}
+                </ul>
+            </div>
+        ),
     };
 
     // 🔹 Banners

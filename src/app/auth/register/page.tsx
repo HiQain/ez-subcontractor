@@ -90,7 +90,7 @@ export default function SelectAccountType() {
                                     className={`account-card mb-3 px-4 ${selectedType === acc.id ? 'active' : ''}`}
                                     key={acc.id}
                                     onClick={() => handleSelection(acc.id)}
-                                    style={{ cursor: 'pointer', minWidth: '430px' }}
+                                    style={{ cursor: 'pointer', minWidth: '100%' }}
 
                                 >
                                     <div className="d-flex align-items-center gap-3">
