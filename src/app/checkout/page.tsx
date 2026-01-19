@@ -516,7 +516,7 @@ export default function CheckoutPage() {
                                         </div>
                                     )}
 
-                                    {role === 'subcontractor' && (
+                                    {selectedPlan.id !== 1 && role === 'subcontractor' && (
                                         <div className="input-wrapper-s2 d-flex align-items-start gap-2">
                                             <div className="input-wrapper d-flex flex-column flex-grow-1">
                                                 <label className="mb-1 fw-semibold">Promo Code</label>

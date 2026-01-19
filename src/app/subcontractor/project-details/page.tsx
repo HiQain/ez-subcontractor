@@ -540,7 +540,7 @@ export default function ProjectSubcontractorDetailsPage() {
                                     {project.user?.company_name && (
                                         <div className="title text-black fw-semibold text-center fs-5 mb-2">{project.user.company_name}</div>
                                     )}
-                                    {project.user?.email && (
+                                    {project.contact_options?.includes('email') && project.user?.email && (
                                         <div className="d-flex align-items-center justify-content-center gap-2 mb-2 flex-nowrap">
                                             <Image src="/assets/img/icons/message-dark.svg" width={20} height={20} alt="Message Icon" />
                                             <Link href={`mailto:${project.user.email}`} className="text-dark fw-medium text-truncate">
@@ -549,7 +549,7 @@ export default function ProjectSubcontractorDetailsPage() {
                                         </div>
                                     )}
 
-                                    {project.user?.phone && (
+                                    {project.contact_options?.includes('phone') && project.user?.phone && (
                                         <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap mb-3">
                                             <Image src="/assets/img/icons/call-dark.svg" width={20} height={20} alt="Call Icon" />
                                             <Link href={`tel:${project.user.phone}`} className="text-dark fw-medium">
