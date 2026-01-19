@@ -385,7 +385,7 @@ export default function HomePage() {
                 </section>
 
                 {/* 🔹 Role Selection */}
-                <section className="role-cards py-4">
+                <section className="role-cards py-4 p-2 p-sm-0">
                     <div className="container">
                         <div className="row">
                             <div className="col-xl-8 offset-xl-2">
@@ -490,15 +490,23 @@ export default function HomePage() {
                                     <Slider {...sliderSettingsMobile}>
                                         {projects.map((project) => (
                                             <div key={project.id} className="px-2">
-                                                <div className="custom-card p-4">
-                                                    <div className="topbar mb-3">
-                                                        <div className="date text-primary-gray-light fs-12 mb-3">
-                                                            {formatTimeAgo(project.created_at)}
-                                                        </div>
+                                                <div className="custom-card p-3">
+                                                    <div className="topbar mb-3 d-flex align-items-center justify-content-between">
                                                         <div
-                                                            className="btn btn-primary btn-sm px-3 py-1 text-start"
+                                                            className="btn btn-primary btn-sm px-2 py-1 text-start"
+                                                            style={{
+                                                                minWidth: '10px',
+                                                                maxWidth: '70%',
+                                                                fontSize: '12px',
+                                                                whiteSpace: 'nowrap',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                            }}
                                                         >
                                                             {project.category.name}
+                                                        </div>
+                                                        <div className="date text-primary-gray-light" style={{ fontSize: '10px' }}>
+                                                            {formatTimeAgo(project.created_at)}
                                                         </div>
                                                     </div>
                                                     <div className="title text-black mb-3"
@@ -506,7 +514,7 @@ export default function HomePage() {
                                                             overflow: 'hidden',
                                                             textOverflow: 'ellipsis',
                                                             whiteSpace: 'nowrap',
-                                                            fontSize: '1.1rem',
+                                                            fontSize: '0.875rem',
                                                         }}>
                                                         {[
                                                             project.street,
@@ -514,7 +522,16 @@ export default function HomePage() {
                                                             project.state
                                                         ].filter(Boolean).join(', ')}
                                                     </div>
-                                                    <div className="description mb-3 text-truncate fw-normal">
+                                                    <div className="description mb-3 fw-normal"
+                                                        style={{
+                                                            display: '-webkit-box',
+                                                            WebkitLineClamp: 3,
+                                                            WebkitBoxOrient: 'vertical',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            fontSize: '0.875rem',
+                                                        }}
+                                                    >
                                                         {stripHtml(project.description)}
                                                     </div>
                                                 </div>
