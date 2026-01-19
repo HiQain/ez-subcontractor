@@ -393,10 +393,10 @@ export default function DashboardPage() {
                                             <div className="slider"></div>
                                         </ul>
                                     </div>
-                                    <div>
+                                    <div style={{ marginRight: '10px' }}>
                                         <button
                                             onClick={() => router.push('/general-contractor/add-project')}
-                                            className="btn btn-primary rounded-3 d-flex align-items-center gap-2 px-4 py-2 fs-4"
+                                            className="btn btn-primary rounded-3 d-flex align-items-center gap-2 px-4 py-2 fs-4 w-100"
                                         >
                                             <Image src="/assets/img/icons/plus.svg" width={14} height={14} alt="Icon" />
                                             <span>Add Project</span>
