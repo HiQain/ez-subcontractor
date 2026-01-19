@@ -59,6 +59,7 @@ export default function DashboardPage() {
     const [activeTab, setActiveTab] = useState('all');
     const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
     const [profileLoaded, setProfileLoaded] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // 🔹 Show non-blocking thank-you toast
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -272,7 +273,20 @@ export default function DashboardPage() {
         }, {});
     };
 
-    const filteredProjects = getFilteredProjects();
+    const filteredProjects = getFilteredProjects().filter((project) => {
+        if (!searchTerm.trim()) return true;
+
+        const term = searchTerm.toLowerCase();
+
+        return (
+            project.description?.toLowerCase().includes(term) ||
+            project.city?.toLowerCase().includes(term) ||
+            project.street?.toLowerCase().includes(term) ||
+            project.state?.toLowerCase().includes(term) ||
+            project.category?.name?.toLowerCase().includes(term)
+        );
+    });
+
     const groupedProjects = groupProjectsByStreet(filteredProjects);
 
     const EyeIcon = ({ active }: { active: boolean }) => (
@@ -351,47 +365,59 @@ export default function DashboardPage() {
                                 {/* ✅ My Projects */}
                                 <div className="bar d-flex align-items-center gap-2 justify-content-between flex-wrap mb-4">
                                     <div>
-                                        <div className="fs-4 fw-semibold mb-5">My Projects</div>
-                                        <ul className="nav nav-tabs mb-5" role="tablist">
-                                            <li className="nav-item" role="presentation">
-                                                <button
-                                                    className={`nav-link ${activeTab === 'all' ? 'active' : ''}`}
-                                                    type="button"
-                                                    onClick={() => setActiveTab('all')}
-                                                >
-                                                    All ({projects.length})
-                                                </button>
-                                            </li>
-                                            <li className="nav-item" role="presentation">
-                                                <button
-                                                    className={`nav-link ${activeTab === 'hired' ? 'active' : ''}`}
-                                                    type="button"
-                                                    onClick={() => setActiveTab('hired')}
-                                                >
-                                                    Hired (
-                                                    {
-                                                        projects.filter((p) => p.status.toLowerCase() === 'hired')
-                                                            .length
-                                                    }
-                                                    )
-                                                </button>
-                                            </li>
-                                            <li className="nav-item" role="presentation">
-                                                <button
-                                                    className={`nav-link ${activeTab === 'active' ? 'active' : ''}`}
-                                                    type="button"
-                                                    onClick={() => setActiveTab('active')}
-                                                >
-                                                    Active (
-                                                    {
-                                                        projects.filter((p) => p.status.toLowerCase() === 'active')
-                                                            .length
-                                                    }
-                                                    )
-                                                </button>
-                                            </li>
-                                            <div className="slider"></div>
-                                        </ul>
+                                        <div className="fs-4 fw-semibold mb-4">My Projects</div>
+
+                                        <div className="d-flex justify-content-between align-items-center flex-wrap gap-4 py-3">
+                                            {/* Tabs */}
+                                            <ul className="nav nav-tabs mb-0 w-auto" role="tablist">
+                                                <li className="nav-item">
+                                                    <button
+                                                        className={`nav-link ${activeTab === 'all' ? 'active' : ''}`}
+                                                        type="button"
+                                                        onClick={() => setActiveTab('all')}
+                                                    >
+                                                        All ({projects.length})
+                                                    </button>
+                                                </li>
+
+                                                <li className="nav-item">
+                                                    <button
+                                                        className={`nav-link ${activeTab === 'hired' ? 'active' : ''}`}
+                                                        type="button"
+                                                        onClick={() => setActiveTab('hired')}
+                                                    >
+                                                        Hired ({projects.filter(p => p.status?.toLowerCase() === 'hired').length})
+                                                    </button>
+                                                </li>
+
+                                                <li className="nav-item">
+                                                    <button
+                                                        className={`nav-link ${activeTab === 'active' ? 'active' : ''}`}
+                                                        type="button"
+                                                        onClick={() => setActiveTab('active')}
+                                                    >
+                                                        Active ({projects.filter(p => p.status?.toLowerCase() === 'active').length})
+                                                    </button>
+                                                </li>
+
+                                                <div className="slider"></div>
+                                            </ul>
+
+                                            {/* Search */}
+                                            <div className="position-relative" style={{ minWidth: '300px' }}>
+                                                <input
+                                                    type="text"
+                                                    className="form-control ps-5 rounded-3"
+                                                    placeholder="Search projects..."
+                                                    value={searchTerm}
+                                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                                    style={{ height: '48px' }}
+                                                />
+                                                <span className="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted">
+                                                    🔍
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div style={{ marginRight: '10px' }}>
                                         <button
