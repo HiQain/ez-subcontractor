@@ -8,6 +8,18 @@
   box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1450980392);
 }
 
+.green-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #28a745;
+  /* green */
+  border-radius: 50%;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 10;
+}
+
 /* header.css */
 
 .dropdown-menu.notifications-dropdown {

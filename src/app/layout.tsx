@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { generateToken, messaging } from "./notification/firebase";
 import { onMessage } from "firebase/messaging";
 import { showNotificationToast } from "./notification/toast";
+import { notificationEmitter } from "./notificationEmitter";
 
 export default function RootLayout({ children }) {
     useEffect(() => {
@@ -24,6 +25,9 @@ export default function RootLayout({ children }) {
                     'success'
                 );
             }
+
+            // 🔹 Trigger Header to refresh notifications
+            notificationEmitter.emit('newNotification');
         });
 
         return () => unsubscribe();

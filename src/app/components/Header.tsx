@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import '../../styles/header.css';
+import { notificationEmitter } from '../notificationEmitter';
 
 export default function Header() {
     const router = useRouter();
@@ -66,30 +67,39 @@ export default function Header() {
     const [loadingNotifications, setLoadingNotifications] = useState(true);
 
     useEffect(() => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        const listener = () => fetchNotifications();
 
-        const fetchNotifications = async () => {
-            try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/notifications`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-                const data = await res.json();
-                if (data.success && Array.isArray(data.data)) {
-                    setNotifications(data.data);
-                } else {
-                    setNotifications([]);
-                }
-            } catch (err) {
-                console.error('Error fetching notifications:', err);
-                setNotifications([]);
-            } finally {
-                setLoadingNotifications(false);
-            }
+        notificationEmitter.on('newNotification', listener);
+
+        return () => {
+            notificationEmitter.off('newNotification', listener);
         };
+    }, []);
 
+    const fetchNotifications = async () => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/notifications`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await res.json();
+            if (data.success && Array.isArray(data.data)) {
+                setNotifications(data.data);
+            } else {
+                setNotifications([]);
+            }
+        } catch (err) {
+            console.error('Error fetching notifications:', err);
+            setNotifications([]);
+        } finally {
+            setLoadingNotifications(false);
+        }
+    };
+
+    useEffect(() => {
         if (isLoggedIn) fetchNotifications();
     }, [isLoggedIn]);
 
@@ -347,6 +357,8 @@ export default function Header() {
                                     alt="Notifications"
                                 />
                             </Link>
+                            {/* 🔹 Green dot */}
+                            {/* {notifications.length > 0 && <span className="green-dot"></span>} */}
                             <ul
                                 className="dropdown-menu dropdown-menu-end notifications-dropdown"
                                 style={{ minWidth: '300px', maxHeight: '400px', overflowY: 'auto' }}
@@ -395,7 +407,7 @@ export default function Header() {
                                 ) : (
                                     notifications.map((notif) => (
                                         <li key={notif.id}>
-                                            <a className="dropdown-item py-2" href="#">
+                                            <a className="dropdown-item py-2" href={`${notif.title === 'New Message Received' ? '/messages' : '#'}`}>
                                                 <span className="d-flex align-items-center justify-content-between w-100">
                                                     <span className="d-block fw-medium">{notif.title}</span>
                                                     <span className="fs-12">{new Date(notif.created_at).toLocaleTimeString()}</span>
@@ -408,7 +420,7 @@ export default function Header() {
                             </ul>
                         </div>
                         <Link
-                            href={`/${role === 'general_contractor' ? 'general-contractor' : role}/profile`}
+                            href={`/ ${role === 'general_contractor' ? 'general-contractor' : role} /profile`}
                             className="nav-link icon"
                             aria-label="Profile"
                         >
