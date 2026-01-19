@@ -171,9 +171,22 @@ export default function EditProfile() {
         fetchProfile();
     }, [router]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    /* ---------- US Phone Formatter ---------- */
+    const formatUSPhone = (digits: string): string => {
+        const d = digits.replace(/\D/g, '').slice(0, 10);
+        if (d.length === 0) return '';
+        if (d.length < 4) return `(${d}`;
+        if (d.length < 7) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
+        return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6, 10)}`;
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        let sanitized = value;
+
+        if (name === 'phone') sanitized = formatUSPhone(value);
+
+        setFormData(prev => ({ ...prev, [name]: sanitized }));
     };
 
     // 👇 NEW: Handle profile image upload with automatic refetch
@@ -514,14 +527,14 @@ export default function EditProfile() {
                                                     Phone Number <span className="text-danger">*</span>
                                                 </label>
                                                 <input
+                                                    type="tel"
                                                     id="phone"
                                                     name="phone"
-                                                    type="tel"
                                                     className="form-control"
-                                                    placeholder="(000) 000-0000"
+                                                    placeholder="(555) 123-4567"
                                                     value={formData.phone}
                                                     onChange={handleChange}
-                                                    required
+                                                    maxLength={14}
                                                 />
                                             </div>
 
