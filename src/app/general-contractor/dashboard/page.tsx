@@ -404,14 +404,13 @@ export default function DashboardPage() {
                                             </ul>
 
                                             {/* Search */}
-                                            <div className="position-relative" style={{ minWidth: '300px' }}>
+                                            <div className="position-relative search-wrapper">
                                                 <input
                                                     type="text"
-                                                    className="form-control ps-5 rounded-3"
+                                                    className="form-control ps-5"
                                                     placeholder="Search projects..."
                                                     value={searchTerm}
                                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                                    style={{ height: '48px' }}
                                                 />
                                                 <span className="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted">
                                                     🔍
@@ -422,14 +421,14 @@ export default function DashboardPage() {
                                     <div style={{ marginRight: '10px' }}>
                                         <button
                                             onClick={() => router.push('/general-contractor/add-project')}
-                                            className="btn btn-primary shadow-none rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 fs-4 w-100"
+                                            className="btn btn-primary shadow-none rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 fs-4 w-100 mb-2"
                                         >
                                             <Image src="/assets/img/icons/plus.svg" width={14} height={14} alt="Icon" />
                                             <span>Add Project</span>
                                         </button>
                                         <button
                                             onClick={() => router.push('/general-contractor/reviews')}
-                                            className="btn btn-warning rounded-3 d-flex align-items-center gap-2 px-4 py-2 fs-4 mt-5"
+                                            className="btn btn-warning rounded-3 d-flex align-items-center gap-2 px-4 py-2 fs-4"
                                             style={{ backgroundColor: '#ffc107', borderColor: '#ffc107' }}
                                         >
                                             <span>Rate Subcontractor</span>
