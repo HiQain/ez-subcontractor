@@ -651,7 +651,7 @@ export default function PostAd() {
                                                     alt="No Document"
                                                     loading="lazy"
                                                 />
-                                                <div className="fs-14 fw-medium">No Document added</div>
+                                                <div className="fs-14 fw-medium">No documents added</div>
                                             </div>
                                         ) : (
                                             allDocuments.map((doc) => (
