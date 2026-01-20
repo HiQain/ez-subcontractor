@@ -26,7 +26,7 @@ export default function PostAnAd() {
     const [loading, setLoading] = useState(false);
     const [cards, setCards] = useState<any[]>([]);
     const [cardsLoading, setCardsLoading] = useState(false);
-    const [orientation, setOrientation] = useState<'Horizontal' | 'Vertical'>('Horizontal');
+    const [orientation, setOrientation] = useState<'Horizontal' | 'Vertical'>('Vertical');
     const [adPlacements, setAdPlacements] = useState<any[]>([]);
     const [adLoading, setAdLoading] = useState(false);
     const [selectedAd, setSelectedAd] = useState<any | null>(null);
@@ -185,10 +185,10 @@ export default function PostAnAd() {
         }
 
         // ✅ Image validation (orientation based)
-        if (orientation === 'Horizontal' && !mainFileRef.current?.files?.[0] && !mainImage) {
-            showToast('Please upload horizontal image', 'error');
-            return;
-        }
+        // if (orientation === 'Horizontal' && !mainFileRef.current?.files?.[0] && !mainImage) {
+        //     showToast('Please upload horizontal image', 'error');
+        //     return;
+        // }
 
         if (orientation === 'Vertical' && !smallFileRef.current?.files?.[0] && !smallImage) {
             showToast('Please upload vertical image', 'error');
@@ -225,17 +225,17 @@ export default function PostAnAd() {
             formData.append('end_date', endDate.toISOString().split('T')[0]);
 
             // 🔹 Images + URLs based on orientation
-            if (orientation === 'Horizontal') {
-                if (mainFileRef.current?.files?.[0]) {
-                    formData.append('horizontal_image', mainFileRef.current.files[0]);
-                } else if (mainImage) {
-                    formData.append('horizontal_image_url', mainImage);
-                }
+            // if (orientation === 'Horizontal') {
+            //     if (mainFileRef.current?.files?.[0]) {
+            //         formData.append('horizontal_image', mainFileRef.current.files[0]);
+            //     } else if (mainImage) {
+            //         formData.append('horizontal_image_url', mainImage);
+            //     }
 
-                if (horizontalUrl?.trim()) {
-                    formData.append('horizontal_url', normalizeUrl(horizontalUrl));
-                }
-            }
+            //     if (horizontalUrl?.trim()) {
+            //         formData.append('horizontal_url', normalizeUrl(horizontalUrl));
+            //     }
+            // }
 
             if (orientation === 'Vertical') {
                 if (smallFileRef.current?.files?.[0]) {
@@ -499,16 +499,16 @@ export default function PostAnAd() {
 
             // 🔹 Images + URLs only for selected orientation
             // Horizontal
-            if (orientation === 'Horizontal') {
-                if (mainFileRef.current?.files?.[0]) {
-                    formData.append('horizontal_image', mainFileRef.current.files[0]);
-                } else if (mainImage) {
-                    formData.append('horizontal_image_url', mainImage);
-                }
+            // if (orientation === 'Horizontal') {
+            //     if (mainFileRef.current?.files?.[0]) {
+            //         formData.append('horizontal_image', mainFileRef.current.files[0]);
+            //     } else if (mainImage) {
+            //         formData.append('horizontal_image_url', mainImage);
+            //     }
 
-                // URL key always bhejna, chahe empty ho
-                formData.append('horizontal_url', horizontalUrl ? normalizeUrl(horizontalUrl) : '');
-            }
+            //     // URL key always bhejna, chahe empty ho
+            //     formData.append('horizontal_url', horizontalUrl ? normalizeUrl(horizontalUrl) : '');
+            // }
 
             // Vertical
             if (orientation === 'Vertical') {
@@ -685,12 +685,12 @@ export default function PostAnAd() {
                                     </div>
                                 )}
                                 <div className="input-wrapper mb-4">
-                                    {(orientation === 'Horizontal') && (
+                                    {/* {(orientation === 'Horizontal') && (
                                         <div className="input-wrapper mb-4">
                                             <label className="fw-semibold mb-1">Horizontal URL</label>
                                             <input type="text" value={horizontalUrl} onChange={e => setHorizontalUrl(e.target.value)} placeholder="Enter Horizontal URL" />
                                         </div>
-                                    )}
+                                    )} */}
 
                                     {(orientation === 'Vertical') && (
                                         <div className="input-wrapper mb-4">
@@ -903,7 +903,7 @@ export default function PostAnAd() {
 
                             {/* Right Side Upload Boxes */}
                             <div className="right-side align-lg-end">
-                                {(orientation === 'Horizontal') && (
+                                {/* {(orientation === 'Horizontal') && (
                                     <div
                                         className="image-box"
                                         onClick={() => mainFileRef.current?.click()}
@@ -939,7 +939,7 @@ export default function PostAnAd() {
                                             onChange={(e) => handleFileChange(e, setMainImage)}
                                         />
                                     </div>
-                                )}
+                                )} */}
 
                                 {(orientation === 'Vertical') && (
                                     <div
