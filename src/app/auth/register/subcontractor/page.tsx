@@ -275,6 +275,7 @@ export default function RegisterPage() {
         else if (formData.password !== formData.password_confirmation) {
             step1Errors.password_confirmation = 'Passwords do not match';
         }
+        if (!formData.company_name.trim()) step1Errors.name = 'Company Name is required';
         if (!isAgreed) step1Errors.agreement = 'You must agree to the terms and conditions';
 
         if (Object.keys(step1Errors).length > 0) {
@@ -481,11 +482,10 @@ export default function RegisterPage() {
                                                     className="form-control"
                                                     disabled={isLoading}
                                                 />
-                                                {errors.name && <span className="text-danger animate-slide-up">{errors.name}</span>}
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column mb-3">
-                                                <label htmlFor="company_name" className="mb-1 fw-semibold">Company Name</label>
+                                                <label htmlFor="company_name" className="mb-1 fw-semibold">Company Name <span className="text-danger">*</span></label>
                                                 <input
                                                     type="text"
                                                     id="company_name"

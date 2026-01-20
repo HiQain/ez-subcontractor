@@ -338,15 +338,32 @@ export default function EditProfile() {
 
         // Validation
         if (!formData.name.trim()) {
-            showToast('Full Name is required.');
+            showToast('Full Name is required.', 'error');
             return;
         }
+
+        if (!formData.company_name.trim()) {
+            showToast('Company Name is required.', 'error');
+            return;
+        }
+
         if (!formData.email.trim()) {
-            showToast('Email is required.');
+            showToast('Email is required.', 'error');
             return;
         }
+
         if (!formData.phone.trim()) {
-            showToast('Phone Number is required.');
+            showToast('Phone Number is required.', 'error');
+            return;
+        }
+
+        if (!formData.zip.trim()) {
+            showToast('Zip Code is required.', 'error');
+            return;
+        }
+
+        if (!formData.work_radius || formData.work_radius <= 0) {
+            showToast('Work Radius must be greater than 0.', 'error');
             return;
         }
 
@@ -599,7 +616,7 @@ export default function EditProfile() {
 
                                                 <div className="input-wrapper d-flex flex-column">
                                                     <label htmlFor="zip" className="mb-1 fw-semibold">
-                                                        ZIP Code
+                                                        ZIP Code <span className="text-danger">*</span>
                                                     </label>
                                                     <input
                                                         type="text"
@@ -629,7 +646,7 @@ export default function EditProfile() {
 
                                                 <div className="input-wrapper d-flex flex-column">
                                                     <label htmlFor="license_number" className="mb-1 fw-semibold">
-                                                        Work Radius (miles)
+                                                        Work Radius (miles) <span className="text-danger">*</span>
                                                     </label>
                                                     <input
                                                         type="number"
