@@ -64,6 +64,7 @@ export default function Header() {
     const isLoggedIn = !!role;
 
     const [notifications, setNotifications] = useState<any[]>([]);
+    const [readAll, setReadAll] = useState(true);
     const [loadingNotifications, setLoadingNotifications] = useState(true);
 
     useEffect(() => {
@@ -78,24 +79,62 @@ export default function Header() {
 
     const fetchNotifications = async () => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/notifications`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/notifications`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
             const data = await res.json();
-            if (data.success && Array.isArray(data.data)) {
-                setNotifications(data.data);
+
+            if (res.ok && data.success && data.data) {
+                setNotifications(data.data.notifications || []);
+                setReadAll(data.data.read_all);
             } else {
                 setNotifications([]);
+                setReadAll(true);
             }
         } catch (err) {
             console.error('Error fetching notifications:', err);
             setNotifications([]);
+            setReadAll(true);
         } finally {
             setLoadingNotifications(false);
+        }
+    };
+
+    const markAllAsRead = async () => {
+        const token = localStorage.getItem('token');
+        if (!token || readAll) return;
+
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}common/notifications/read-all`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                setReadAll(true); // 🟢 green dot remove
+                setNotifications((prev) =>
+                    prev.map((n) => ({ ...n, read: true }))
+                );
+            }
+        } catch (err) {
+            console.error('Error marking notifications as read:', err);
         }
     };
 
@@ -349,6 +388,7 @@ export default function Header() {
                                 className="nav-link icon dropdown-toggle"
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false"
+                                onClick={markAllAsRead}
                             >
                                 <Image
                                     src="/assets/img/icons/notification-dark.svg"
@@ -358,7 +398,7 @@ export default function Header() {
                                 />
                             </Link>
                             {/* 🔹 Green dot */}
-                            {/* {notifications.length > 0 && <span className="green-dot"></span>} */}
+                            {!readAll && <span className="green-dot"></span>}
                             <ul
                                 className="dropdown-menu dropdown-menu-end notifications-dropdown"
                                 style={{ minWidth: '300px', maxHeight: '400px', overflowY: 'auto' }}
@@ -387,6 +427,7 @@ export default function Header() {
                                                     const data = await res.json();
                                                     if (res.ok && data.success) {
                                                         setNotifications([]);
+                                                        setReadAll(true);
                                                         console.log('Notifications cleared');
                                                     } else {
                                                         console.error('Failed to clear notifications');
@@ -410,7 +451,7 @@ export default function Header() {
                                             <a className="dropdown-item py-2" href={`${notif.title === 'New Message Received' ? '/messages' : '#'}`}>
                                                 <span className="d-flex align-items-center justify-content-between w-100">
                                                     <span className="d-block fw-medium">{notif.title}</span>
-                                                    <span className="fs-12">{new Date(notif.created_at).toLocaleTimeString()}</span>
+                                                    <span style={{ fontSize: '10px', marginLeft: '10px' }}>{new Date(notif.created_at).toLocaleTimeString()}</span>
                                                 </span>
                                                 <span className="fs-12 opacity-50">{notif.body}</span>
                                             </a>
