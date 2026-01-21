@@ -9,6 +9,13 @@ import "../../styles/footer.css";
 
 export default function Footer() {
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
+
+    const copyLink = () => {
+        navigator.clipboard.writeText('https://www.ezsubcontractor.com');
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     const toggleDropdown = (key: string) => {
         setOpenDropdown(prev => (prev === key ? null : key));
@@ -139,7 +146,9 @@ export default function Footer() {
 
                         <div className="col-lg-3 col-sm-6">
                             <div className="footer-title">Reach Us:</div>
-                            <div className="d-flex align-items-center gap-2 mb-3">
+                            <div className="d-flex align-items-center gap-2" style={{
+                                marginBottom: '35px'
+                            }}>
                                 <div className="icon">
                                     <Image
                                         src="/assets/img/icons/message-green.svg"
@@ -156,6 +165,39 @@ export default function Footer() {
                                 >
                                     info@ezsubcontractor.com
                                 </Link>
+                            </div>
+                            <div className="d-flex align-items-center gap-2 mb-3">
+                                <button
+                                    onClick={copyLink}
+                                    className="text-decoration-none fw-semibold"
+                                    style={{
+                                        color: '#A5D6A7',
+                                        backgroundColor: '#1B5E20',
+                                        padding: '4px 10px',
+                                        borderRadius: '4px',
+                                        fontSize: '0.9rem',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        position: 'relative'
+                                    }}
+                                >
+                                    Copy Website Link
+                                </button>
+
+                                {copied && (
+                                    <span
+                                        style={{
+                                            color: '#fff',
+                                            backgroundColor: '#4CAF50',
+                                            padding: '2px 6px',
+                                            borderRadius: '4px',
+                                            fontSize: '0.8rem',
+                                            transition: 'opacity 0.3s'
+                                        }}
+                                    >
+                                        Copied!
+                                    </span>
+                                )}
                             </div>
                         </div>
 
