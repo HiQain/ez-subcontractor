@@ -19,12 +19,12 @@ export default function RegisterPage() {
 
     // 🔑 Form state
     const [formData, setFormData] = useState({
-        name: 'John Doe',
-        email: 'johndoe@gmail.com',
-        phone: '(342) 432-4324',
-        company_name: 'ABC Corporation',
-        password: 'Password123!',
-        password_confirmation: 'Password123!',
+        name: '',
+        email: '',
+        phone: '',
+        company_name: '',
+        password: '',
+        password_confirmation: '',
         license_number: '',
         zip: '',
         work_radius: 25,

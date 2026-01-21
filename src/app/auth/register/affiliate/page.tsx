@@ -57,15 +57,12 @@ export default function RegisterPage() {
 
     // 🔑 Unified form data — all fields in one object
     const [formData, setFormData] = useState({
-        name: 'User Test',
-        email: 'test_aff_1@gmail.com',
-        phone: '(324) 342-3423',
-        company_name: 'ABC Corporation',
-        password: 'Password123',
-        password_confirmation: 'Password123',
-        zip: '0',
-        work_radius: '0',
-        category: 1, // string ID (e.g., '1')
+        name: '',
+        email: '',
+        phone: '',
+        company_name: '',
+        password: '',
+        password_confirmation: '',
     });
 
     const [showPassword, setShowPassword] = useState(false);
@@ -187,8 +184,6 @@ export default function RegisterPage() {
             company_name: formData.company_name,
             password: formData.password,
             password_confirmation: formData.password_confirmation,
-            zip: formData.zip || '46000',
-            work_radius: parseInt(formData.work_radius) || 0,
             category: 1,
             role: 'affiliate',
             device_token: fcmToken,

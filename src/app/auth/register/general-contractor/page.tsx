@@ -55,16 +55,15 @@ export default function RegisterPage() {
 
     // 🔑 Unified form data — all fields in one object
     const [formData, setFormData] = useState({
-        name: 'User Test',
-        email: 'test1@gmail.com',
-        phone: '(324) 342-3423',
-        company_name: 'ABC Corporation',
-        password: 'Password123',
-        password_confirmation: 'Password123',
+        name: '',
+        email: '',
+        phone: '',
+        company_name: '',
+        password: '',
+        password_confirmation: '',
         license_number: '',
-        zip: '0',
-        work_radius: '0',
-        category: 1,
+        zip: '',
+        work_radius: '',
     });
 
     const [showPassword, setShowPassword] = useState(false);
