@@ -35,6 +35,10 @@
     overflow: hidden;
   }
 
+  .filter-sec .posted-card .topbar button.title {
+    font-size: 18px;
+  }
+
   .filter-sec .posted-card .topbar>div {
     width: 100%;
     justify-content: space-between;
