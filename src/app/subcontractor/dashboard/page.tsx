@@ -954,6 +954,13 @@ export default function DashboardSubContractor() {
                                                     {subscriptionId ? (
                                                         <button
                                                             className="title p-0 border-0 bg-transparent text-start text-capitalize"
+                                                            style={{
+                                                                display: 'block',
+                                                                width: '80%',          // ensure parent width ke andar rahe
+                                                                overflow: 'hidden',
+                                                                whiteSpace: 'nowrap',   // ek line me rakhe
+                                                                textOverflow: 'ellipsis', // ... show kare agar lamba ho
+                                                            }}
                                                             onClick={() => {
                                                                 localStorage.setItem('project-id', String(project.id));
                                                                 router.push('/subcontractor/project-details');
@@ -966,11 +973,22 @@ export default function DashboardSubContractor() {
                                                             ].filter(Boolean).join(', ')}
                                                         </button>
                                                     ) : (
-                                                        <div className="title text-capitalize">{[
-                                                            project.street,
-                                                            project.city,
-                                                            project.state
-                                                        ].filter(Boolean).join(', ')}</div>
+                                                        <div
+                                                            className="title text-capitalize"
+                                                            style={{
+                                                                display: 'block',
+                                                                width: '80%',
+                                                                overflow: 'hidden',
+                                                                whiteSpace: 'nowrap',
+                                                                textOverflow: 'ellipsis',
+                                                            }}
+                                                        >
+                                                            {[
+                                                                project.street,
+                                                                project.city,
+                                                                project.state
+                                                            ].filter(Boolean).join(', ')}
+                                                        </div>
                                                     )}
                                                     <div className="d-flex align-items-center gap-2">
                                                         <div className="date">{formatTimeAgo(project.created_at)}</div>
@@ -1049,7 +1067,7 @@ export default function DashboardSubContractor() {
                                                                 <button onClick={() => {
                                                                     localStorage.setItem('project-id', String(project.id));
                                                                     router.push('/subcontractor/project-details');
-                                                                }} className="btn btn-primary me-2 btn-sm py-1 px-4">
+                                                                }} className="btn btn-primary me-2 btn-sm py-1 px-4 shadow-none">
                                                                     View More
                                                                 </button>
                                                                 {
