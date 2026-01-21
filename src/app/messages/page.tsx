@@ -669,8 +669,11 @@ export default function ChatPage() {
                     {getInitials(selectedUser?.name)}
                   </div>
 
-                  <div className="title text-black fw-semibold fs-5 mb-2">
+                  <div className="title text-black fw-semibold fs-5">
                     {capitalizeEachWord(selectedUser.name)}
+                  </div>
+                  <div className="title text-black fw-semibold fs-6 mb-2">
+                    {capitalizeEachWord(selectedUser.company_name)}
                   </div>
                   <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap mb-2">
                     <Image
