@@ -103,6 +103,7 @@ export default function DashboardSubContractor() {
     const [hasMore, setHasMore] = useState(true);
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
+    const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
     const searchTimeout = useRef<NodeJS.Timeout | null>(null);
     const descriptionRefs = useRef<(HTMLParagraphElement | null)[]>([]);
@@ -686,7 +687,7 @@ export default function DashboardSubContractor() {
                 <section className="filter-sec mt-4">
                     <div className="container">
                         <div className="row g-4">
-                            <div className="col-xl-3 order-2 order-xl-1">
+                            <div className="col-xl-3 order-2 order-xl-1 d-none d-xl-inline-block">
                                 <span className="d-block mb-3 fw-semibold fs-4">Filters</span>
 
                                 <div className="input-wrapper mb-3">
@@ -824,8 +825,89 @@ export default function DashboardSubContractor() {
                             </div>
 
                             {/* Projects Column (unchanged) */}
+                            {/* 🔹 Mobile Filter Button */}
+                            <div className="d-flex d-xl-none justify-content-between align-items-center mb-3">
+                                <span className="fw-semibold fs-4 text-dark">Projects</span>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+                                >
+                                    {mobileFilterOpen ? 'Close Filters' : 'Filters'}
+                                </button>
+                            </div>
+
+                            {mobileFilterOpen && (
+                                <div>
+                                    <div className="input-wrapper mb-3">
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Search projects..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+
+                                    <span className="d-block mb-2 fw-medium">Zip Code</span>
+                                    <input
+                                        type="text"
+                                        placeholder="29391"
+                                        className="form-control mb-3"
+                                        value={zipCode}
+                                        onChange={(e) => setZipCode(e.target.value)}
+                                    />
+
+                                    <div className="d-none">
+                                        <span className="d-block mb-2 fw-medium">Category</span>
+                                        <div className="input-wrapper d-flex flex-column position-relative w-100 mb-3">
+                                            <select
+                                                className="form-control"
+                                                value={categoryId}
+                                                onChange={(e) => setCategoryId(e.target.value)}
+                                                disabled={categoriesLoading}
+                                            >
+                                                <option value="">All Categories</option>
+                                                {categories.map(cat => (
+                                                    <option key={cat.id} value={cat.id}>
+                                                        {cat.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <span className="d-block mb-2 fw-medium">Work Radius</span>
+                                    <div className="range-wrapper mb-5">
+                                        <div className="range-container">
+                                            <div className="slider-wrap">
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="500"
+                                                    value={workRadius}
+                                                    onChange={(e) => setWorkRadius(Number(e.target.value))}
+                                                    className="range-slider"
+                                                />
+                                                <div
+                                                    className="range-value"
+                                                    style={{
+                                                        left: `${(workRadius / 500) * 100}%`,
+                                                    }}
+                                                >
+                                                    {workRadius} miles
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="d-flex align-items-center justify-content-between">
+                                            <span className="min">0 miles</span>
+                                            <span className="max">500 miles</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="col-xl-9 order-1 order-xl-1">
-                                <div className="d-flex justify-content-between align-items-center mb-4">
+                                <div className="d-none d-xl-flex justify-content-between align-items-center mb-4">
                                     <span className="d-block fw-semibold fs-4 text-dark">Projects</span>
                                     <small className="text-muted">
                                         {projects.length} of {loading ? '...' : 'many'} projects
@@ -1039,6 +1121,73 @@ export default function DashboardSubContractor() {
                                                 {loading ? 'Loading...' : 'Load More'}
                                             </button>
                                         )}
+
+                                        <div className="slider overflow-hidden rounded-4 d-block d-xl-none">
+                                            <Slider ref={leftSliderRef} {...sliderSettings}>
+                                                {verticalAds.map(ad => (
+                                                    <a
+                                                        key={ad.id}
+                                                        href={ad.redirect_url}
+                                                        target="_blank"
+                                                        className="d-block px-1 text-decoration-none text-dark"
+                                                    >
+                                                        <div className="bg-white rounded-4 overflow-hidden border h-100">
+
+                                                            {/* Image */}
+                                                            <div
+                                                                style={{
+                                                                    height: '326px',
+                                                                    position: 'relative',
+                                                                    borderBottom: '1px solid #e9ecef'
+                                                                }}
+                                                            >
+                                                                <Image
+                                                                    src={ad.image}
+                                                                    alt="Ad"
+                                                                    fill
+                                                                    className="img-fluid"
+                                                                    style={{ objectFit: 'cover' }}
+                                                                />
+                                                            </div>
+
+                                                            {/* Content BELOW image (vertical style preserved) */}
+                                                            <div className="p-3">
+
+                                                                {/* Profile + Company */}
+                                                                <div className="d-flex align-items-center gap-2 mb-2">
+                                                                    <Image
+                                                                        src={
+                                                                            ad.advertiser.profile_image_url ||
+                                                                            '/assets/img/profile-placeholder.webp'
+                                                                        }
+                                                                        width={35}
+                                                                        height={35}
+                                                                        className="rounded-circle"
+                                                                        alt=""
+                                                                        style={{ objectFit: 'cover' }}
+                                                                    />
+                                                                    <div>
+                                                                        <p className="mb-0 fw-bold fs-14">
+                                                                            {ad.advertiser.company_name}
+                                                                        </p>
+                                                                        <p className="mb-0 text-muted fs-13">
+                                                                            {ad.advertiser.name}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Caption (separate, niche) */}
+                                                                {ad.description && (
+                                                                    <p className="mb-0 text-muted fs-14">
+                                                                        {ad.description}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                ))}
+                                            </Slider>
+                                        </div>
                                     </>
                                 )}
                             </div>
