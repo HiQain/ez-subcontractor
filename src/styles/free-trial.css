@@ -16,6 +16,32 @@
 }
 
 @media (max-width: 768px) {
+  .filter-sec .posted-card .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .filter-sec .posted-card .topbar .date {
+    font-size: 11px;
+  }
+
+  .filter-sec .posted-card .topbar .title {
+    font-size: 14px;
+    line-height: 1.3;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .filter-sec .posted-card .topbar>div {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 768px) {
   .search-wrapper {
     min-width: 350px;
   }

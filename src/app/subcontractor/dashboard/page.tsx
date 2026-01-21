@@ -686,7 +686,7 @@ export default function DashboardSubContractor() {
                 <section className="filter-sec mt-4">
                     <div className="container">
                         <div className="row g-4">
-                            <div className="col-xl-3">
+                            <div className="col-xl-3 order-2 order-xl-1">
                                 <span className="d-block mb-3 fw-semibold fs-4">Filters</span>
 
                                 <div className="input-wrapper mb-3">
@@ -754,14 +754,6 @@ export default function DashboardSubContractor() {
                                         <span className="max">500 miles</span>
                                     </div>
                                 </div>
-
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-dark text-center justify-content-center btn-sm w-100 mb-4"
-                                    onClick={handleResetFilters}
-                                >
-                                    Clear
-                                </button>
 
                                 <div className="slider overflow-hidden rounded-4">
                                     <Slider ref={leftSliderRef} {...sliderSettings}>
@@ -832,7 +824,7 @@ export default function DashboardSubContractor() {
                             </div>
 
                             {/* Projects Column (unchanged) */}
-                            <div className="col-xl-9">
+                            <div className="col-xl-9 order-1 order-xl-1">
                                 <div className="d-flex justify-content-between align-items-center mb-4">
                                     <span className="d-block fw-semibold fs-4 text-dark">Projects</span>
                                     <small className="text-muted">

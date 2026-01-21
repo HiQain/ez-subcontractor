@@ -418,7 +418,7 @@ export default function ProfilePage() {
                                                 </div>
                                                 <div className="content">
                                                     <div className="text-black text-center fs-3 fw-bold">
-                                                        {parseFloat(profile.average_rating).toFixed(1)}/5
+                                                        {parseFloat(profile.average_rating).toFixed(1)}/5 ({profile.total_ratings})
                                                     </div>
                                                 </div>
                                             </div>
