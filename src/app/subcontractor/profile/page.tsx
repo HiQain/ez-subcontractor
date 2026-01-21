@@ -312,12 +312,12 @@ export default function ProfilePage() {
                                 ? '/assets/img/star2.svg'
                                 : '/assets/img/star-empty.svg'
                     }
-                    width={50}
-                    height={50}
+                    width={40}
+                    height={40}
                     alt="Star Icon"
                     style={{
-                        width: 'clamp(20px,5vw,50px)',
-                        height: 'clamp(20px,5vw,50px)',
+                        width: 'clamp(20px,5vw,40px)',
+                        height: 'clamp(20px,5vw,40px)',
                     }}
                 />
             );
@@ -417,7 +417,7 @@ export default function ProfilePage() {
                                                     {renderStars(profile.average_rating)}
                                                 </div>
                                                 <div className="content">
-                                                    <div className="text-black text-center fs-3 fw-bold">
+                                                    <div className="text-black text-center fs-4 fw-bold">
                                                         {parseFloat(profile.average_rating).toFixed(1)}/5 ({profile.total_ratings})
                                                     </div>
                                                 </div>
