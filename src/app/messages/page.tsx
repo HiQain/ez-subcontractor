@@ -435,7 +435,11 @@ export default function ChatPage() {
 
                       <div className="chat-meta">
                         <div className="time">
-                          {new Date(item.last_message_time).toLocaleDateString()}
+                          {
+                            item.last_message_time !== null
+                              ? new Date(item.last_message_time).toLocaleDateString()
+                              : new Date().toLocaleDateString()
+                          }
                         </div>
                       </div>
                     </div>
