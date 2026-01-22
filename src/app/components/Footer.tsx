@@ -181,7 +181,7 @@ export default function Footer() {
                                         position: 'relative'
                                     }}
                                 >
-                                    Copy Website Link
+                                    Share This Website
                                 </button>
 
                                 {copied && (
