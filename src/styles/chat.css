@@ -572,51 +572,83 @@
   }
 }
 
+/* ===============================
+   MOBILE CHAT FIX (FINAL)
+================================ */
+
+.mobile-back-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  margin-right: 8px;
+  color: #272727;
+}
+
 @media (max-width: 768px) {
+  .mobile-back-btn {
+    display: block;
+  }
+
   .chat-wrapper {
-    display: grid;
-    grid-template-columns: 1fr;
+    position: relative;
+    height: calc(100vh - 120px);
+    /* header adjust */
+    margin: 20px 0;
+    overflow: hidden;
   }
 
+  /* Sidebar full width */
   .chat-wrapper .sidebar {
+    width: 100%;
     max-width: 100%;
+    height: 100%;
+    border-right: none;
   }
 
+  /* Main chat hidden by default */
+  .chat-wrapper .main-chat {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 20;
+  }
+
+  /* When chat is opened */
+  .chat-wrapper.chat-open .main-chat {
+    transform: translateX(0);
+  }
+
+  .chat-wrapper.chat-open .sidebar {
+    display: none;
+  }
+
+  /* Header sticky */
   .chat-wrapper .chat-header {
-    border-top: 1px solid #DADADA;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 30;
   }
 
-  .chat-wrapper .chat-item {
-    flex-wrap: wrap;
-    gap: 6px;
-    justify-content: end;
+  /* Messages scroll fix */
+  .chat-wrapper .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 90px;
   }
 
+  /* Input sticky bottom */
   .chat-wrapper .message-input {
-    flex-direction: row !important;
-    align-items: center !important;
     position: sticky;
     bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 8px 12px;
-    background-color: #fff;
-    border-top: 1px solid #DADADA;
-    z-index: 100;
-    gap: 8px;
-  }
-
-  .chat-wrapper .message-input .form-wrapper {
-    flex: 1;
-    padding: 4px 12px;
-  }
-
-  .chat-wrapper .message-input input.form-control {
-    width: 100%;
-  }
-
-  .chat-list:has(.chat-item.active) .chat-item:not(.active) {
-    display: none !important;
+    background: #fff;
+    z-index: 40;
   }
 }
 

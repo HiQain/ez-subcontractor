@@ -359,7 +359,7 @@ export default function ChatPage() {
 
       <section className="chat-sec">
         <div className="container">
-          <div className="chat-wrapper">
+          <div className={`chat-wrapper ${selectedChatId ? 'chat-open' : ''}`}>
 
             {/* SidebarSubcontractor */}
             <div className="sidebar">
@@ -441,8 +441,22 @@ export default function ChatPage() {
               <div className="chat-header">
                 {selectedUser ? (
                   <div className="chat-header-left">
+                    {/* 🔙 Mobile Back Button */}
+                    <button
+                      className="mobile-back-btn"
+                      onClick={() => {
+                        setSelectedChatId(null);
+                        setSelectedUser(null);
+                        setMessages([]);
+                      }}
+                    >
+                      ←
+                    </button>
+
                     <div className="chat-header-info">
-                      <div className="chat-name">{capitalizeEachWord(selectedUser.name)}</div>
+                      <div className="chat-name">
+                        {capitalizeEachWord(selectedUser.name)}
+                      </div>
                     </div>
                   </div>
                 ) : (
