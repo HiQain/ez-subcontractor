@@ -45,6 +45,7 @@ interface Project {
         email: string;
         phone: string;
         company_name: string;
+        zip: string;
         profile_image_url: string | null;
     };
 }
@@ -569,6 +570,7 @@ export default function ProjectSubcontractorDetailsPage() {
                                                         email: project.user.email,
                                                         phone: project.user.phone,
                                                         companyName: project.user.company_name,
+                                                        zip: project.user.zip,
                                                     },
                                                 }}
                                                 className="btn bg-dark w-100 justify-content-center rounded-3 mt-4 mb-3"

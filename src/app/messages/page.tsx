@@ -33,6 +33,7 @@ export default function ChatPage() {
   const [chatUserEmail, setChatUserEmail] = useState<string | null>(null);
   const [chatUserPhone, setChatUserPhone] = useState<string | null>(null);
   const [averageRating, setAverageRating] = useState<string | null>(null);
+  const [zip, setZip] = useState<string | null>(null);
   const [ratingCount, setRatingCount] = useState<number>(null);
   const [chatUserCompanyName, setChatUserCompanyName] = useState<string | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -49,6 +50,7 @@ export default function ChatPage() {
     setChatUserPhone(params.get('phone'));
     setChatUserCompanyName(params.get('companyName'));
     setAverageRating(params.get('average_rating'));
+    setZip(params.get('zip'));
     setRatingCount(parseInt(params.get('rating_count')));
   }, []);
 
@@ -242,6 +244,7 @@ export default function ChatPage() {
         company_name: chatUserCompanyName,
         average_rating: averageRating,
         rating_count: ratingCount,
+        zip: zip,
       };
 
       return [incomingUser, ...prev];
@@ -683,6 +686,9 @@ export default function ChatPage() {
                   </div>
                   <div className="title text-black fw-semibold fs-6 mb-2">
                     {capitalizeEachWord(selectedUser.company_name)}
+                  </div>
+                  <div className="title text-black fw-semibold fs-6 mb-2">
+                    {selectedUser.zip}
                   </div>
 
                   {hasValidRating && (

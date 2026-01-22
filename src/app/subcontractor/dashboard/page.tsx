@@ -29,6 +29,7 @@ interface Project {
         phone: string;
         company_name: string;
         profile_image_url: string;
+        zip: string;
     };
 }
 
@@ -307,6 +308,8 @@ export default function DashboardSubContractor() {
 
             const fetchedProjects = data?.data?.data || [];
             const total = data?.data?.total || 0;
+
+            console.log('DATA ====>', data?.data?.data)
 
             setProjects(prev => resetPage ? fetchedProjects : [...prev, ...fetchedProjects]);
             setShouldShowSeeMore(Array(fetchedProjects.length).fill(false));
@@ -1053,6 +1056,7 @@ export default function DashboardSubContractor() {
                                                                                             email: project.user.email,
                                                                                             phone: project.user.phone,
                                                                                             companyName: project.user.company_name,
+                                                                                            zip: project.user.zip,
                                                                                         },
                                                                                     }} className="icon">
                                                                                         <Image

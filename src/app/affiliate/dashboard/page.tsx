@@ -486,6 +486,7 @@ export default function AffiliateDashboard() {
                                                                             companyName: contractor.company_name,
                                                                             average_rating: contractor.average_rating,
                                                                             rating_count: contractor.ratings_count,
+                                                                            zip: contractor.zip,
                                                                         },
                                                                     }} className="icon">
                                                                         <Image

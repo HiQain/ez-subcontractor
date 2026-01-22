@@ -361,6 +361,7 @@ export default function ContractorDetails() {
                                             companyName: contractor.company_name,
                                             average_rating: contractor.average_rating,
                                             rating_count: contractor.ratings_count,
+                                            zip: contractor.zip,
                                         },
                                     }}
                                     className="btn btn-primary rounded-3 flex-grow-1 d-flex align-items-center justify-content-center gap-2"

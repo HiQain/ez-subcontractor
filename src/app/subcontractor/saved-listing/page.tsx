@@ -29,6 +29,7 @@ interface Project {
         phone: string;
         company_name: string;
         profile_image_url: string;
+        zip: string;
     };
 }
 
@@ -541,6 +542,7 @@ export default function SavedListingPage() {
                                                                                                 email: project.user.email,
                                                                                                 phone: project.user.phone,
                                                                                                 companyName: project.user.company_name,
+                                                                                                zip: project.user.zip,
                                                                                             },
                                                                                         }} className="icon">
                                                                                             <Image

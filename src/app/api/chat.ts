@@ -19,6 +19,7 @@ export interface Contractor {
     last_message: string | null;
     last_message_time: string | null;
     average_rating: string;
+    zip: string;
     rating_count: number;
 }
 
