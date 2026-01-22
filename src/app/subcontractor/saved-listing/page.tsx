@@ -546,7 +546,7 @@ export default function SavedListingPage() {
                                                                                             },
                                                                                         }} className="icon">
                                                                                             <Image
-                                                                                                src={`/assets/img/icons/chat.svg`}
+                                                                                                src="/assets/img/icons/Chat.svg"
                                                                                                 width={20}
                                                                                                 height={20}
                                                                                                 alt="Social Icon"

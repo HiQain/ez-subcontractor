@@ -223,7 +223,6 @@ export default function ChatPage() {
           ? {
             ...user,
             last_message: '',
-            last_message_time: '',
           }
           : user
       )
@@ -430,7 +429,7 @@ export default function ChatPage() {
                           {capitalizeEachWord(item.name)}
                         </div>
                         <div className="chat-last-message">
-                          {item.last_message || "No messages yet"}
+                          {item.last_message}
                         </div>
                       </div>
 
