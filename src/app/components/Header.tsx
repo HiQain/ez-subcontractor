@@ -212,7 +212,8 @@ export default function Header() {
                     {(
                         pathname.startsWith('/general-contractor') ||
                         (pathname === '/messages' && role === 'general_contractor') ||
-                        (pathname === '/subscription-list' && role === 'general_contractor')
+                        (pathname === '/subscription-list' && role === 'general_contractor') ||
+                        (pathname === '/checkout' && role === 'general_contractor')
                     ) && (
                             <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
                                 <li className="nav-item">
@@ -236,7 +237,8 @@ export default function Header() {
                     {(
                         pathname.startsWith('/subcontractor') ||
                         (pathname === '/messages' && role === 'subcontractor') ||
-                        (pathname === '/subscription-list' && role === 'subcontractor')
+                        (pathname === '/subscription-list' && role === 'subcontractor') ||
+                        (pathname === '/checkout' && role === 'subcontractor')
                     ) && (
                             <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
                                 <li className="nav-item">
@@ -260,7 +262,8 @@ export default function Header() {
                     {(
                         pathname.startsWith('/affiliate') ||
                         (pathname === '/messages' && role === 'affiliate') ||
-                        (pathname === '/subscription-list' && role === 'affiliate')
+                        (pathname === '/subscription-list' && role === 'affiliate') ||
+                        (pathname === '/checkout' && role === 'affiliate')
                     ) && (
                             <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
                                 <li className="nav-item">
