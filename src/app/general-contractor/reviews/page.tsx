@@ -17,7 +17,7 @@ interface Contractor {
     state: string | null;
     profile_image_url: string;
     average_rating: string; // e.g., "4.50"
-    ratings_count: string;  // e.g., "2"
+    rating_count: number;  // e.g., "2"
     created_at: string;     // e.g., "2025-11-06T20:51:19.000000Z"
 }
 
@@ -241,6 +241,12 @@ export default function ReviewsPage() {
             setCurrentContractor(null);
             setSelectedRating(0);
             setComment('');
+
+            setQuery('');
+            setResults([]);
+            setShowList(false);
+            inputRef.current?.blur();
+
             fetchContractors();
 
             // Optional: Refresh contractor list or update average_rating locally
@@ -547,7 +553,7 @@ export default function ReviewsPage() {
                                                                                 })}
                                                                         </div>
                                                                         <div className="content">
-                                                                            <div className="fs-12">{parseFloat(contractor.average_rating).toFixed(1)}/5</div>
+                                                                            <div className="fs-12">{parseFloat(contractor.average_rating).toFixed(1)}/5 ({contractor.rating_count})</div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
