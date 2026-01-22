@@ -18,6 +18,8 @@ export interface Contractor {
     created_at: string;
     last_message: string | null;
     last_message_time: string | null;
+    average_rating: string;
+    rating_count: number;
 }
 
 // Get contractors

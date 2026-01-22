@@ -359,6 +359,8 @@ export default function ContractorDetails() {
                                             email: contractor.email,
                                             phone: contractor.phone,
                                             companyName: contractor.company_name,
+                                            average_rating: contractor.average_rating,
+                                            rating_count: contractor.ratings_count,
                                         },
                                     }}
                                     className="btn btn-primary rounded-3 flex-grow-1 d-flex align-items-center justify-content-center gap-2"

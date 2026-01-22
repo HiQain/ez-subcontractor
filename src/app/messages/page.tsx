@@ -32,6 +32,8 @@ export default function ChatPage() {
   const [chatUserName, setChatUserName] = useState<string | null>(null);
   const [chatUserEmail, setChatUserEmail] = useState<string | null>(null);
   const [chatUserPhone, setChatUserPhone] = useState<string | null>(null);
+  const [averageRating, setAverageRating] = useState<string | null>(null);
+  const [ratingCount, setRatingCount] = useState<number>(null);
   const [chatUserCompanyName, setChatUserCompanyName] = useState<string | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
@@ -46,6 +48,8 @@ export default function ChatPage() {
     setChatUserEmail(params.get('email'));
     setChatUserPhone(params.get('phone'));
     setChatUserCompanyName(params.get('companyName'));
+    setAverageRating(params.get('average_rating'));
+    setRatingCount(parseInt(params.get('rating_count')));
   }, []);
 
   const handleMenuClick = (panelType: 'contact' | 'media' | 'search') => {
@@ -236,6 +240,8 @@ export default function ChatPage() {
         last_message_time: new Date().toISOString(),
         created_at: new Date().toISOString(),
         company_name: chatUserCompanyName,
+        average_rating: averageRating,
+        rating_count: ratingCount,
       };
 
       return [incomingUser, ...prev];
@@ -340,6 +346,9 @@ export default function ChatPage() {
       </>
     );
   }
+
+  const rating = Number(selectedUser?.average_rating);
+  const hasValidRating = !isNaN(rating) && rating > 0;
 
   return (
     <div className="sections overflow-hidden">
@@ -675,6 +684,44 @@ export default function ChatPage() {
                   <div className="title text-black fw-semibold fs-6 mb-2">
                     {capitalizeEachWord(selectedUser.company_name)}
                   </div>
+
+                  {hasValidRating && (
+                    <div className="d-flex align-items-center flex-wrap justify-content-center mb-2">
+                      <div className="rating-icons d-flex align-items-center gap-1">
+                        {Array(5)
+                          .fill(0)
+                          .map((_, j) => {
+                            const starValue = j + 1;
+                            const isFull = starValue <= Math.floor(rating);
+                            const isHalf = !isFull && starValue <= rating + 0.5;
+
+                            return (
+                              <Image
+                                key={j}
+                                src={
+                                  isFull
+                                    ? '/assets/img/start1.svg'
+                                    : isHalf
+                                      ? '/assets/img/star2.svg'
+                                      : '/assets/img/star-empty.svg'
+                                }
+                                width={14}
+                                height={14}
+                                alt="Star Icon"
+                                loading="lazy"
+                              />
+                            );
+                          })}
+                      </div>
+
+                      <div className="content" style={{ marginLeft: '5px' }}>
+                        <div className="fs-12">
+                          {rating.toFixed(1)}/5 ({selectedUser?.rating_count})
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap mb-2">
                     <Image
                       src="/assets/img/icons/message-dark.svg"
