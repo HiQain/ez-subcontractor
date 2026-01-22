@@ -10,6 +10,7 @@ import { capitalizeEachWord, ChatMessage, clearChatAPI, Contractor, getContracto
 import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { showToast } from '../../utils/appToast';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -215,7 +216,20 @@ export default function ChatPage() {
     if (!selectedChatId || messages.length === 0) return;
 
     setMessages([]);
-    alert("Chat cleared successfully!");
+
+    setResults(prev =>
+      prev.map(user =>
+        user.id === selectedChatId
+          ? {
+            ...user,
+            last_message: '',
+            last_message_time: '',
+          }
+          : user
+      )
+    );
+
+    showToast('Chat cleared successfully!')
 
     try {
       await clearChatAPI(selectedChatId);
