@@ -501,10 +501,10 @@ export default function ReviewsPage() {
                                                                             />
                                                                         )}
                                                                         <div className="content">
-                                                                            <div className="fw-semibold fs-14 mb-1 text-capitalize">{contractor.name}</div>
                                                                             <div style={{ color: '#8F9B1F' }} className="fw-semibold fs-14">
                                                                                 {contractor.company_name || 'Unknown Company'}
                                                                             </div>
+                                                                            <div className="fw-semibold fs-14 mb-1 text-capitalize">{contractor.name}</div>
                                                                         </div>
                                                                     </div>
                                                                     <div className="date fs-12 text-gray-light">
