@@ -6,54 +6,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
+import { showToast } from '../../../../utils/appToast';
 
 
 export default function RegisterPage() {
     const router = useRouter();
     const params = useParams();
     const accountType = (params.type as string) || 'affiliate';
-
-    // 🔹 Show non-blocking toast notification
-    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-        const toast = document.createElement('div');
-        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
-        const textColor = type === 'success' ? '#155724' : '#721c24';
-        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
-        const icon = type === 'success' ? '✅' : '❌';
-
-        toast.innerHTML = `
-            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 9999;
-                min-width: 300px;
-                background-color: ${bgColor};
-                color: ${textColor};
-                border: 1px solid ${borderColor};
-                border-radius: 8px;
-                padding: 12px 20px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                font-weight: 500;
-            ">
-                <span>${icon} ${message}</span>
-            </div>
-        `;
-        document.body.appendChild(toast);
-
-        const timeoutId = setTimeout(() => {
-            if (toast.parentNode) toast.parentNode.removeChild(toast);
-        }, 4000);
-
-        // const closeButton = toast.querySelector('.btn-close');
-        // closeButton?.addEventListener('click', () => {
-        //     clearTimeout(timeoutId);
-        //     if (toast.parentNode) toast.parentNode.removeChild(toast);
-        // });
-    };
 
     // 🔑 Unified form data — all fields in one object
     const [formData, setFormData] = useState({

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../../styles/free-trial.css';
+import { showToast } from '../../../utils/appToast';
 
 interface Project {
     id: number;
@@ -40,92 +41,6 @@ export default function DashboardPage() {
     const [error, setError] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [deleteError, setDeleteError] = useState<string | null>(null);
-
-    // 🔹 ✅ Custom Toast — matches LoginPage & Design Spartans aesthetic
-    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-        const toast = document.createElement('div');
-        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
-        const textColor = type === 'success' ? '#155724' : '#721c24';
-        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
-        const icon = type === 'success' ? '✅' : '❌';
-
-        toast.innerHTML = `
-            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 9999;
-                min-width: 320px;
-                background-color: ${bgColor};
-                color: ${textColor};
-                border: 1px solid ${borderColor};
-                border-radius: 8px;
-                padding: 14px 20px;
-                box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                font-weight: 500;
-                font-size: 15px;
-                animation: toastFadeIn 0.4s ease forwards;
-            ">
-                <span>${icon} ${message}</span>
-                <button type="button" class="btn-close" style="
-                    font-size: 16px;
-                    margin-left: auto;
-                    opacity: 0.7;
-                " data-bs-dismiss="toast"></button>
-            </div>
-        `;
-
-        // Optional: Add fade-in animation if not globally defined
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes toastFadeIn {
-                from { opacity: 0; transform: translateX(100%); }
-                to { opacity: 1; transform: translateX(0); }
-            }
-        `;
-        document.head.appendChild(style);
-
-        document.body.appendChild(toast);
-
-        const timeoutId = setTimeout(() => {
-            const fadeOut = document.createElement('style');
-            fadeOut.textContent = `
-                .toast { 
-                    animation: toastFadeOut 0.4s forwards !important; 
-                }
-                @keyframes toastFadeOut {
-                    from { opacity: 1; transform: translateX(0); }
-                    to { opacity: 0; transform: translateX(100%); }
-                }
-            `;
-            document.head.appendChild(fadeOut);
-            setTimeout(() => {
-                if (toast.parentNode) toast.parentNode.removeChild(toast);
-                document.head.removeChild(fadeOut);
-            }, 400);
-        }, 3500);
-
-        const closeButton = toast.querySelector('.btn-close');
-        closeButton?.addEventListener('click', () => {
-            clearTimeout(timeoutId);
-            const fadeOut = document.createElement('style');
-            fadeOut.textContent = `
-                @keyframes toastFadeOut {
-                    from { opacity: 1; transform: translateX(0); }
-                    to { opacity: 0; transform: translateX(100%); }
-                }
-            `;
-            document.head.appendChild(fadeOut);
-            toast.style.animation = 'toastFadeOut 0.4s forwards';
-            setTimeout(() => {
-                if (toast.parentNode) toast.parentNode.removeChild(toast);
-                document.head.removeChild(fadeOut);
-            }, 400);
-        });
-    };
 
     // 🔹 Open delete modal
     const openDeleteModal = (id: number) => {
