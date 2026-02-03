@@ -256,7 +256,7 @@ export default function TransactionsPage() {
                                                             filteredTransactions.map((tx, index) => (
                                                                 <tr key={tx.id}>
                                                                     <td>{index + 1}</td>
-                                                                    <td>{tx.transaction_id ? `${tx.transaction_id.slice(0, 14)}...` : '—'}</td>
+                                                                    <td>{`${tx.transaction_id !== null && tx.transaction_id !== '' ? tx.transaction_id.slice(0, 14) + '...' : 'N/A'}`}</td>
                                                                     <td>{tx.plan.name}</td>
                                                                     <td>****{tx.card_last4}</td>
                                                                     <td>{new Date(tx.created_at).toLocaleDateString()}</td>
