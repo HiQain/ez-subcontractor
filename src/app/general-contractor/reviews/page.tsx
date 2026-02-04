@@ -19,6 +19,7 @@ interface Contractor {
     average_rating: string; // e.g., "4.50"
     rating_count: number;  // e.g., "2"
     created_at: string;     // e.g., "2025-11-06T20:51:19.000000Z"
+    zip: string;     // e.g., "2025-11-06T20:51:19.000000Z"
 }
 
 export default function ReviewsPage() {
@@ -126,6 +127,9 @@ export default function ReviewsPage() {
 
     // 🔹 Filter and sort contractors
     const filteredContractors = contractors.filter(contractor => {
+        // hide contractors with zero ratings
+        if (contractor.rating_count === 0) return false;
+
         if (filterRating === null) return true;
 
         const avg = parseFloat(contractor.average_rating) || 0;
@@ -511,6 +515,9 @@ export default function ReviewsPage() {
                                                                                 {contractor.company_name || 'Unknown Company'}
                                                                             </div>
                                                                             <div className="fw-semibold fs-14 mb-1 text-capitalize">{contractor.name}</div>
+                                                                            <div className="fs-12 fw-medium">
+                                                                                {contractor.zip}
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                     <div className="date fs-12 text-gray-light">

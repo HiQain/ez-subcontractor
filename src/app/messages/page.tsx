@@ -39,6 +39,13 @@ export default function ChatPage() {
   const [chatUserCompanyName, setChatUserCompanyName] = useState<string | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+  const [currentContractor, setCurrentContractor] = useState<Contractor | null>(null);
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [ratingLoading, setRatingLoading] = useState(false);
+  const [ratingError, setRatingError] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -320,6 +327,52 @@ export default function ChatPage() {
       setProfileLoaded(true);
     }
   }, [router]);
+
+  const handleRateSubcontractor = async () => {
+    if (!currentContractor || selectedRating === 0) return;
+
+    setRatingLoading(true);
+    setRatingError(null);
+
+    try {
+      const token = localStorage.getItem('token');
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}common/rating/add`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            rated_user_id: currentContractor.id.toString(),
+            rating: selectedRating.toString(),
+            comment: comment.trim(),
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.message || 'Rating failed');
+      }
+
+      showToast('Rating submitted successfully');
+
+      setIsRatingModalOpen(false);
+      setCurrentContractor(null);
+      setSelectedRating(0);
+      setComment('');
+    } catch (err: any) {
+      setRatingError(err.message || 'Something went wrong');
+    } finally {
+      setRatingLoading(false);
+    }
+  };
+
 
   if (!profileLoaded) {
     return (
@@ -805,6 +858,18 @@ export default function ChatPage() {
                       <span className='p-1'>Phone</span>
                     </Link>
                   </div>
+                  {localStorage.getItem('role') === 'general_contractor' && (
+                    <button
+                      className="btn btn-warning rounded-3 d-flex align-items-center gap-2 px-4 py-2 fs-4 mt-2"
+                      style={{ backgroundColor: '#ffc107', borderColor: '#ffc107' }}
+                      onClick={() => {
+                        setCurrentContractor(selectedUser);
+                        setIsRatingModalOpen(true);
+                      }}
+                    >
+                      <span>Rate Subcontractor</span>
+                    </button>
+                  )}
                 </div>
 
                 {/* <div className="contact-options p-4">
@@ -871,6 +936,117 @@ export default function ChatPage() {
                 console.log('User blocked successfully');
               }}
             /> */}
+
+            {/* Rating Modal */}
+            {isRatingModalOpen && currentContractor && (
+              <div className="modal-backdrop show" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}></div>
+            )}
+            {isRatingModalOpen && currentContractor && (
+              <div
+                className="modal show d-block"
+                style={{
+                  position: 'fixed',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: 1060,
+                  maxWidth: '400px',
+                  width: '90%',
+                  height: '330px',
+                  backgroundColor: 'white',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                }}
+              >
+                <div className="modal-header border-0 mb-0 py-0 px-0">
+                  <h5 className="modal-title text-center w-100 mb-0 py-0 px-0">Rate Now</h5>
+                  <button
+                    type="button"
+                    className="btn-close shadow-none"
+                    onClick={() => {
+                      setIsRatingModalOpen(false);
+                      setCurrentContractor(null);
+                      setSelectedRating(0);
+                      setComment('');
+                      setRatingError(null);
+                    }}
+                    aria-label="Close"
+                  ></button>
+                </div>
+                <div className="modal-body text-center">
+                  {/* Avatar */}
+                  <img
+                    src="/assets/img/placeholder-round.png"
+                    alt="Contractor"
+                    className="rounded-circle mb-1"
+                    style={{ width: '60px', height: '60px', objectFit: 'cover' }}
+                  />
+                  <h6 className="mb-1 text-capitalize">{currentContractor.name}</h6>
+                  <h6 className="mb-1 text-capitalize mb-3 text-primary">{currentContractor.company_name}</h6>
+                  {/* Star Rating */}
+                  <div className="d-flex justify-content-center align-items-center gap-1 mb-4">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        className="border-0 bg-transparent p-0"
+                        onClick={() => setSelectedRating(star)}
+                        onMouseEnter={() => { }}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <Image
+                          src={
+                            star <= selectedRating
+                              ? '/assets/img/start1.svg'
+                              : star <= selectedRating + 0.5
+                                ? '/assets/img/star2.svg'
+                                : '/assets/img/star-empty.svg'
+                          }
+                          width={32}
+                          height={32}
+                          alt={`Star ${star}`}
+                          className="mx-1"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  {ratingError && (
+                    <div className="alert alert-danger mt-2 p-2 mb-3 text-start">
+                      {ratingError}
+                    </div>
+                  )}
+                  {/* Buttons */}
+                  <div className="d-flex gap-2">
+                    <button
+                      className="btn btn-outline-dark justify-content-center w-50 rounded-2"
+                      onClick={() => {
+                        setIsRatingModalOpen(false);
+                        setCurrentContractor(null);
+                        setSelectedRating(0);
+                        setComment('');
+                        setRatingError(null);
+                      }}
+                      disabled={ratingLoading}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="btn btn-primary w-50 justify-content-center rounded-2"
+                      style={{ height: 50 }}
+                      onClick={handleRateSubcontractor}
+                      disabled={ratingLoading || selectedRating === 0}
+                    >
+                      {ratingLoading ? (
+                        <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      ) : (
+                        'Done'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
           </div>
         </div>
