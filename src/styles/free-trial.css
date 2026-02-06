@@ -15,6 +15,10 @@
   min-width: 550px;
 }
 
+.cus-bt {
+  background-color: black !important;
+}
+
 @media (max-width: 768px) {
   .filter-sec .posted-card .topbar {
     flex-direction: column;
