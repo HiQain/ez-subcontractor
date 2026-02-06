@@ -661,7 +661,8 @@ export default function ReviewsPage() {
                             style={{ width: '60px', height: '60px', objectFit: 'cover' }}
                         />
                         <h6 className="mb-1 text-capitalize">{currentContractor.name}</h6>
-                        <h6 className="mb-1 text-capitalize mb-3 text-primary">{currentContractor.company_name}</h6>
+                        <h6 className="mb-1 text-capitalize text-primary">{currentContractor.company_name}</h6>
+                        <h6 className="mb-1 text-capitalize">{currentContractor.zip}</h6>
                         {/* Star Rating */}
                         <div className="d-flex justify-content-center align-items-center gap-1 mb-4">
                             {[1, 2, 3, 4, 5].map((star) => (

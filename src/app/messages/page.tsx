@@ -45,7 +45,19 @@ export default function ChatPage() {
   const [comment, setComment] = useState('');
   const [ratingLoading, setRatingLoading] = useState(false);
   const [ratingError, setRatingError] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  const handleDownload = () => {
+    if (!previewImage) return;
+
+    const a = document.createElement('a');
+    a.href = previewImage;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -362,6 +374,26 @@ export default function ChatPage() {
 
       showToast('Rating submitted successfully');
 
+      // 🔥 TEMPORARY COUNT INCREASE
+      if (selectedUser) {
+        setSelectedUser(prev => {
+          if (!prev) return prev;
+
+          const oldCount = prev.rating_count || 0;
+          const oldAvg = Number(prev.average_rating) || 0;
+
+          const newCount = oldCount + 1;
+          const newAvg =
+            ((oldAvg * oldCount) + selectedRating) / newCount;
+
+          return {
+            ...prev,
+            rating_count: newCount,
+            average_rating: newAvg.toFixed(1),
+          };
+        });
+      }
+
       setIsRatingModalOpen(false);
       setCurrentContractor(null);
       setSelectedRating(0);
@@ -450,7 +482,7 @@ export default function ChatPage() {
 
               <div className="chat-list">
                 {filteredResults.map((item) => {
-                  const initials = (item.name || "?")
+                  const initials = (item.company_name || "?")
                     .split(" ")
                     .map(word => word[0])
                     .join("")
@@ -479,7 +511,7 @@ export default function ChatPage() {
 
                       <div className="chat-info">
                         <div className="chat-title">
-                          {capitalizeEachWord(item.name)}
+                          {capitalizeEachWord(item.company_name)}
                         </div>
                         <div className="chat-last-message">
                           {item.last_message}
@@ -525,7 +557,7 @@ export default function ChatPage() {
 
                     <div className="chat-header-info">
                       <div className="chat-name">
-                        {capitalizeEachWord(selectedUser.name)}
+                        {capitalizeEachWord(selectedUser.company_name)}
                       </div>
                     </div>
                   </div>
@@ -649,6 +681,8 @@ export default function ChatPage() {
                                     width={200}
                                     height={200}
                                     className="rounded-md"
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => setPreviewImage(att)}
                                   />
                                 ))}
                               </div>
@@ -762,14 +796,14 @@ export default function ChatPage() {
                       fontWeight: 600,
                     }}
                   >
-                    {getInitials(selectedUser?.name)}
+                    {getInitials(selectedUser?.company_name)}
                   </div>
 
                   <div className="title text-black fw-semibold fs-5">
-                    {capitalizeEachWord(selectedUser.name)}
+                    {capitalizeEachWord(selectedUser.company_name)}
                   </div>
                   <div className="title text-black fw-semibold fs-6 mb-2">
-                    {capitalizeEachWord(selectedUser.company_name)}
+                    {capitalizeEachWord(selectedUser.name)}
                   </div>
                   <div className="title text-black fw-semibold fs-6 mb-2">
                     {selectedUser.zip}
@@ -806,7 +840,7 @@ export default function ChatPage() {
 
                       <div className="content" style={{ marginLeft: '5px' }}>
                         <div className="fs-12">
-                          {rating.toFixed(1)}/5 ({selectedUser?.rating_count})
+                          {Number.isInteger(rating) ? rating : rating.toFixed(1)}/5 ({selectedUser?.rating_count})
                         </div>
                       </div>
                     </div>
@@ -937,6 +971,64 @@ export default function ChatPage() {
               }}
             /> */}
 
+            {/* Image Modal */}
+            {/* Image Preview Modal */}
+            {previewImage && (
+              <>
+                <div
+                  className="modal-backdrop show"
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.7)',
+                    zIndex: 2000,
+                  }}
+                  onClick={() => setPreviewImage(null)}
+                />
+
+                <div
+                  style={{
+                    position: 'fixed',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: 2100,
+                    maxWidth: '90%',
+                    maxHeight: '90%',
+                    background: '#fff',
+                    padding: '16px',
+                    borderRadius: '10px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '70vh',
+                      borderRadius: '8px',
+                    }}
+                  />
+
+                  <div className="mt-3 d-flex justify-content-center gap-2">
+                    <button
+                      onClick={handleDownload}
+                      className="btn btn-primary"
+                    >
+                      Download
+                    </button>
+                    <button
+                      className="btn btn-outline-dark"
+                      onClick={() => setPreviewImage(null)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
             {/* Rating Modal */}
             {isRatingModalOpen && currentContractor && (
               <div className="modal-backdrop show" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}></div>
@@ -983,7 +1075,8 @@ export default function ChatPage() {
                     style={{ width: '60px', height: '60px', objectFit: 'cover' }}
                   />
                   <h6 className="mb-1 text-capitalize">{currentContractor.name}</h6>
-                  <h6 className="mb-1 text-capitalize mb-3 text-primary">{currentContractor.company_name}</h6>
+                  <h6 className="mb-1 text-capitalize text-primary">{currentContractor.company_name}</h6>
+                  <h6 className="mb-1 text-capitalize">{currentContractor.zip}</h6>
                   {/* Star Rating */}
                   <div className="d-flex justify-content-center align-items-center gap-1 mb-4">
                     {[1, 2, 3, 4, 5].map((star) => (
