@@ -128,7 +128,7 @@ export default function ReviewsPage() {
     // 🔹 Filter and sort contractors
     const filteredContractors = contractors.filter(contractor => {
         // hide contractors with zero ratings
-        if (contractor.rating_count === 0) return false;
+        // if (contractor.rating_count === 0) return false;
 
         if (filterRating === null) return true;
 
