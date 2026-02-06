@@ -36,7 +36,7 @@ export default function Footer() {
                 <div className="footer-main">
                     <div className="row g-3">
                         {/* Contact Info */}
-                        <div className={"col-lg-4 col-sm-6"}>
+                        {/* <div className={"col-lg-4 col-sm-6"}>
                             <Link
                                 href="/"
                                 className="footer-logo d-flex justify-content-center mb-4"
@@ -52,8 +52,33 @@ export default function Footer() {
                                     loading="lazy"
                                 />
                             </Link>
-                            {/* <p className={'text-white'}>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text.</p> */}
+                        </div> */}
+
+                        <div className={"col-lg-4 col-sm-6"}>
+                            <Link
+                                href="/"
+                                className="footer-logo d-flex justify-content-center mb-4"
+                                style={{ width: 'fit-content', textDecoration: 'none' }}
+                                aria-label="Home"
+                            >
+                                <span
+                                    style={{
+                                        color: '#C8DA2A',
+                                        fontSize: '38px',
+                                        fontWeight: '700',
+                                        letterSpacing: '0.5px'
+                                    }}
+                                >
+                                    EZ
+                                    <span style={{
+                                        color: 'white',
+                                    }}>
+                                        subcontractor
+                                    </span>
+                                </span>
+                            </Link>
                         </div>
+
 
                         {/* Quick Links – Updated to match new structure */}
                         <div className="col-6 col-lg-2 offset-lg-1 col-sm-6">
