@@ -6,7 +6,7 @@ import '../../styles/chat.css';
 import '../../styles/chat-1.css';
 import '../../styles/chat-2.css';
 import { useEffect, useRef, useState } from 'react';
-import { capitalizeEachWord, ChatMessage, clearChatAPI, Contractor, getContractors, getInitials, getMessages, sendMessageAPI } from '../api/chat';
+import { capitalizeEachWord, ChatMessage, clearChatAPI, Contractor, getContractors, getInitials, getMessages, markUnreadMessages, sendMessageAPI } from '../api/chat';
 import { subscribeToChatChannel, unsubscribeFromChatChannel } from '../api/userChatPusher';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -494,13 +494,20 @@ export default function ChatPage() {
                     <div
                       key={item.id}
                       className={`chat-item ${selectedChatId === item.id ? 'selected' : ''}`}
-                      onClick={() => {
+                      onClick={async () => {
                         if (selectedChatId === item.id) return;
+                        try {
+                          await markUnreadMessages(item.id);
+                        } catch (e) {
+                          console.error("Failed to mark unread messages", e);
+                        }
+
                         setMessages([]);
                         setLoadingMessages(false);
                         setSelectedChatId(item.id);
                         setSelectedUser(item);
-                        // ✅ unread count 0 karo
+
+                        // UI me unread_count 0
                         setResults(prev =>
                           prev.map(user =>
                             user.id === item.id
@@ -508,6 +515,7 @@ export default function ChatPage() {
                               : user
                           )
                         );
+
                         loadMessages(item.id);
                       }}
                       style={{ cursor: "pointer" }}

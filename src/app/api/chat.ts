@@ -50,6 +50,22 @@ export const getMessages = async (chatId: number): Promise<ChatMessage[]> => {
     return Array.isArray(data?.data?.data) ? data.data.data : [];
 };
 
+// Mark as read
+export const markUnreadMessages = async (senderId: number) => {
+    const token = localStorage.getItem("token");
+    const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}common/chat/mark-unread-messages/${senderId}`,
+        {
+            method: "GET",
+            headers: {
+                Authorization: token ? `Bearer ${token}` : "",
+                Accept: "application/json",
+            },
+        }
+    );
+    return res.json();
+};
+
 // Send message with optional attachment
 export const sendMessageAPI = async (
     receiver_id: number,
