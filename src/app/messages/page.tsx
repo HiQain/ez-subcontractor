@@ -277,6 +277,7 @@ export default function ChatPage() {
         average_rating: averageRating,
         rating_count: ratingCount,
         zip: zip,
+        unread_count: 0,
       };
 
       return [incomingUser, ...prev];
@@ -499,6 +500,14 @@ export default function ChatPage() {
                         setLoadingMessages(false);
                         setSelectedChatId(item.id);
                         setSelectedUser(item);
+                        // ✅ unread count 0 karo
+                        setResults(prev =>
+                          prev.map(user =>
+                            user.id === item.id
+                              ? { ...user, unread_count: 0 }
+                              : user
+                          )
+                        );
                         loadMessages(item.id);
                       }}
                       style={{ cursor: "pointer" }}
@@ -526,6 +535,25 @@ export default function ChatPage() {
                               : new Date().toLocaleDateString()
                           }
                         </div>
+                        {item.unread_count > 0 && (
+                          <div
+                            style={{
+                              minWidth: 20,
+                              height: 20,
+                              padding: '0 6px',
+                              borderRadius: '10px',
+                              background: '#C8DA2A',
+                              color: '#000',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            {item.unread_count}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

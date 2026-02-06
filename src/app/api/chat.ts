@@ -21,6 +21,7 @@ export interface Contractor {
     average_rating: string;
     zip: string;
     rating_count: number;
+    unread_count: number;
 }
 
 // Get contractors
