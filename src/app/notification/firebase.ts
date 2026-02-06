@@ -21,6 +21,7 @@ export const generateToken = async () => {
     if (permission === 'granted') {
         const token = await getToken(messaging!, {
             vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+            serviceWorkerRegistration: await navigator.serviceWorker.ready
         });
         localStorage.setItem("fcmToken", token);
         console.log('token ===>', token);
