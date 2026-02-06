@@ -582,6 +582,12 @@ export default function DashboardPage() {
                                                 ))}
                                             </Slider>
                                         </div>
+                                        <button
+                                            onClick={() => router.push('/general-contractor/affiliate-list')}
+                                            className="btn btn-primary shadow-none rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 fs-4 w-100 mt-4"
+                                        >
+                                            <span>Search Affiliate</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
