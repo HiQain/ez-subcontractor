@@ -488,85 +488,91 @@ export default function ReviewsPage() {
                                         ) : (
                                             <div className="row g-4 mb-5">
                                                 {sortedFilteredContractors.length > 0 ? (
-                                                    sortedFilteredContractors.map((contractor) => (
-                                                        <div className="col-lg-4 col-md-6" key={contractor.id}>
-                                                            <div className="review-inner-card">
-                                                                <div className="top d-flex align-items-center gap-2 justify-content-between flex-wrap mb-2">
-                                                                    <div className="icon-wrapper d-flex align-items-center gap-2">
-                                                                        {contractor.profile_image_url ? (
-                                                                            <Image
-                                                                                className="avatar rounded-circle"
-                                                                                src={contractor.profile_image_url}
-                                                                                width={40}
-                                                                                height={40}
-                                                                                alt="Search Icon"
-                                                                            />
-                                                                        ) : (
-                                                                            <Image
-                                                                                className="avatar rounded-circle"
-                                                                                src="/assets/img/profile-placeholder.webp"
-                                                                                width={40}
-                                                                                height={40}
-                                                                                alt="Search Icon"
-                                                                            />
-                                                                        )}
-                                                                        <div className="content">
-                                                                            <div style={{ color: '#8F9B1F' }} className="fw-semibold fs-14">
-                                                                                {contractor.company_name || 'Unknown Company'}
-                                                                            </div>
-                                                                            <div className="fw-semibold fs-14 mb-1 text-capitalize">{contractor.name}</div>
-                                                                            <div className="fs-12 fw-medium">
-                                                                                {contractor.zip}
+                                                    sortedFilteredContractors.map((contractor) => {
+                                                        const rating = Number(contractor?.average_rating);
+                                                        return (
+                                                            <div className="col-lg-4 col-md-6" key={contractor.id}>
+                                                                <div className="review-inner-card">
+                                                                    <div className="top d-flex align-items-center gap-2 justify-content-between flex-wrap mb-2">
+                                                                        <div className="icon-wrapper d-flex align-items-center gap-2">
+                                                                            {contractor.profile_image_url ? (
+                                                                                <Image
+                                                                                    className="avatar rounded-circle"
+                                                                                    src={contractor.profile_image_url}
+                                                                                    width={40}
+                                                                                    height={40}
+                                                                                    alt="Search Icon"
+                                                                                />
+                                                                            ) : (
+                                                                                <Image
+                                                                                    className="avatar rounded-circle"
+                                                                                    src="/assets/img/profile-placeholder.webp"
+                                                                                    width={40}
+                                                                                    height={40}
+                                                                                    alt="Search Icon"
+                                                                                />
+                                                                            )}
+                                                                            <div className="content">
+                                                                                <div style={{ color: '#8F9B1F' }} className="fw-semibold fs-14">
+                                                                                    {contractor.company_name || 'Unknown Company'}
+                                                                                </div>
+                                                                                <div className="fw-semibold fs-14 mb-1 text-capitalize">{contractor.name}</div>
+                                                                                <div className="fs-12 fw-medium">
+                                                                                    {contractor.zip}
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                    </div>
-                                                                    <div className="date fs-12 text-gray-light">
-                                                                        {formatDate(contractor.created_at)}
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="bottom d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                                                                    <div className="fs-12 fw-medium">
-                                                                        {contractor.city && contractor.state
-                                                                            ? `${contractor.city}, ${contractor.state}`
-                                                                            : ''}
-                                                                    </div>
-                                                                    <div className="right d-flex align-items-center gap-2 flex-wrap">
-                                                                        <div className="rating-icons d-flex align-items-center gap-1">
-                                                                            {Array(5)
-                                                                                .fill(0)
-                                                                                .map((_, j) => {
-                                                                                    const starValue = j + 1;
-                                                                                    const rating = parseFloat(contractor.average_rating) || 0;
-                                                                                    const isFull = starValue <= Math.floor(rating);
-                                                                                    const isHalf = !isFull && starValue <= rating + 0.5;
-
-                                                                                    return (
-                                                                                        <Image
-                                                                                            key={j}
-                                                                                            src={
-                                                                                                isFull
-                                                                                                    ? '/assets/img/start1.svg'
-                                                                                                    : isHalf
-                                                                                                        ? '/assets/img/star2.svg'
-                                                                                                        : '/assets/img/star-empty.svg'
-                                                                                            }
-                                                                                            width={14}
-                                                                                            height={14}
-                                                                                            alt="Star Icon"
-                                                                                            loading="lazy"
-                                                                                        />
-                                                                                    );
-                                                                                })}
+                                                                        <div className="date fs-12 text-gray-light">
+                                                                            {formatDate(contractor.created_at)}
                                                                         </div>
-                                                                        <div className="content">
-                                                                            <div className="fs-12">{parseFloat(contractor.average_rating).toFixed(1)}/5 ({contractor.rating_count})</div>
+                                                                    </div>
+
+                                                                    <div className="bottom d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                                                                        <div className="fs-12 fw-medium">
+                                                                            {contractor.city && contractor.state
+                                                                                ? `${contractor.city}, ${contractor.state}`
+                                                                                : ''}
+                                                                        </div>
+                                                                        <div className="right d-flex align-items-center gap-2 flex-wrap">
+                                                                            <div className="rating-icons d-flex align-items-center gap-1">
+                                                                                {Array(5)
+                                                                                    .fill(0)
+                                                                                    .map((_, j) => {
+                                                                                        const starValue = j + 1;
+                                                                                        const rating = parseFloat(contractor.average_rating) || 0;
+                                                                                        const isFull = starValue <= Math.floor(rating);
+                                                                                        const isHalf = !isFull && starValue <= rating + 0.5;
+
+                                                                                        return (
+                                                                                            <Image
+                                                                                                key={j}
+                                                                                                src={
+                                                                                                    isFull
+                                                                                                        ? '/assets/img/start1.svg'
+                                                                                                        : isHalf
+                                                                                                            ? '/assets/img/star2.svg'
+                                                                                                            : '/assets/img/star-empty.svg'
+                                                                                                }
+                                                                                                width={14}
+                                                                                                height={14}
+                                                                                                alt="Star Icon"
+                                                                                                loading="lazy"
+                                                                                            />
+                                                                                        );
+                                                                                    })}
+                                                                            </div>
+                                                                            <div className="content">
+                                                                                <div className="fs-12">
+                                                                                    {Number.isInteger(rating) ? rating : rating.toFixed(1)}/5 ({contractor?.rating_count})
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    ))
+                                                        )
+                                                    }
+                                                    )
                                                 ) : (
                                                     <div className="col-12">
                                                         <div className="text-center py-4">
