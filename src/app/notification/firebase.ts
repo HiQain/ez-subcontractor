@@ -16,13 +16,33 @@ export const messaging =
     typeof window !== "undefined" ? getMessaging(app) : null;
 
 export const generateToken = async () => {
-    const permission = await Notification.requestPermission();
-    console.log('permission ===>', permission);
-    if (permission === 'granted') {
-        const token = await getToken(messaging!, {
+    if (typeof window === 'undefined') return;
+
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            console.warn("Notification permission not granted");
+            return;
+        }
+
+        if (!messaging) {
+            console.warn("Firebase messaging not initialized");
+            return;
+        }
+
+        const token = await getToken(messaging, {
             vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
         });
-        localStorage.setItem("fcmToken", token);
-        console.log('token ===>', token);
+
+        if (token) {
+            localStorage.setItem("fcmToken", token);
+            console.log("FCM Token generated:", token);
+        } else {
+            console.warn("No FCM token received");
+        }
+
+    } catch (error) {
+        console.error("FCM error:", error);
     }
-}
+};
+
