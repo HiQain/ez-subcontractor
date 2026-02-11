@@ -54,7 +54,7 @@ export const getMessages = async (chatId: number): Promise<ChatMessage[]> => {
 export const markUnreadMessages = async (senderId: number) => {
     const token = localStorage.getItem("token");
     const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}common/chat/mark-unread-messages/${senderId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}common/chat/mark-unread-messages/${senderId}`,
         {
             method: "GET",
             headers: {
