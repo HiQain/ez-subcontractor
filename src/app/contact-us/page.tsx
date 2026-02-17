@@ -34,7 +34,7 @@ export default function ContactUsPage() {
                                 {/* Contact Info Card */}
                                 <div className="col-lg-4">
                                     <div
-                                        className="contact-wrapper"
+                                        className="contact-wrapper contact-wrapper-offset"
                                         style={{
                                             background: `url('/assets/img/contact-us-image.webp')`,
                                             backgroundSize: 'cover',
