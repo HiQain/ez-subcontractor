@@ -285,7 +285,7 @@ export default function Header() {
                         )}
 
                     {[
-                        '/', '/home-general-contractor', '/home-subcontractor', '/home-affiliate', '/subscription', '/how-it-works', '/blogs', '/faq', '/terms-and-conditions', '/privacy-policy', '/blog-detail'
+                        '/', '/home-general-contractor', '/home-subcontractor', '/home-affiliate', '/subscription', '/how-it-works', '/blogs', '/faq', '/terms-and-conditions', '/privacy-policy', '/blog-detail', '/contact-us'
                     ].includes(pathname) && (
                             <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
                                 <li className="nav-item">
@@ -377,6 +377,9 @@ export default function Header() {
                                             </Link>
                                         </li>
                                     </ul>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" href="/contact-us">Contact Us</Link>
                                 </li>
                             </ul>
                         )}

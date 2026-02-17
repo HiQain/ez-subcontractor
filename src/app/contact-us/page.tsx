@@ -1,4 +1,3 @@
-// app/projects/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -10,11 +9,12 @@ import Footer from "../components/Footer";
 import '../../styles/contact-us.css';
 
 
-export default function AboutUsPage() {
-    const handleSubmit = (e: React.FormEvent) => {
+export default function ContactUsPage() {
+    const [isSubmitted, setIsSubmitted] = useState(false);
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // Add your form submission logic here (e.g., API call)
-        console.log('Form submitted');
+        setIsSubmitted(true);
     };
 
     return (
@@ -26,7 +26,7 @@ export default function AboutUsPage() {
                     <div className="container">
                         <div className="content-wrapper mb-5 text-center">
                             <h1 className="mb-2">Contact Us</h1>
-                            <p className="mb-0">Any questions or remarks? Just write us a message!s</p>
+                            <p className="mb-0">Any questions or remarks? Just write us a message!</p>
                         </div>
 
                         <div className="main-wrapper">
@@ -123,18 +123,18 @@ export default function AboutUsPage() {
                                 {/* Contact Form */}
                                 <div className="col-lg-8">
                                     <div className="form-wrapper">
-                                        <form className="form">
+                                        <form className="form" onSubmit={handleSubmit}>
                                             <div className="input-wrapper d-flex flex-column">
                                                 <label htmlFor="firstName" className="mb-1 fw-semibold">
                                                     First Name *
                                                 </label>
-                                                <input type="text" id="firstName" placeholder="Jason" required/>
+                                                <input type="text" id="firstName" placeholder="Jason" required />
                                             </div>
                                             <div className="input-wrapper d-flex flex-column">
                                                 <label htmlFor="lastName" className="mb-1 fw-semibold">
                                                     Last Name *
                                                 </label>
-                                                <input type="text" id="lastName" placeholder="Doe" required/>
+                                                <input type="text" id="lastName" placeholder="Doe" required />
                                             </div>
                                             <div className="input-wrapper d-flex flex-column">
                                                 <label htmlFor="email" className="mb-1 fw-semibold">
@@ -162,7 +162,7 @@ export default function AboutUsPage() {
                                                 <label htmlFor="subject" className="mb-1 fw-semibold">
                                                     Subject *
                                                 </label>
-                                                <input type="text" id="subject" placeholder="Enter subject" required/>
+                                                <input type="text" id="subject" placeholder="Enter subject" required />
                                             </div>
                                             <div className="input-wrapper d-flex flex-column">
                                                 <label htmlFor="message" className="mb-1 fw-semibold">
@@ -178,6 +178,11 @@ export default function AboutUsPage() {
                                             <button type="submit" className="submit-btn d-block mt-2">
                                                 Send Message
                                             </button>
+                                            {isSubmitted && (
+                                                <div className="text-success fw-semibold">
+                                                    Thank you! Your message has been submitted.
+                                                </div>
+                                            )}
                                             <Image
                                                 src="/assets/img/send-btn.webp"
                                                 width={212}
