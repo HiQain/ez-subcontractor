@@ -71,12 +71,16 @@ export const markUnreadMessages = async (senderId: number) => {
 export const sendMessageAPI = async (
     receiver_id: number,
     message: string,
-    files?: File[]
+    files?: File[],
+    last_message_type?: 'text' | 'json'
 ): Promise<ChatMessage | null> => {
     const token = localStorage.getItem("token");
     const formData = new FormData();
     formData.append("receiver_id", receiver_id.toString());
     formData.append("message", message || "");
+    if (last_message_type) {
+        formData.append("last_message_type", last_message_type);
+    }
 
     if (files && files.length > 0) {
         files.forEach((file, index) => {

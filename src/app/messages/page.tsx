@@ -49,6 +49,35 @@ export default function ChatPage() {
   const [prefillPayload, setPrefillPayload] = useState<Record<string, string> | null>(null);
   const prefillSentRef = useRef(false);
 
+  const parseJobMessage = (text?: string) => {
+    if (!text) return null;
+    try {
+      const parsed = JSON.parse(text);
+      if (!parsed || typeof parsed !== 'object') return null;
+      const category = typeof parsed.category === 'string' ? parsed.category : '';
+      const description = typeof parsed.description === 'string' ? parsed.description : '';
+      const city = typeof parsed.city === 'string' ? parsed.city : '';
+      const state = typeof parsed.state === 'string' ? parsed.state : '';
+      const location = typeof parsed.location === 'string' ? parsed.location : '';
+
+      if (!category && !description && !city && !state && !location) return null;
+
+      return { category, description, city, state, location };
+    } catch {
+      return null;
+    }
+  };
+
+  const dedupeById = (list: ChatMessage[]) => {
+    const seen = new Set<number>();
+    return list.filter(msg => {
+      if (!msg?.id) return true;
+      if (seen.has(msg.id)) return false;
+      seen.add(msg.id);
+      return true;
+    });
+  };
+
   const handleDownload = () => {
     if (!previewImage) return;
 
@@ -157,7 +186,11 @@ export default function ChatPage() {
     if (!selectedChatId) return;
 
     const channel = subscribeToChatChannel(selectedChatId, (msg: any) => {
-      setMessages((prev) => [...prev, msg]);
+      const isJob = Boolean(parseJobMessage(msg?.message));
+      setMessages((prev) => {
+        if (prev.some(m => m.id === msg.id)) return prev;
+        return [...prev, msg];
+      });
 
       setResults(prev =>
         Array.isArray(prev)
@@ -167,6 +200,7 @@ export default function ChatPage() {
                 ...user,
                 last_message: msg.message || "📎 Attachment",
                 last_message_time: msg.created_at,
+                last_message_type: isJob ? 'json' : 'text',
               }
               : user
           )
@@ -185,7 +219,7 @@ export default function ChatPage() {
     }
   }, [messages]);
 
-  const sendMessageWithText = async (text: string, attachments: File[] = []) => {
+  const sendMessageWithText = async (text: string, attachments: File[] = [], messageType: 'text' | 'json' = 'text') => {
     if (!selectedChatId || loadingMessages) return;
     if (!text || text.trim() === "") return;
 
@@ -212,6 +246,7 @@ export default function ChatPage() {
             ...user,
             last_message: text || (attachments.length > 0 ? "📎 Attachment" : ""),
             last_message_time: new Date().toISOString(),
+            last_message_type: messageType,
           }
           : user
       )
@@ -221,10 +256,12 @@ export default function ChatPage() {
     setFiles([]);
 
     try {
-      const sentMsg = await sendMessageAPI(selectedChatId, text, attachments);
+      const sentMsg = await sendMessageAPI(selectedChatId, text, attachments, messageType);
       // Replace temp message with real message if API returns it
       setMessages(prev =>
-        prev.map(msg => (msg.id === tempId ? { ...sentMsg, sending: false } : msg))
+        dedupeById(
+          prev.map(msg => (msg.id === tempId ? { ...sentMsg, sending: false } : msg))
+        )
       );
     } catch (error) {
       console.error("Send message error:", error);
@@ -235,7 +272,7 @@ export default function ChatPage() {
 
   const sendMessage = async () => {
     if ((!messageText || messageText.trim() === "") && files.length === 0) return;
-    await sendMessageWithText(messageText, files);
+    await sendMessageWithText(messageText, files, 'text');
   };
 
   const filteredResults = Array.isArray(results)
@@ -332,7 +369,7 @@ export default function ChatPage() {
 
     const prefillText = JSON.stringify(prefillPayload);
     prefillSentRef.current = true;
-    void sendMessageWithText(prefillText, []);
+    void sendMessageWithText(prefillText, [], 'json');
   }, [prefillPayload, selectedChatId, loadingMessages]);
 
   useEffect(() => {
@@ -728,46 +765,80 @@ export default function ChatPage() {
                   ) : filteredMessages.length === 0 ? (
                     <div className="text-center p-4">No messages found</div>
                   ) : (
-                    filteredMessages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className={`message ${msg.sender_id === selectedChatId ? 'incoming' : 'outgoing'}`}
-                      >
-                        <div className="message-content" style={{
-                          minWidth: '80px'
-                        }}>
-                          <div className="message-bubble">
-                            {/* Attachments first */}
-                            {msg.attachment && msg.attachment.length > 0 && (
-                              <div className="message-attachments mb-2">
-                                {msg.attachment.map((att, index) => (
-                                  <Image
-                                    key={index}
-                                    src={att}
-                                    alt={`attachment-${index}`}
-                                    width={200}
-                                    height={200}
-                                    className="rounded-md"
-                                    style={{ cursor: 'pointer' }}
-                                    onClick={() => setPreviewImage(att)}
-                                  />
-                                ))}
+                    filteredMessages.map((msg) => {
+                      const jobData = parseJobMessage(msg.message);
+                      const cityState = jobData
+                        ? [jobData.city, jobData.state].filter(Boolean).join(', ')
+                        : '';
+                      const addressLine = jobData?.location || '';
+
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`message ${msg.sender_id === selectedChatId ? 'incoming' : 'outgoing'}`}
+                        >
+                          <div className="message-content" style={{
+                            minWidth: '80px'
+                          }}>
+                            <div className="message-bubble">
+                              {/* Attachments first */}
+                              {msg.attachment && msg.attachment.length > 0 && (
+                                <div className="message-attachments mb-2">
+                                  {msg.attachment.map((att, index) => (
+                                    <Image
+                                      key={index}
+                                      src={att}
+                                      alt={`attachment-${index}`}
+                                      width={200}
+                                      height={200}
+                                      className="rounded-md"
+                                      style={{ cursor: 'pointer' }}
+                                      onClick={() => setPreviewImage(att)}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+
+                              {jobData ? (
+                                <div className="job-card">
+                                  <div className="job-title">Job Details</div>
+                                  {jobData.category && (
+                                    <div className="job-row">
+                                      <div className="job-label">Category</div>
+                                      <div className="job-value">{jobData.category}</div>
+                                    </div>
+                                  )}
+                                  {jobData.description && (
+                                    <div className="job-desc">{jobData.description}</div>
+                                  )}
+                                  {cityState && (
+                                    <div className="job-row">
+                                      <div className="job-label">City/State</div>
+                                      <div className="job-value">{cityState}</div>
+                                    </div>
+                                  )}
+                                  {addressLine && addressLine !== cityState && (
+                                    <div className="job-row">
+                                      <div className="job-label">Address</div>
+                                      <div className="job-value">{addressLine}</div>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                msg.message && <div className="message-text">{msg.message}</div>
+                              )}
+
+                              <div className="message-meta">
+                                <span className="message-time">
+                                  {new Date(msg.created_at).toLocaleTimeString()}
+                                </span>
                               </div>
-                            )}
-
-                            {/* Text below image */}
-                            {msg.message && <div className="message-text">{msg.message}</div>}
-
-                            <div className="message-meta">
-                              <span className="message-time">
-                                {new Date(msg.created_at).toLocaleTimeString()}
-                              </span>
                             </div>
                           </div>
-                        </div>
 
-                      </div>
-                    ))
+                        </div>
+                      );
+                    })
                   )
                 ) : (
                   <div className="text-center p-4">Select a user to start chat</div>
