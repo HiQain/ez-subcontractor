@@ -48,6 +48,7 @@ export default function ChatPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [prefillPayload, setPrefillPayload] = useState<Record<string, string> | null>(null);
   const prefillSentRef = useRef(false);
+  const [previewItems, setPreviewItems] = useState<{ file: File; url: string }[]>([]);
 
   const parseJobMessage = (text?: string) => {
     if (!text) return null;
@@ -374,6 +375,24 @@ export default function ChatPage() {
     prefillSentRef.current = true;
     void sendMessageWithText(prefillText, [], 'json');
   }, [prefillPayload, selectedChatId, loadingMessages]);
+
+  useEffect(() => {
+    if (files.length === 0) {
+      setPreviewItems([]);
+      return;
+    }
+
+    const nextItems = files.map(file => ({
+      file,
+      url: URL.createObjectURL(file),
+    }));
+
+    setPreviewItems(nextItems);
+
+    return () => {
+      nextItems.forEach(item => URL.revokeObjectURL(item.url));
+    };
+  }, [files]);
 
   useEffect(() => {
     const userRole = localStorage.getItem('role');
@@ -841,6 +860,7 @@ export default function ChatPage() {
                                       <div className="job-value">{addressLine}</div>
                                     </div>
                                   )}
+                                  <div className="job-note">Is this job still available?</div>
                                 </div>
                               ) : (
                                 msg.message && <div className="message-text">{msg.message}</div>
@@ -868,21 +888,42 @@ export default function ChatPage() {
                 <div className="message-input">
                   {files.length > 0 && (
                     <div className="attachments-preview p-2">
-                      {files.map((file, idx) => (
-                        <div key={idx} className="preview-item d-flex align-items-center gap-2 mb-1">
-                          <span>📎 {file.name}</span>
-                          <button
-                            className="remove-attachment"
-                            onClick={() => {
-                              setFiles(files.filter((_, i) => i !== idx));
-                              const fileInput = document.getElementById("fileInput") as HTMLInputElement;
-                              if (fileInput) fileInput.value = "";
-                            }}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
+                      {previewItems.map((item, idx) => {
+                        const isImage = item.file.type.startsWith('image/');
+                        return (
+                          <div key={idx} className="preview-item">
+                            {isImage ? (
+                              <div className="preview-thumb">
+                                <img src={item.url} alt={item.file.name} />
+                                <button
+                                  className="remove-attachment"
+                                  onClick={() => {
+                                    setFiles(files.filter((_, i) => i !== idx));
+                                    const fileInput = document.getElementById("fileInput") as HTMLInputElement;
+                                    if (fileInput) fileInput.value = "";
+                                  }}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="preview-file">
+                                <span>📎 {item.file.name}</span>
+                                <button
+                                  className="remove-attachment"
+                                  onClick={() => {
+                                    setFiles(files.filter((_, i) => i !== idx));
+                                    const fileInput = document.getElementById("fileInput") as HTMLInputElement;
+                                    if (fileInput) fileInput.value = "";
+                                  }}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
