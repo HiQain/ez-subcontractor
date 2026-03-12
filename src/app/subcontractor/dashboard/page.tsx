@@ -1063,6 +1063,17 @@ export default function DashboardSubContractor() {
                                                                                             phone: project.user.phone,
                                                                                             companyName: project.user.company_name,
                                                                                             zip: project.user.zip,
+                                                                                            category: project.category?.name || '',
+                                                                                            description: project.description
+                                                                                                ? project.description.replace(/<[^>]*>/g, '').trim()
+                                                                                                : '',
+                                                                                            city: project.city || '',
+                                                                                            state: project.state || '',
+                                                                                            location: [
+                                                                                                project.street,
+                                                                                                project.city,
+                                                                                                project.state,
+                                                                                            ].filter(Boolean).join(', '),
                                                                                         },
                                                                                     }} className="icon">
                                                                                         <Image

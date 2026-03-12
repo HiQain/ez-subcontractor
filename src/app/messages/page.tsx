@@ -46,6 +46,8 @@ export default function ChatPage() {
   const [ratingLoading, setRatingLoading] = useState(false);
   const [ratingError, setRatingError] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [prefillPayload, setPrefillPayload] = useState<Record<string, string> | null>(null);
+  const prefillSentRef = useRef(false);
 
   const handleDownload = () => {
     if (!previewImage) return;
@@ -72,6 +74,21 @@ export default function ChatPage() {
     setAverageRating(params.get('average_rating'));
     setZip(params.get('zip'));
     setRatingCount(parseInt(params.get('rating_count')));
+
+    const category = params.get('category') || '';
+    const description = params.get('description') || '';
+    const city = params.get('city') || '';
+    const state = params.get('state') || '';
+    const location = params.get('location') || '';
+
+    const payload: Record<string, string> = {};
+    if (category) payload.category = category;
+    if (description) payload.description = description;
+    if (city) payload.city = city;
+    if (state) payload.state = state;
+    if (location) payload.location = location;
+
+    setPrefillPayload(Object.keys(payload).length > 0 ? payload : null);
   }, []);
 
   const handleMenuClick = (panelType: 'contact' | 'media' | 'search') => {
@@ -168,10 +185,9 @@ export default function ChatPage() {
     }
   }, [messages]);
 
-  const sendMessage = async () => {
+  const sendMessageWithText = async (text: string, attachments: File[] = []) => {
     if (!selectedChatId || loadingMessages) return;
-    if (!selectedChatId) return;
-    if ((!messageText || messageText.trim() === "") && files.length === 0) return;
+    if (!text || text.trim() === "") return;
 
     const tempId = Date.now();
 
@@ -179,8 +195,8 @@ export default function ChatPage() {
       id: tempId,
       sender_id: 0,
       receiver_id: selectedChatId,
-      message: messageText,
-      attachment: files.map(f => URL.createObjectURL(f)),
+      message: text,
+      attachment: attachments.map(f => URL.createObjectURL(f)),
       created_at: new Date().toISOString(),
       sending: true,
     };
@@ -194,7 +210,7 @@ export default function ChatPage() {
         user.id === selectedChatId
           ? {
             ...user,
-            last_message: messageText || (files.length > 0 ? "📎 Attachment" : ""),
+            last_message: text || (attachments.length > 0 ? "📎 Attachment" : ""),
             last_message_time: new Date().toISOString(),
           }
           : user
@@ -205,7 +221,7 @@ export default function ChatPage() {
     setFiles([]);
 
     try {
-      const sentMsg = await sendMessageAPI(selectedChatId, messageText, files);
+      const sentMsg = await sendMessageAPI(selectedChatId, text, attachments);
       // Replace temp message with real message if API returns it
       setMessages(prev =>
         prev.map(msg => (msg.id === tempId ? { ...sentMsg, sending: false } : msg))
@@ -215,6 +231,11 @@ export default function ChatPage() {
       // Remove temp message if failed
       setMessages(prev => prev.filter(msg => msg.id !== tempId));
     }
+  };
+
+  const sendMessage = async () => {
+    if ((!messageText || messageText.trim() === "") && files.length === 0) return;
+    await sendMessageWithText(messageText, files);
   };
 
   const filteredResults = Array.isArray(results)
@@ -278,6 +299,7 @@ export default function ChatPage() {
         rating_count: ratingCount,
         zip: zip,
         unread_count: 0,
+        last_message_type: 'text',
       };
 
       return [incomingUser, ...prev];
@@ -303,6 +325,15 @@ export default function ChatPage() {
     router.replace('/messages');
 
   }, [chatUserId, results, router]);
+
+  useEffect(() => {
+    if (!prefillPayload || prefillSentRef.current) return;
+    if (!selectedChatId || loadingMessages) return;
+
+    const prefillText = JSON.stringify(prefillPayload);
+    prefillSentRef.current = true;
+    void sendMessageWithText(prefillText, []);
+  }, [prefillPayload, selectedChatId, loadingMessages]);
 
   useEffect(() => {
     const userRole = localStorage.getItem('role');
@@ -531,7 +562,7 @@ export default function ChatPage() {
                           {capitalizeEachWord(item.company_name)}
                         </div>
                         <div className="chat-last-message">
-                          {item.last_message}
+                          {item.last_message_type === 'json' ? 'Job Add' : item.last_message}
                         </div>
                       </div>
 
