@@ -363,6 +363,19 @@
   border-radius: 10px;
   padding: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.chat-wrapper .message-content .job-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10);
+  border-color: #C9DA2B;
+}
+
+.chat-wrapper .message-content .job-card:focus-visible {
+  outline: 2px solid #C9DA2B;
+  outline-offset: 2px;
 }
 
 .chat-wrapper .message-content .job-card .job-title {

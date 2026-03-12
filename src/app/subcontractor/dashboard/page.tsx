@@ -1063,6 +1063,7 @@ export default function DashboardSubContractor() {
                                                                                             phone: project.user.phone,
                                                                                             companyName: project.user.company_name,
                                                                                             zip: project.user.zip,
+                                                                                            projectId: String(project.id),
                                                                                             category: project.category?.name || '',
                                                                                             description: project.description
                                                                                                 ? project.description.replace(/<[^>]*>/g, '').trim()

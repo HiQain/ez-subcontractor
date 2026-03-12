@@ -54,15 +54,16 @@ export default function ChatPage() {
     try {
       const parsed = JSON.parse(text);
       if (!parsed || typeof parsed !== 'object') return null;
+      const projectId = typeof parsed.projectId === 'string' ? parsed.projectId : '';
       const category = typeof parsed.category === 'string' ? parsed.category : '';
       const description = typeof parsed.description === 'string' ? parsed.description : '';
       const city = typeof parsed.city === 'string' ? parsed.city : '';
       const state = typeof parsed.state === 'string' ? parsed.state : '';
       const location = typeof parsed.location === 'string' ? parsed.location : '';
 
-      if (!category && !description && !city && !state && !location) return null;
+      if (!projectId && !category && !description && !city && !state && !location) return null;
 
-      return { category, description, city, state, location };
+      return { projectId, category, description, city, state, location };
     } catch {
       return null;
     }
@@ -109,8 +110,10 @@ export default function ChatPage() {
     const city = params.get('city') || '';
     const state = params.get('state') || '';
     const location = params.get('location') || '';
+    const projectId = params.get('projectId') || '';
 
     const payload: Record<string, string> = {};
+    if (projectId) payload.projectId = projectId;
     if (category) payload.category = category;
     if (description) payload.description = description;
     if (city) payload.city = city;
@@ -599,7 +602,7 @@ export default function ChatPage() {
                           {capitalizeEachWord(item.company_name)}
                         </div>
                         <div className="chat-last-message">
-                          {item.last_message_type === 'json' ? 'Job Add' : item.last_message}
+                          {item.last_message_type === 'json' ? 'Job Ad' : item.last_message}
                         </div>
                       </div>
 
@@ -800,7 +803,22 @@ export default function ChatPage() {
                               )}
 
                               {jobData ? (
-                                <div className="job-card">
+                                <div
+                                  className="job-card mb-2"
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() => {
+                                    if (!jobData.projectId) return;
+                                    localStorage.setItem('project-id', String(jobData.projectId));
+                                    router.push('/subcontractor/project-details');
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key !== 'Enter' && e.key !== ' ') return;
+                                    if (!jobData.projectId) return;
+                                    localStorage.setItem('project-id', String(jobData.projectId));
+                                    router.push('/subcontractor/project-details');
+                                  }}
+                                >
                                   <div className="job-title">Job Details</div>
                                   {jobData.category && (
                                     <div className="job-row">
@@ -808,15 +826,15 @@ export default function ChatPage() {
                                       <div className="job-value">{jobData.category}</div>
                                     </div>
                                   )}
-                                  {jobData.description && (
+                                  {/* {jobData.description && (
                                     <div className="job-desc">{jobData.description}</div>
-                                  )}
-                                  {cityState && (
+                                  )} */}
+                                  {/* {cityState && (
                                     <div className="job-row">
                                       <div className="job-label">City/State</div>
                                       <div className="job-value">{cityState}</div>
                                     </div>
-                                  )}
+                                  )} */}
                                   {addressLine && addressLine !== cityState && (
                                     <div className="job-row">
                                       <div className="job-label">Address</div>
