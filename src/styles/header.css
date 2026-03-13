@@ -336,6 +336,13 @@
   pointer-events: none;
 }
 
+.navbar .navbar-toggler:focus,
+.navbar .navbar-toggler:active,
+.navbar .navbar-toggler:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
 .navbar .dropdown-menu {
   border: none;
   background-color: #F9F9F9 !important;
@@ -421,6 +428,10 @@
     top: 50%;
     transform: translateY(-50%);
     z-index: 2;
+  }
+
+  .navbar .icon-buttons .nav-link:last-child {
+    margin-right: 10px;
   }
 }
 
