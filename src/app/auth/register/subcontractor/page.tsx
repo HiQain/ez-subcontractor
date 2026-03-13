@@ -37,6 +37,8 @@ export default function RegisterPage() {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isAgreed, setIsAgreed] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [latitude, setLatitude] = useState<number | null>(null);
+    const [longitude, setLongitude] = useState<number | null>(null);
 
     // Categories
     const [categories, setCategories] = useState<Category[]>([]);
@@ -104,6 +106,23 @@ export default function RegisterPage() {
                 const { agreement: _, ...rest } = prev;
                 return rest;
             });
+        }
+    };
+
+    const fetchLatLngByZip = async (zip: string): Promise<{ lat: number; lng: number } | null> => {
+        try {
+            const res = await fetch(`https://api.zippopotam.us/us/${zip}`);
+            if (!res.ok) return null;
+            const data = await res.json();
+            const place = data?.places?.[0];
+            if (!place?.latitude || !place?.longitude) return null;
+            const lat = Number(place.latitude);
+            const lng = Number(place.longitude);
+            if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+            return { lat, lng };
+        } catch (err) {
+            console.error('Zip geocoding failed:', err);
+            return null;
         }
     };
 
@@ -214,6 +233,32 @@ export default function RegisterPage() {
         fetchCategories();
     }, []);
 
+    useEffect(() => {
+        const zip = formData.zip.trim();
+        if (zip.length !== 5) {
+            setLatitude(null);
+            setLongitude(null);
+            return;
+        }
+
+        let cancelled = false;
+        (async () => {
+            const result = await fetchLatLngByZip(zip);
+            if (cancelled) return;
+            if (result) {
+                setLatitude(result.lat);
+                setLongitude(result.lng);
+            } else {
+                setLatitude(null);
+                setLongitude(null);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [formData.zip]);
+
     // Initialize Select2 on Step 2 (only for GC/Sub)
     useEffect(() => {
         if (
@@ -314,6 +359,9 @@ export default function RegisterPage() {
 
         if (formData.work_radius === 0) newErrors.work_radius = 'Work Radius is required';
         if (!formData.zip.trim()) newErrors.zip = 'Zip Code is required';
+        if (formData.zip.trim() && (latitude === null || longitude === null)) {
+            newErrors.zip = 'Unable to find location for this Zip Code';
+        }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -331,6 +379,22 @@ export default function RegisterPage() {
         }
         localStorage.setItem('userRadius', formData.work_radius.toString());
 
+        let resolvedLatitude = latitude;
+        let resolvedLongitude = longitude;
+        if (formData.zip.trim() && (resolvedLatitude === null || resolvedLongitude === null)) {
+            const result = await fetchLatLngByZip(formData.zip.trim());
+            resolvedLatitude = result?.lat ?? null;
+            resolvedLongitude = result?.lng ?? null;
+        }
+
+        if (formData.zip.trim() && (resolvedLatitude === null || resolvedLongitude === null)) {
+            const msg = 'Unable to find location for this Zip Code';
+            setErrors({ zip: msg });
+            showToast(msg, 'error');
+            setIsLoading(false);
+            return;
+        }
+
         const payload: Record<string, any> = {
             name: formData.name,
             email: formData.email,
@@ -340,6 +404,8 @@ export default function RegisterPage() {
             password_confirmation: formData.password_confirmation,
             license_number: formData.license_number,
             zip: formData.zip,
+            latitude: resolvedLatitude,
+            longitude: resolvedLongitude,
             work_radius: formData.work_radius || 0,
             category: formData.category || '1',
             role: 'subcontractor',
@@ -682,6 +748,7 @@ export default function RegisterPage() {
                                                     inputMode="numeric"
                                                     maxLength={5}
                                                 />
+                                                {errors.zip && <span className="text-danger animate-slide-up">{errors.zip}</span>}
                                             </div>
 
                                             <div className="input-wrapper d-flex flex-column mb-3">
