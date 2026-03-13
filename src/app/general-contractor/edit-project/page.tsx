@@ -601,7 +601,7 @@ export default function EditProjectPage() {
                                         <div className="col-12 mb-4">
                                             <div className="fw-semibold mb-2">Preferred Contact Method</div>
                                             <div className="d-flex gap-3 flex-wrap">
-                                                {['email', 'phone', 'chat'].map(option => (
+                                                {['email', 'phone'].map(option => (
                                                     <div key={option} className="form-check">
                                                         <input
                                                             type="checkbox"

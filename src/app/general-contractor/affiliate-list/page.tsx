@@ -27,6 +27,7 @@ export default function AffiliateList() {
     const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [search, setSearch] = useState('');
 
     const fetchAffiliates = async () => {
         setLoading(true);
@@ -58,6 +59,16 @@ export default function AffiliateList() {
         fetchAffiliates();
     }, []);
 
+    const filteredAffiliates = affiliates.filter((affiliate) => {
+        const query = search.toLowerCase();
+        return (
+            affiliate.name?.toLowerCase().includes(query) ||
+            affiliate.company_name?.toLowerCase().includes(query) ||
+            affiliate.email?.toLowerCase().includes(query) ||
+            affiliate.phone?.toLowerCase().includes(query)
+        );
+    });
+
     return (
         <>
             <Header />
@@ -84,6 +95,21 @@ export default function AffiliateList() {
                                 </button>
                                 <span className="fs-4 fw-semibold">Affiliates</span>
                             </div>
+                            <div className="mb-4">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Search affiliates..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        minWidth: '350px',
+                                        borderRadius: '10px',
+                                        padding: '12px 15px'
+                                    }}
+                                />
+                            </div>
                         </div>
                         <div className="row g-4">
                             <div>
@@ -108,7 +134,7 @@ export default function AffiliateList() {
                                         </svg>
                                         <div>{error}</div>
                                     </div>
-                                ) : affiliates.length === 0 ? (
+                                ) : filteredAffiliates.length === 0 ? (
                                     <div className="text-center py-5">
                                         <Image
                                             src="/assets/img/post.webp"
@@ -122,7 +148,7 @@ export default function AffiliateList() {
                                 ) : (
                                     <>
                                         <div className="row g-3">
-                                            {affiliates.map((affiliate) => (
+                                            {filteredAffiliates.map((affiliate) => (
                                                 <div key={affiliate.id} className="col-lg-4 col-md-6">
                                                     <div className="filter-card" style={{
                                                         margin: '20px'
