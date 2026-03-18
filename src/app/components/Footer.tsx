@@ -12,7 +12,7 @@ export default function Footer() {
     const [copied, setCopied] = useState(false);
 
     const copyLink = () => {
-        navigator.clipboard.writeText('https://www.ezsubcontractor.com');
+        navigator.clipboard.writeText('https://ezsubcontractor.com');
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
