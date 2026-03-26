@@ -49,6 +49,7 @@ export default function ChatPage() {
   const [prefillPayload, setPrefillPayload] = useState<Record<string, string> | null>(null);
   const prefillSentRef = useRef(false);
   const [previewItems, setPreviewItems] = useState<{ file: File; url: string }[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   const parseJobMessage = (text?: string) => {
     if (!text) return null;
@@ -78,6 +79,28 @@ export default function ChatPage() {
       seen.add(msg.id);
       return true;
     });
+  };
+
+  const normalizeIncomingMessage = (payload: any): ChatMessage | null => {
+    const candidate = payload?.message && typeof payload.message === 'object'
+      ? payload.message
+      : payload?.data && typeof payload.data === 'object'
+        ? payload.data
+        : payload;
+
+    if (!candidate || typeof candidate !== 'object') return null;
+    if (typeof candidate.id !== 'number') return null;
+    if (typeof candidate.sender_id !== 'number') return null;
+    if (typeof candidate.receiver_id !== 'number') return null;
+
+    return {
+      ...candidate,
+      message: typeof candidate.message === 'string' ? candidate.message : '',
+      attachment: Array.isArray(candidate.attachment) ? candidate.attachment : [],
+      created_at: typeof candidate.created_at === 'string'
+        ? candidate.created_at
+        : new Date().toISOString(),
+    };
   };
 
   const handleDownload = () => {
@@ -187,24 +210,45 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    if (!selectedChatId) return;
+    if (!currentUserId) return;
 
-    const channel = subscribeToChatChannel(selectedChatId, (msg: any) => {
-      const isJob = Boolean(parseJobMessage(msg?.message));
-      setMessages((prev) => {
-        if (prev.some(m => m.id === msg.id)) return prev;
-        return [...prev, msg];
-      });
+    subscribeToChatChannel(currentUserId, (payload: any) => {
+      const incomingMessage = normalizeIncomingMessage(payload);
+      if (!incomingMessage) return;
+
+      const isActiveChat =
+        selectedChatId !== null &&
+        (
+          incomingMessage.sender_id === selectedChatId ||
+          incomingMessage.receiver_id === selectedChatId
+        );
+
+      if (isActiveChat) {
+        setMessages(prev => {
+          if (prev.some(m => m.id === incomingMessage.id)) return prev;
+          return [...prev, incomingMessage];
+        });
+      }
+
+      const isJob = Boolean(parseJobMessage(incomingMessage.message));
+      const counterpartId =
+        incomingMessage.sender_id === currentUserId
+          ? incomingMessage.receiver_id
+          : incomingMessage.sender_id;
 
       setResults(prev =>
         Array.isArray(prev)
           ? prev.map(user =>
-            user.id === selectedChatId
+            user.id === counterpartId
               ? {
                 ...user,
-                last_message: msg.message || "📎 Attachment",
-                last_message_time: msg.created_at,
+                last_message: incomingMessage.message || "📎 Attachment",
+                last_message_time: incomingMessage.created_at,
                 last_message_type: isJob ? 'json' : 'text',
+                unread_count:
+                  !isActiveChat && incomingMessage.sender_id !== currentUserId
+                    ? (user.unread_count || 0) + 1
+                    : user.unread_count,
               }
               : user
           )
@@ -213,9 +257,9 @@ export default function ChatPage() {
     });
 
     return () => {
-      unsubscribeFromChatChannel(selectedChatId);
+      unsubscribeFromChatChannel(currentUserId);
     };
-  }, [selectedChatId]);
+  }, [currentUserId, selectedChatId]);
 
   useEffect(() => {
     if (chatMessagesRef.current) {
@@ -395,40 +439,40 @@ export default function ChatPage() {
   }, [files]);
 
   useEffect(() => {
-    const userRole = localStorage.getItem('role');
+    const token = localStorage.getItem('token');
 
-    if (userRole === 'general_contractor') {
-      const token = localStorage.getItem('token');
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}common/get-profile`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+            },
+          }
+        );
 
-      const fetchProfile = async () => {
-        try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}common/get-profile`,
-            {
-              method: 'GET',
-              headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-              },
-            }
-          );
+        if (!response.ok) throw new Error('Failed to fetch profile');
 
-          if (!response.ok) throw new Error('Failed to fetch profile');
+        const data = await response.json();
+        const profileId = Number(data?.data?.id);
 
-          const data = await response.json();
-          const subId = data?.data?.subscription_id || null;
-
-          setSubscriptionId(subId);
-        } catch (err) {
-          console.error('Profile fetch error:', err);
-        } finally {
-          setProfileLoaded(true);
+        if (Number.isFinite(profileId) && profileId > 0) {
+          setCurrentUserId(profileId);
         }
-      };
-      fetchProfile();
-    } else {
-      setProfileLoaded(true);
-    }
+
+        const subId = data?.data?.subscription_id || null;
+        setSubscriptionId(subId);
+      } catch (err) {
+        console.error('Profile fetch error:', err);
+      } finally {
+        setProfileLoaded(true);
+      }
+    };
+
+    fetchProfile();
   }, [router]);
 
   const handleRateSubcontractor = async () => {

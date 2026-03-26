@@ -18,11 +18,11 @@ export const initPusher = () => {
 };
 
 export const subscribeToChatChannel = (
-    chatId: number,
+    channelId: number,
     onMessage: (data: any) => void
 ) => {
     const pusherInstance = initPusher();
-    const channel = pusherInstance.subscribe(`chat.${chatId}`);
+    const channel = pusherInstance.subscribe(`chat.${channelId}`);
 
     channel.bind("message-sent", (data: any) => {
         onMessage(data);
