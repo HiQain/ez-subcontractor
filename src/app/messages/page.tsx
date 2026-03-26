@@ -50,6 +50,7 @@ export default function ChatPage() {
   const prefillSentRef = useRef(false);
   const [previewItems, setPreviewItems] = useState<{ file: File; url: string }[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
   const parseJobMessage = (text?: string) => {
     if (!text) return null;
@@ -266,6 +267,31 @@ export default function ChatPage() {
       chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    const container = chatMessagesRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const distanceFromBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight;
+      setShowScrollToBottom(distanceFromBottom > 160);
+    };
+
+    handleScroll();
+    container.addEventListener('scroll', handleScroll);
+
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [selectedChatId, messages.length]);
+
+  const scrollToBottom = () => {
+    if (!chatMessagesRef.current) return;
+
+    chatMessagesRef.current.scrollTo({
+      top: chatMessagesRef.current.scrollHeight,
+      behavior: 'auto',
+    });
+  };
 
   const sendMessageWithText = async (text: string, attachments: File[] = [], messageType: 'text' | 'json' = 'text') => {
     if (!selectedChatId || loadingMessages) return;
@@ -926,6 +952,17 @@ export default function ChatPage() {
                   <div className="text-center p-4">Select a user to start chat</div>
                 )}
               </div>
+
+              {selectedUser && showScrollToBottom && (
+                <button
+                  type="button"
+                  className="scroll-to-bottom-btn"
+                  onClick={scrollToBottom}
+                  aria-label="Scroll to latest messages"
+                >
+                  ↓
+                </button>
+              )}
 
               {/* 🔥 SHOW ATTACHMENT PREVIEW HERE */}
               {selectedUser && files.length > 0 && (
