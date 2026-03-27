@@ -648,9 +648,9 @@ export default function RegisterPage() {
                                                     onChange={handleAgreementChange}
                                                     disabled={isLoading}
                                                 />
-                                                <label className="form-check-label fs-12" htmlFor="agreement">
+                                                <label className="form-check-label fw-semibold fs-12" htmlFor="agreement">
                                                     By checking this box, you agree to receive SMS messages from EZ
-                                                    Subcontractor regarding job updates, platform notifications, and
+                                                    Subcontractor regarding job alerts, platform notifications, and
                                                     promotional offers. Message frequency may vary. Message &amp; data
                                                     rates may apply. Reply STOP to opt out or HELP for help. View our{' '}
                                                     <Link href="/terms-and-conditions" style={{ color: '#8F9B1F' }}>
