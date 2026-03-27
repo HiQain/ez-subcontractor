@@ -388,13 +388,16 @@ export default function RegisterPage() {
                                             onChange={handleAgreementChange} // ✅ Fixed + dedicated handler
                                         />
                                         <label className="form-check-label fw-semibold fs-12" htmlFor="agreement">
-                                            By registering, you confirm that you have reviewed and accepted our{' '}
-                                            <Link href="/privacy-policy" style={{ color: '#8F9B1F' }}>
-                                                Privacy Policy
+                                            By checking this box, you agree to receive SMS messages from EZ
+                                            Subcontractor regarding job updates, platform notifications, and
+                                            promotional offers. Message frequency may vary. Message &amp; data rates
+                                            may apply. Reply STOP to opt out or HELP for help. View our{' '}
+                                            <Link href="/terms-and-conditions" style={{ color: '#8F9B1F' }}>
+                                                Terms &amp; Conditions
                                             </Link>{' '}
                                             and{' '}
-                                            <Link href="/terms-and-conditions" style={{ color: '#8F9B1F' }}>
-                                                Terms &amp; Conditions.
+                                            <Link href="/privacy-policy" style={{ color: '#8F9B1F' }}>
+                                                Privacy Policy.
                                             </Link>
                                         </label>
                                         {errors.agreement && (
