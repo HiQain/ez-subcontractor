@@ -11,6 +11,12 @@ type DynamicLandingPageProps = {
     };
 };
 
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+    return [];
+}
+
 const hasLocationSuffix = (slug: string, prefix: string) =>
     slug.startsWith(prefix) && slug.length > prefix.length;
 
