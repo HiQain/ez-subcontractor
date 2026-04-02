@@ -11,6 +11,27 @@ import { notificationEmitter } from '../notificationEmitter';
 export default function Header() {
     const router = useRouter();
     const pathname = usePathname();
+    const publicHeaderRoutes = [
+        '/',
+        '/home-general-contractor',
+        '/home-general-contractor2',
+        '/home-subcontractor',
+        '/home-affiliate',
+        '/subscription',
+        '/how-it-works',
+        '/blogs',
+        '/faq',
+        '/terms-and-conditions',
+        '/privacy-policy',
+        '/blog-detail',
+        '/contact-us',
+    ];
+    const shouldShowPublicLinks =
+        publicHeaderRoutes.includes(pathname) ||
+        pathname.startsWith('/home-general-contractor-') ||
+        pathname.startsWith('/home-general-contractor2-') ||
+        pathname.startsWith('/home-subcontractor-') ||
+        pathname.startsWith('/home-affiliate-');
 
     // ✅ Start as null — no assumption
     const [authState, setAuthState] = useState<{ role: string | null; resolved: boolean }>({
@@ -284,105 +305,103 @@ export default function Header() {
                             </ul>
                         )}
 
-                    {[
-                        '/', '/home-general-contractor', '/home-subcontractor', '/home-affiliate', '/subscription', '/how-it-works', '/blogs', '/faq', '/terms-and-conditions', '/privacy-policy', '/blog-detail', '/contact-us'
-                    ].includes(pathname) && (
-                            <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
-                                <li className="nav-item">
-                                    <Link className="nav-link" href="/">Home</Link>
-                                </li>
-                                <li className="nav-item dropdown">
-                                    <Link
-                                        className="nav-link dropdown-toggle" role="button"
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false" href={'#'}>Free Trial</Link>
-                                    <ul className="dropdown-menu">
-                                        <li>
-                                            <Link
-                                                href={'/home-general-contractor#plans'}
-                                                className={`dropdown-item d-flex align-items-center`}>
-                                                General Contractor
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={'/home-subcontractor#plans'}
-                                                className={`dropdown-item d-flex align-items-center`}>
-                                                Subcontractor
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={'/home-affiliate#plans'}
-                                                className={`dropdown-item d-flex align-items-center`}>
-                                                Affiliate
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li className="nav-item dropdown">
-                                    <Link
-                                        className="nav-link dropdown-toggle"
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false" href={'#'}>How It Works</Link>
-                                    <ul className="dropdown-menu">
-                                        <li>
-                                            <Link
-                                                href={'/home-general-contractor#howsItsWorks'}
-                                                className={`dropdown-item d-flex align-items-center`}>
-                                                General Contractor
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={'/home-subcontractor#howsItsWorks'}
-                                                className={`dropdown-item d-flex align-items-center`}>
-                                                Subcontractor
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={'/home-affiliate#howsItsWorks'}
-                                                className={`dropdown-item d-flex align-items-center`}>
-                                                Affiliate
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li className="nav-item dropdown">
-                                    <Link
-                                        className="nav-link dropdown-toggle"
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false" href={'#'}>Blogs</Link>
-                                    <ul className="dropdown-menu">
-                                        <li>
-                                            <Link
-                                                href={'/home-general-contractor#blogs'}
-                                                className={`dropdown-item d-flex align-items-center`}>
-                                                General Contractor
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={'/home-subcontractor#blogs'}
-                                                className={`dropdown-item d-flex align-items-center`}>
-                                                Subcontractor
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={'/home-affiliate#blogs'}
-                                                className={`dropdown-item d-flex align-items-center `}>
-                                                Affiliate
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li className="nav-item">
-                                    <Link className="nav-link" href="/contact-us">Contact Us</Link>
-                                </li>
-                            </ul>
-                        )}
+                    {shouldShowPublicLinks && (
+                        <ul className="navbar-nav mx-auto mb-2 mb-lg-0 rounded-3 px-lg-2 py-lg-2">
+                            <li className="nav-item">
+                                <Link className="nav-link" href="/">Home</Link>
+                            </li>
+                            <li className="nav-item dropdown">
+                                <Link
+                                    className="nav-link dropdown-toggle" role="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false" href={'#'}>Free Trial</Link>
+                                <ul className="dropdown-menu">
+                                    <li>
+                                        <Link
+                                            href={'/home-general-contractor#plans'}
+                                            className={`dropdown-item d-flex align-items-center`}>
+                                            General Contractor
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href={'/home-subcontractor#plans'}
+                                            className={`dropdown-item d-flex align-items-center`}>
+                                            Subcontractor
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href={'/home-affiliate#plans'}
+                                            className={`dropdown-item d-flex align-items-center`}>
+                                            Affiliate
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li className="nav-item dropdown">
+                                <Link
+                                    className="nav-link dropdown-toggle"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false" href={'#'}>How It Works</Link>
+                                <ul className="dropdown-menu">
+                                    <li>
+                                        <Link
+                                            href={'/home-general-contractor#howsItsWorks'}
+                                            className={`dropdown-item d-flex align-items-center`}>
+                                            General Contractor
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href={'/home-subcontractor#howsItsWorks'}
+                                            className={`dropdown-item d-flex align-items-center`}>
+                                            Subcontractor
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href={'/home-affiliate#howsItsWorks'}
+                                            className={`dropdown-item d-flex align-items-center`}>
+                                            Affiliate
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li className="nav-item dropdown">
+                                <Link
+                                    className="nav-link dropdown-toggle"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false" href={'#'}>Blogs</Link>
+                                <ul className="dropdown-menu">
+                                    <li>
+                                        <Link
+                                            href={'/home-general-contractor#blogs'}
+                                            className={`dropdown-item d-flex align-items-center`}>
+                                            General Contractor
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href={'/home-subcontractor#blogs'}
+                                            className={`dropdown-item d-flex align-items-center`}>
+                                            Subcontractor
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href={'/home-affiliate#blogs'}
+                                            className={`dropdown-item d-flex align-items-center `}>
+                                            Affiliate
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" href="/contact-us">Contact Us</Link>
+                            </li>
+                        </ul>
+                    )}
                 </div>
 
                 {/* ✅ Auth UI — no flicker because `resolved === true` */}
