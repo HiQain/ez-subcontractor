@@ -8,6 +8,7 @@ import React, { useRef, useState, useEffect } from "react";
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import ExpandableHtmlContent from "../components/ExpandableHtmlContent";
 
 import "../../styles/home.css";
 import "../../styles/cards.css";
@@ -410,11 +411,9 @@ export default function HomePage() {
                                         HOW IT WORKS
                                     </Link>
                                     <h1 className="mb-4">{howItWorks.title}</h1>
-                                    <div
+                                    <ExpandableHtmlContent
                                         className="mb-3 fw-medium"
-                                        dangerouslySetInnerHTML={{
-                                            __html: howItWorks.description.replace(/\n/g, '<br />'),
-                                        }}
+                                        html={howItWorks.description.replace(/\n/g, '<br />')}
                                     />
                                     <Link href="/auth/register/general-contractor" className="btn btn-primary rounded-3 mt-3">
                                         Join as a General Contractor
