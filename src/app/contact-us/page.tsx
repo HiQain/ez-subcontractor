@@ -31,10 +31,9 @@ export default function ContactUsPage() {
 
                         <div className="main-wrapper">
                             <div className="row g-lg-0 g-3">
-                                {/* Contact Info Card */}
-                                <div className="col-lg-4">
+                                <div className="col-lg-5">
                                     <div
-                                        className="contact-wrapper contact-wrapper-offset"
+                                        className="contact-wrapper"
                                         style={{
                                             background: `url('/assets/img/contact-us-image.webp')`,
                                             backgroundSize: 'cover',
@@ -44,6 +43,10 @@ export default function ContactUsPage() {
                                     >
                                         <div className="top-wrapper">
                                             <div className="sub-title">Contact Information</div>
+                                            <p className="contact-copy">
+                                                Reach out through email, phone, or social media and we&apos;ll get back
+                                                to you as soon as possible.
+                                            </p>
                                             <div className="contact-links">
                                                 <div className="link">
                                                     <div className="icon">
@@ -55,10 +58,10 @@ export default function ContactUsPage() {
                                                         />
                                                     </div>
                                                     <Link
-                                                        href="mailto:EZcontractorz1@gmail.com"
+                                                        href="mailto:info@ezsubcontractor.com"
                                                         className="text"
                                                     >
-                                                        EZcontractorz1@gmail.com
+                                                        info@ezsubcontractor.com
                                                     </Link>
                                                 </div>
                                                 <div className="link">
@@ -70,8 +73,8 @@ export default function ContactUsPage() {
                                                             alt="Call Icon"
                                                         />
                                                     </div>
-                                                    <Link href="tel:+10001234392" className="text">
-                                                        +1 (000) 123-4392
+                                                    <Link href="tel:8883177624" className="text">
+                                                        888 317-7624
                                                     </Link>
                                                 </div>
                                                 <div className="link">
@@ -83,22 +86,22 @@ export default function ContactUsPage() {
                                                             alt="Location Icon"
                                                         />
                                                     </div>
-                                                    <div className="text">132 Dartmouth St Boston, MA 02116</div>
+                                                    <div className="text">
+                                                        1310 South Beach Blvd Suite 1035
+                                                        <br />
+                                                        La Habra CA 90631
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="social-links">
-                                            <Link href="#" className="icon">
-                                                <Image
-                                                    src="/assets/img/icons/youtube.svg"
-                                                    width={12}
-                                                    height={12}
-                                                    alt="YouTube"
-                                                    loading="lazy"
-                                                />
-                                            </Link>
-                                            <Link href="#" className="icon icon1">
+                                            <Link
+                                                href="https://www.instagram.com/ezsubcontractor/"
+                                                className="icon icon1"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
                                                 <Image
                                                     src="/assets/img/icons/insta.svg"
                                                     width={15}
@@ -107,7 +110,12 @@ export default function ContactUsPage() {
                                                     loading="lazy"
                                                 />
                                             </Link>
-                                            <Link href="#" className="icon">
+                                            <Link
+                                                href="https://www.facebook.com/ezsubcontractor"
+                                                className="icon"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
                                                 <Image
                                                     src="/assets/img/icons/facebook.svg"
                                                     width={12}
@@ -120,9 +128,12 @@ export default function ContactUsPage() {
                                     </div>
                                 </div>
 
-                                {/* Contact Form */}
-                                <div className="col-lg-8">
+                                <div className="col-lg-7">
                                     <div className="form-wrapper">
+                                        <div className="form-heading">
+                                            <h2>Send Us a Message</h2>
+                                            <p>Fill out the form below and our team will contact you shortly.</p>
+                                        </div>
                                         <form className="form" onSubmit={handleSubmit}>
                                             <div className="input-wrapper d-flex flex-column">
                                                 <label htmlFor="firstName" className="mb-1 fw-semibold">
@@ -166,11 +177,11 @@ export default function ContactUsPage() {
                                             </div>
                                             <div className="input-wrapper d-flex flex-column">
                                                 <label htmlFor="message" className="mb-1 fw-semibold">
-                                                    Description *
+                                                    Message *
                                                 </label>
                                                 <textarea
                                                     id="message"
-                                                    placeholder="Write description"
+                                                    placeholder="Write your message"
                                                     required
                                                 ></textarea>
                                             </div>
@@ -183,18 +194,6 @@ export default function ContactUsPage() {
                                                     Thank you! Your message has been submitted.
                                                 </div>
                                             )}
-                                            <Image
-                                                src="/assets/img/send-btn.webp"
-                                                width={212}
-                                                height={92}
-                                                alt="Send Button"
-                                                loading="lazy"
-                                                style={{
-                                                    marginLeft: 'auto',
-                                                    marginRight: '120px',
-                                                    marginTop: '-30px',
-                                                }}
-                                            />
                                         </form>
                                     </div>
                                 </div>

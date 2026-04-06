@@ -4,27 +4,22 @@
 }
 
 .banner-sec.contact .main-wrapper {
-  border-radius: 10px;
+  border-radius: 24px;
   background-color: white;
   box-shadow: 2px 2px 16px 4px rgba(0, 0, 0, 0.1254901961);
-  padding: 8px;
+  padding: 16px;
 }
 
 .banner-sec.contact .contact-wrapper {
   background: center/cover no-repeat;
   width: 100%;
-  height: 646px;
+  min-height: 100%;
   padding: 40px;
-  border-radius: 10px;
+  border-radius: 18px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   justify-content: space-between;
-}
-
-.banner-sec.contact .contact-wrapper-offset {
-  margin-top: 15px;
-  margin-left: 15px;
 }
 
 .banner-sec.contact .contact-wrapper .sub-title {
@@ -32,6 +27,14 @@
   font-weight: 600;
   color: white;
   margin-bottom: 50px;
+}
+
+.banner-sec.contact .contact-wrapper .contact-copy {
+  font-size: 16px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 36px;
+  max-width: 290px;
 }
 
 .banner-sec.contact .contact-wrapper .contact-links .link {
@@ -59,6 +62,8 @@
   font-weight: 600;
   color: white;
   text-decoration: none;
+  line-height: 1.7;
+  word-break: break-word;
 }
 
 .banner-sec.contact .contact-wrapper .social-links {
@@ -77,6 +82,7 @@
   width: 30px;
   height: 30px;
   transition: all 0.3s ease;
+  border: 1px solid transparent;
 }
 
 .banner-sec.contact .contact-wrapper .social-links .icon:hover {
@@ -95,6 +101,22 @@
   padding: 40px;
 }
 
+.banner-sec.contact .form-wrapper .form-heading {
+  margin-bottom: 24px;
+}
+
+.banner-sec.contact .form-wrapper .form-heading h2 {
+  font-size: 30px;
+  font-weight: 700;
+  color: #272727;
+  margin-bottom: 8px;
+}
+
+.banner-sec.contact .form-wrapper .form-heading p {
+  color: #666;
+  margin-bottom: 0;
+}
+
 .banner-sec.contact .form-wrapper .form {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -109,13 +131,13 @@
   width: fit-content;
   height: fit-content;
   background-color: #C9DA2B;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px 63px;
   font-size: 18px;
   font-weight: 600;
   border: 1px solid #C9DA2B;
   transition: all 0.3s ease;
-  margin-left: auto;
+  margin-top: 8px;
 }
 
 .banner-sec.contact .form-wrapper .form .submit-btn:hover,
@@ -125,18 +147,23 @@
 
 .banner-sec.contact .input-wrapper input,
 .banner-sec.contact .input-wrapper textarea {
-  max-height: 45px;
   width: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid #DADADA;
-  padding: 12px;
+  padding: 14px 16px;
   outline: none;
   transition: all 0.3s ease;
   overflow: hidden;
+  font-size: 15px;
+}
+
+.banner-sec.contact .input-wrapper input {
+  min-height: 52px;
 }
 
 .banner-sec.contact .input-wrapper textarea {
-  min-height: 129px;
+  min-height: 160px;
+  resize: vertical;
 }
 
 .banner-sec.contact .input-wrapper input:hover,
@@ -162,24 +189,23 @@
   margin-left: 6px;
 }
 
-.banner-sec.contact {
-  padding-top: 50px;
-}
-
 /* Media Query */
 @media (max-width: 992px) {
-  .banner-sec.contact .contact-wrapper {
-    max-width: 480px;
-    margin: 0 auto;
+  .banner-sec.contact {
+    padding-top: 120px;
   }
 
-  .banner-sec.contact .contact-wrapper-offset {
-    margin-top: 0;
-    margin-left: 0;
+  .banner-sec.contact .main-wrapper {
+    padding: 12px;
+  }
+
+  .banner-sec.contact .contact-wrapper {
+    min-height: auto;
+    padding: 28px;
   }
 
   .banner-sec.contact .form-wrapper {
-    padding: 12px !important;
+    padding: 20px 12px 12px !important;
   }
 
   .banner-sec.contact .form {
