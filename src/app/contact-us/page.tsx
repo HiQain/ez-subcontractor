@@ -5,16 +5,83 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { showToast } from '../../utils/appToast';
 
 import '../../styles/contact-us.css';
 
+type ContactFormState = {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+};
 
 export default function ContactUsPage() {
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState<ContactFormState>({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+    });
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+        const { id, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [id]: value,
+        }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setIsSubmitted(true);
+
+        try {
+            setIsSubmitting(true);
+            setIsSubmitted(false);
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/contact-us`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify({
+                    name: formData.name.trim(),
+                    email: formData.email.trim(),
+                    subject: formData.subject.trim(),
+                    message: formData.message.trim(),
+                }),
+            });
+
+            const data = await response.json().catch(() => null);
+
+            if (!response.ok) {
+                const errorMessage = Array.isArray(data?.message)
+                    ? data.message[0]
+                    : data?.message || 'Failed to send message. Please try again.';
+                throw new Error(errorMessage);
+            }
+
+            setIsSubmitted(true);
+            setFormData({
+                name: '',
+                email: '',
+                subject: '',
+                message: '',
+            });
+            showToast(data?.message || 'Your message has been sent successfully!');
+        } catch (error) {
+            showToast(
+                error instanceof Error ? error.message : 'Network error. Please try again.',
+                'error'
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -136,16 +203,17 @@ export default function ContactUsPage() {
                                         </div>
                                         <form className="form" onSubmit={handleSubmit}>
                                             <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="firstName" className="mb-1 fw-semibold">
-                                                    First Name *
+                                                <label htmlFor="name" className="mb-1 fw-semibold">
+                                                    Name *
                                                 </label>
-                                                <input type="text" id="firstName" placeholder="Jason" required />
-                                            </div>
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="lastName" className="mb-1 fw-semibold">
-                                                    Last Name *
-                                                </label>
-                                                <input type="text" id="lastName" placeholder="Doe" required />
+                                                <input
+                                                    type="text"
+                                                    id="name"
+                                                    placeholder="Alex"
+                                                    value={formData.name}
+                                                    onChange={handleChange}
+                                                    required
+                                                />
                                             </div>
                                             <div className="input-wrapper d-flex flex-column">
                                                 <label htmlFor="email" className="mb-1 fw-semibold">
@@ -155,17 +223,8 @@ export default function ContactUsPage() {
                                                     type="email"
                                                     id="email"
                                                     placeholder="hello@example.com"
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="input-wrapper d-flex flex-column">
-                                                <label htmlFor="phone" className="mb-1 fw-semibold">
-                                                    Phone Number *
-                                                </label>
-                                                <input
-                                                    id="phone"
-                                                    type="tel"
-                                                    placeholder="(000) 000-0000"
+                                                    value={formData.email}
+                                                    onChange={handleChange}
                                                     required
                                                 />
                                             </div>
@@ -173,7 +232,14 @@ export default function ContactUsPage() {
                                                 <label htmlFor="subject" className="mb-1 fw-semibold">
                                                     Subject *
                                                 </label>
-                                                <input type="text" id="subject" placeholder="Enter subject" required />
+                                                <input
+                                                    type="text"
+                                                    id="subject"
+                                                    placeholder="Enter subject"
+                                                    value={formData.subject}
+                                                    onChange={handleChange}
+                                                    required
+                                                />
                                             </div>
                                             <div className="input-wrapper d-flex flex-column">
                                                 <label htmlFor="message" className="mb-1 fw-semibold">
@@ -182,12 +248,18 @@ export default function ContactUsPage() {
                                                 <textarea
                                                     id="message"
                                                     placeholder="Write your message"
+                                                    value={formData.message}
+                                                    onChange={handleChange}
                                                     required
-                                                ></textarea>
+                                                />
                                             </div>
 
-                                            <button type="submit" className="submit-btn d-block mt-2">
-                                                Send Message
+                                            <button
+                                                type="submit"
+                                                className="submit-btn d-block mt-2"
+                                                disabled={isSubmitting}
+                                            >
+                                                {isSubmitting ? 'Sending...' : 'Send Message'}
                                             </button>
                                             {isSubmitted && (
                                                 <div className="text-success fw-semibold">
