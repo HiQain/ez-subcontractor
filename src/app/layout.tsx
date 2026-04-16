@@ -1,4 +1,5 @@
 "use client";
+import Script from "next/script";
 import "../styles/font-montserrat.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "slick-carousel/slick/slick.css";
@@ -37,6 +38,18 @@ export default function RootLayout({ children }) {
         <html lang="en">
             <head>
                 <link rel="icon" type="image/png" href="/assets/img/icons/fav.png" />
+                <Script
+                    src="https://www.googletagmanager.com/gtag/js?id=G-BCYHMJZTDN"
+                    strategy="afterInteractive"
+                />
+                <Script id="google-analytics" strategy="afterInteractive">
+                    {`
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){dataLayer.push(arguments);}
+                        gtag('js', new Date());
+                        gtag('config', 'G-BCYHMJZTDN');
+                    `}
+                </Script>
             </head>
             <body>
                 {children}
