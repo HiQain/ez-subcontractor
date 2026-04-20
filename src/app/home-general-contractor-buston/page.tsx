@@ -622,14 +622,14 @@ export default function HomePage() {
                             <div key={reason.id} className="col-md-6">
                                 <div className="gc2-reason-card h-100">
                                     <div className="gc2-reason-icon-wrap mb-3">
-                                    <Image
-                                        src={reason.icon}
-                                        width={48}
-                                        height={48}
-                                        alt="Service icon"
-                                        className="gc2-reason-icon"
-                                        style={{ objectFit: 'contain' }}
-                                    />
+                                        <Image
+                                            src={reason.icon}
+                                            width={48}
+                                            height={48}
+                                            alt="Service icon"
+                                            className="gc2-reason-icon"
+                                            style={{ objectFit: 'contain' }}
+                                        />
                                     </div>
                                     <h3 className="h5 fw-bold mb-2">{reason.title}</h3>
                                     <p className="text-muted mb-0">{reason.description}</p>

@@ -3,7 +3,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 import Slider from "react-slick";
 import React, { useRef, useState, useEffect } from "react";
 
@@ -39,18 +38,7 @@ const stripHtml = (html: string): string => {
         .trim();
 };
 
-const formatRouteLocation = (pathname: string): string | null => {
-    const routeMap: Record<string, string> = {
-        '/home-general-contractor-newyork': 'New York',
-        '/home-general-contractor-buston': 'Buston',
-        '/home-general-contractor-huston': 'Huston',
-    };
-
-    return routeMap[pathname] || null;
-};
-
 export default function HomePage() {
-    const pathname = usePathname();
     const sliderRef = useRef(null);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [faqs, setFaqs] = useState<any[]>([]);
@@ -58,7 +46,6 @@ export default function HomePage() {
     const [blogs, setBlogs] = useState([]);
     const [blogsLoading, setBlogsLoading] = useState(true);
     const [plans, setPlans] = useState<any[]>([]);
-    const locationLabel = formatRouteLocation(pathname);
 
     useEffect(() => {
         const fetchBlogs = async () => {
@@ -531,9 +518,7 @@ export default function HomePage() {
                             <div className="pe-lg-4">
                                 <span className="btn btn-outline-dark mb-3">WHY EZ SUBCONTRACTOR</span>
                                 <h2 className="fw-bold mb-3">
-                                    {locationLabel
-                                        ? `A smarter way to win and manage work in ${locationLabel}`
-                                        : "A smarter way to win and manage more construction work"}
+                                    A smarter way to win and manage more construction work
                                 </h2>
                                 <p className="text-muted mb-3">
                                     General contractors need more than leads. They need a reliable way to post projects,
@@ -636,14 +621,14 @@ export default function HomePage() {
                             <div key={reason.id} className="col-md-6">
                                 <div className="gc2-reason-card h-100">
                                     <div className="gc2-reason-icon-wrap mb-3">
-                                    <Image
-                                        src={reason.icon}
-                                        width={48}
-                                        height={48}
-                                        alt="Service icon"
-                                        className="gc2-reason-icon"
-                                        style={{ objectFit: 'contain' }}
-                                    />
+                                        <Image
+                                            src={reason.icon}
+                                            width={48}
+                                            height={48}
+                                            alt="Service icon"
+                                            className="gc2-reason-icon"
+                                            style={{ objectFit: 'contain' }}
+                                        />
                                     </div>
                                     <h3 className="h5 fw-bold mb-2">{reason.title}</h3>
                                     <p className="text-muted mb-0">{reason.description}</p>
@@ -782,9 +767,7 @@ export default function HomePage() {
                                     BUILT FOR REAL JOBS
                                 </span>
                                 <h2 className="fw-bold mb-3">
-                                    {locationLabel
-                                        ? `Build stronger contractor connections in ${locationLabel}`
-                                        : "Keep your pipeline full with faster subcontractor coordination"}
+                                    Keep your pipeline full with faster subcontractor coordination
                                 </h2>
                                 <p className="text-muted mb-3">
                                     EZ Subcontractor helps general contractors stay ahead with a cleaner bidding flow,
