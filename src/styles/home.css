@@ -492,7 +492,7 @@
 
 .gc2-process-image {
   -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   transition: transform 0.35s ease;
 }
 
@@ -587,7 +587,7 @@
 
 .gc2-expertise-image {
   -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
 }
 
 @media (max-width: 768px) {
