@@ -29,15 +29,8 @@ export default function Header() {
     const shouldShowPublicLinks =
         publicHeaderRoutes.includes(pathname) ||
         pathname.startsWith('/home-general-contractor-') ||
-        pathname.startsWith('/home-general-contractor2-') ||
         pathname.startsWith('/home-subcontractor-') ||
         pathname.startsWith('/home-affiliate-');
-
-    const generalContractorLandingPath = pathname.startsWith('/home-general-contractor2')
-        ? pathname
-        : pathname.startsWith('/home-general-contractor2-')
-            ? pathname
-            : '/home-general-contractor2';
 
     // ✅ Start as null — no assumption
     const [authState, setAuthState] = useState<{ role: string | null; resolved: boolean }>({
@@ -324,7 +317,6 @@ export default function Header() {
                                 <ul className="dropdown-menu">
                                     <li>
                                         <Link
-                                            // href={`${generalContractorLandingPath}#plans`}
                                             href={'/home-general-contractor#plans'}
                                             className={`dropdown-item d-flex align-items-center`}>
                                             General Contractor
@@ -354,7 +346,6 @@ export default function Header() {
                                 <ul className="dropdown-menu">
                                     <li>
                                         <Link
-                                            // href={`${generalContractorLandingPath}#howsItsWorks`}
                                             href={'/home-general-contractor#howsItsWorks'}
                                             className={`dropdown-item d-flex align-items-center`}>
                                             General Contractor
@@ -384,7 +375,6 @@ export default function Header() {
                                 <ul className="dropdown-menu">
                                     <li>
                                         <Link
-                                            // href={`${generalContractorLandingPath}#blogs`}
                                             href={'/home-general-contractor#blogs'}
                                             className={`dropdown-item d-flex align-items-center`}>
                                             General Contractor
