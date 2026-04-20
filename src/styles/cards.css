@@ -1,0 +1,60 @@
+.project-sec {
+  padding: 50px 0;
+}
+.project-sec .main-card-slide {
+  margin-bottom: 30px;
+}
+.project-sec .description {
+  font-weight: 600;
+  color: #6d6d6d;
+}
+.project-sec .custom-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.project-sec .custom-pagination .page-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #272727 !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.project-sec .custom-pagination .page-dot.active, .project-sec .custom-pagination .page-dot:hover {
+  background: #C9DA2B !important;
+  border: 2px solid #272727 !important;
+  width: 29px;
+  height: 11px;
+  border-radius: 30px;
+}
+
+.description {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.3s ease;
+}
+.description.expanded {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.see-more-btn {
+  background: none;
+  border: none;
+  color: #C9DA2B !important;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 5px;
+  padding: 0;
+}
+
+.custom-card.has-more .see-more-btn {
+  display: inline-block;
+}
+
+/*# sourceMappingURL=cards.css.map */

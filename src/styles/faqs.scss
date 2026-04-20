@@ -1,0 +1,54 @@
+$primary: #C9DA2B;
+$gray: #F9F9F9;
+$gray-light: #9A9A9A;
+$dark: #272727;
+
+.hero-sec.faqs {
+    padding: 50px 0;
+
+    .accordion-item {
+        border-radius: 10px !important;
+        margin-bottom: 25px !important;
+        box-shadow: 0 60px 30px #00000010 !important;
+
+        &:last-child{
+            margin-bottom: 0 !important;
+        }
+        .accordion-header {
+            border-radius: 10px !important;
+            .accordion-button {
+                background-color: white;
+                color: $dark;
+                font-weight: 600;
+                font-size: 18px;
+                padding: 24px 20px;
+                border-radius: 10px 10px 10px 10px !important;
+                box-shadow: none;
+                &:not(.collapsed) {
+                    background-color: $primary;
+                    color: $dark;
+                    border-radius: 10px 10px 0 0 !important;
+                    box-shadow: none;
+                }
+                &::after {
+                    width: 18px;
+                    height: 10px;
+                    background-image: url('/assets/img/icons/dropdown-dark.svg');
+                    background-size: contain;
+                }
+            }
+        }
+        .accordion-body {
+            background-color: $primary;
+            transition: all 0.3s ease;
+            padding: 20px 42px 20px 20px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .accordion-collapse.show {
+            .accordion-body {
+                background-color: $primary;
+            }
+        }
+    }
+}

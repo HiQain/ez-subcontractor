@@ -1,0 +1,327 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import '../../styles/pricing.css';
+import { useState, useEffect } from 'react';
+
+export default function PricingPage() {
+    const router = useRouter();
+
+    // State
+    const [activeTab, setActiveTab] = useState<'subcontractor' | 'affiliate' | 'general_contractor'>('subcontractor');
+    const [plans, setPlans] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Fetch plans based on active tab
+    useEffect(() => {
+        const fetchPlans = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const token = localStorage.getItem('token'); // Optional: auth not required for public plans
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}common/subscription/public/plans?role=${activeTab}`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                });
+                const data = await res.json();
+
+                console.log(data);
+
+                if (res.ok && data.success && Array.isArray(data.data?.plans)) {
+                    // Transform API response into your UI structure
+                    const transformedPlans = data.data.plans.map((plan: any) => ({
+                        id: plan.id,
+                        title: plan.plan_name,
+                        price: parseFloat(plan.price), // Use discount if available
+                        discount: plan.discount_price, // Use discount if available
+                        features: plan.features.map((f: any) => f.feature),
+                        hasNote: plan.type === 'trial',
+                        isPopular: plan.label === 'Popular',
+                        showStrike: !!plan.discount_price,
+                        saveText: plan.discount_price ? `${Math.round(100 - (parseFloat(plan.discount_price) / parseFloat(plan.price)) * 100)}% OFF` : '',
+                        saveColor: '#DC2626',
+                        duration_days: plan.duration_days,
+                        type: plan.type,
+                        stripe_price_id: plan.stripe_price_id,
+                        extra_category_price: plan.extra_category_price,
+                    }));
+
+                    setPlans(transformedPlans);
+                } else {
+                    throw new Error(data.message?.[0] || 'Failed to load plans');
+                }
+            } catch (err: any) {
+                console.error('Error fetching plans:', err);
+                setError(err.message || 'Failed to load subscription plans. Please try again.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPlans();
+    }, [activeTab]); // 🔁 Re-fetch when tab changes
+
+    const handleSelectPlan = (plan: any) => {
+        const token = localStorage.getItem('token');
+        localStorage.setItem('selectedPlan', JSON.stringify({ ...plan, type: activeTab }));
+        if (token && token !== 'null' && token !== 'undefined') {
+            router.push('/checkout');
+        } else {
+            router.push('/auth/login');
+        }
+    };
+
+    const renderNoteCard = () => (
+        <div className="note-card d-flex align-items-start gap-1">
+            <Image
+                src="/assets/img/icons/note.webp"
+                width={24}
+                height={24}
+                alt="Note"
+                loading="lazy"
+                className="d-block"
+            />
+            <div className="content">
+                <span style={{ fontSize: '14px' }} className="d-block fw-semibold mb-1">
+                    Note
+                </span>
+                <p style={{ fontSize: '12px' }} className="mb-0">
+                    After your trial ends, you’ll need to subscribe to keep bidding on projects, chatting with
+                    contractors, and accessing premium tools.
+                </p>
+            </div>
+        </div>
+    );
+
+    const renderPlanCard = (plan: any) => (
+        <div key={plan.id} className="col-lg-3 col-md-6">
+            <div className={`price-card ${plan.isPopular ? 'popular' : ''} free`}>
+                <div>
+                    <div className="pricing-header">
+                        {plan.isPopular ? (
+                            <div className="d-flex align-items-center justify-content-between mb-3">
+                                <span className="title1 mb-0 text-truncate">{plan.title}</span>
+                                <div
+                                    style={{ fontSize: '14px' }}
+                                    className="custom-btn bg-white shadow p-2 rounded-pill"
+                                >
+                                    🔥 Popular
+                                </div>
+                            </div>
+                        ) : (
+                            <span className="title1 text-truncate">{plan.title}</span>
+                        )}
+
+                        {plan.showStrike ? (
+                            <div className="d-flex align-items-center gap-1 flex-wrap">
+                                <del className="fs-18 fw-medium text-black">$ {plan.price}</del>
+                                <div className="d-flex align-items-center gap-2 justify-content-between">
+                                    <span className="price">
+                                        $
+                                        <span className="fw-bold">
+                                            {Math.trunc(plan.discount ? plan.price - (plan.price / 100) * plan.discount : plan.price)}
+                                        </span>
+                                    </span>
+                                    {plan.saveText && (
+                                        <div
+                                            style={{ backgroundColor: plan.saveColor }}
+                                            className="custom-btn text-white py-2 px-3 rounded-pill"
+                                        >
+                                            {Math.trunc(parseFloat(plan.discount))} % OFF
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="d-flex align-items-center gap-2">
+                                <span className="price">
+                                    $<span className="fw-bold">{plan.price}</span>
+                                </span>
+                                {plan.saveText && (
+                                    <button
+                                        type="button"
+                                        style={{ backgroundColor: plan.saveColor }}
+                                        className="custom-btn text-white p-2 rounded-pill"
+                                    >
+                                        {plan.saveText}
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="pricing-body mb-3">
+                        <ul className="m-0 p-0 list-with-icon">
+                            {plan.features.map((feature: string, i: number) => (
+                                <li key={i}>{feature}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="d-flex align-items-center flex-column">
+                    {plan.hasNote && renderNoteCard()}
+                    <div className="pricing-button w-100 pt-0">
+                        <button className="btn" onClick={() => handleSelectPlan(plan)}>
+                            Buy Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <div>
+            <Header />
+            <div className="sections overflow-hidden">
+                <section
+                    style={{
+                        background: `url('/assets/img/pricing-hero.webp') center /cover no-repeat`,
+                    }}
+                    className="hero-sec position-relative pricing"
+                >
+                    <div className="container">
+                        <div className="content-wrapper">
+                            <h1 className="text-primary text-center mb-3">
+                                Choose Your Plan and Start Getting Project Leads Today
+                            </h1>
+                            <p className="mb-4 text-white text-center fs-5 fw-medium">
+                                Unlock full access to jobs, messaging, and contractor tools — no hidden fees.
+                            </p>
+                            <ul className="nav nav-tabs mb-4" role="tablist">
+                                <li className="nav-item" role="presentation">
+                                    <button
+                                        className={`nav-link ${activeTab === 'subcontractor' ? 'active' : ''}`}
+                                        type="button"
+                                        onClick={() => setActiveTab('subcontractor')}
+                                    >
+                                        Subcontractor
+                                    </button>
+                                </li>
+                                <li className="nav-item" role="presentation">
+                                    <button
+                                        className={`nav-link ${activeTab === 'affiliate' ? 'active' : ''}`}
+                                        type="button"
+                                        onClick={() => setActiveTab('affiliate')}
+                                    >
+                                        Affiliate
+                                    </button>
+                                </li>
+                                <li className="nav-item" role="presentation">
+                                    <button
+                                        className={`nav-link ${activeTab === 'general_contractor' ? 'active' : ''}`}
+                                        type="button"
+                                        onClick={() => setActiveTab('general_contractor')}
+                                    >
+                                        General Contractor
+                                    </button>
+                                </li>
+                                <span
+                                    className="slider"
+                                    style={{
+                                        width: activeTab === 'affiliate' ? '30%' : activeTab === 'general_contractor' ? '40%' : '33.333%',
+                                        transform:
+                                            activeTab === 'subcontractor'
+                                                ? 'translateX(0%)'
+                                                : activeTab === 'affiliate'
+                                                    ? 'translateX(105%)'
+                                                    : 'translateX(150%)',
+                                    }}
+                                />
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                {loading ?
+                    <>
+                        <div className="sections overflow-hidden py-5 my-5">
+                            <section className="banner-sec profile position-static">
+                                <div className="container">
+                                    <div className="row">
+                                        <div className="col-12 text-center py-5">
+                                            <div className="spinner-border text-primary" role="status">
+                                                <span className="visually-hidden">Loading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </> :
+                    <section className="pricing-sec">
+                        <div className="container-fluid">
+                            <div className="tab-content pricing-wrapper">
+                                <div
+                                    className={`tab-pane fade ${activeTab === 'subcontractor' ? 'show active' : ''} pricing-content`}
+                                    id="subcontractor">
+                                    <div className="row g-3 justify-content-center">
+                                        {plans.length > 0 ? (
+                                            plans.map((plan) => renderPlanCard(plan))
+                                        ) : (
+                                            <div className="col-12 text-center py-5">
+                                                <p>No plans available at this time.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div
+                                    className={`tab-pane fade ${activeTab === 'affiliate' ? 'show active' : ''} pricing-content`}
+                                    id="affiliate">
+                                    <div className="row g-3 justify-content-center">
+                                        {plans.length > 0 ? (
+                                            plans.map((plan) => renderPlanCard(plan))
+                                        ) : (
+                                            <div className="col-12 text-center py-5">
+                                                <p>No affiliate plans available at this time.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div
+                                    className={`tab-pane fade ${activeTab === 'general_contractor' ? 'show active' : ''} pricing-content`}
+                                    id="general_contractor">
+                                    <div className="row g-3 justify-content-center">
+                                        {plans.length > 0 ? (
+                                            plans.map((plan) => renderPlanCard(plan))
+                                        ) : (
+                                            <div className="col-12 text-center py-5">
+                                                <p>No General Contractor plans available at this time.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                }
+                {error &&
+                    <div className="sections overflow-hidden">
+                        <section className="banner-sec profile position-static">
+                            <div className="container">
+                                <div className="row">
+                                    <div className="col-12 text-center py-5">
+                                        <p className="text-danger">{error}</p>
+                                        <button
+                                            className="btn btn-primary mt-3"
+                                            onClick={() => window.location.reload()}
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                }
+
+            </div>
+            <Footer />
+        </div>
+    );
+}

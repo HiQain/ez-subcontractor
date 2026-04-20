@@ -1,0 +1,181 @@
+.hero-sec.login .image-wrapper .left-image {
+  position: fixed;
+  inset: 0;
+  object-fit: cover;
+  width: 50%;
+  height: 100vh;
+}
+.hero-sec.login .image-wrapper .main-title {
+  font-weight: 600;
+  position: fixed;
+  left: 30px;
+  bottom: 30px;
+  color: white;
+}
+.hero-sec.login .content-wrapper {
+  width: 100%;
+  margin-left: auto;
+  min-height: 100vh;
+  max-width: 482px;
+  margin: 0 auto;
+  /* screen height se chhoti na ho */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.hero-sec.login .content-wrapper .content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+.hero-sec.login .content-wrapper .content .numbers {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.hero-sec.login .content-wrapper .content .numbers .number {
+  background-color: #F9F9F9;
+  width: 77px;
+  height: 61px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: clamp(20px, 2.5vw, 24px);
+  font-weight: 600;
+  color: #000000;
+  margin-bottom: 15px;
+  border: none;
+  border: 1px solid #124944;
+  text-align: center;
+}
+.hero-sec.login .content-wrapper .content .numbers .number.active {
+  border: none;
+}
+.hero-sec.login .content-wrapper .content .timer-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 30px;
+  border: 1px solid #C9DA2B;
+  width: fit-content;
+  margin: 0 auto;
+  margin-bottom: 10px;
+}
+.hero-sec.login .content-wrapper .content .form {
+  display: grid;
+  gap: 20px;
+}
+.hero-sec.login .content-wrapper .content .icon {
+  width: 80px;
+  height: 46px;
+  border: 1px solid #dadada;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 40px;
+}
+.hero-sec.login .content-wrapper .account-card {
+  background-color: #F9F9F9;
+  border-radius: 25px;
+  padding: 20px 40px;
+  position: relative;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.hero-sec.login .content-wrapper .note-card {
+  background-color: rgba(0, 187, 255, 0.062745098);
+  border: 1px solid #00BBFF;
+  border-radius: 10px;
+  padding: 21px 35px;
+  font-weight: 500;
+  font-size: 14px;
+}
+.hero-sec.login .register-topbar {
+  background-color: #F9F9F9;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.eye-icon.active .slash {
+  stroke: none;
+}
+
+/* Slide-up animation from bottom */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Apply animation to error messages */
+.text-danger.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+/* Media Query */
+@media (min-width: 768px) {
+  .input-wrapper-s1 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+@media (max-width: 992px) {
+  .hero-sec {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .hero-sec .image-wrapper .left-image {
+    display: none;
+  }
+  .hero-sec .image-wrapper .main-title {
+    color: #272727 !important;
+    position: static !important;
+    padding: 20px !important;
+    text-align: center !important;
+  }
+  .hero-sec .content-wrapper {
+    width: 100%;
+    min-height: 100% !important;
+  }
+}
+@media (max-width: 768px) {
+  .input-wrapper-s1 {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+@media (max-width: 576px) {
+  .hero-sec.login {
+    height: 100%;
+    justify-content: space-between !important;
+  }
+  .hero-sec.login .content-wrapper .content .account-wrapper {
+    grid-template-columns: 1fr;
+  }
+  .hero-sec.login .content-wrapper .content .input-wrapper-s2 .buttons {
+    flex-wrap: wrap;
+  }
+  .login-s1 {
+    height: 100vh !important;
+  }
+}
+
+/*# sourceMappingURL=login.css.map */

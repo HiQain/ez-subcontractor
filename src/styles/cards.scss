@@ -1,0 +1,71 @@
+$primary: #C9DA2B !important;
+$gray: #F9F9F9 !important;
+$gray-light: #9A9A9A !important;
+$dark: #272727 !important;
+$danger: #DC2626;
+
+.project-sec {
+  padding: 50px 0;
+
+  .main-card-slide {
+    margin-bottom: 30px;
+  }
+
+  .description {
+    font-weight: 600;
+    color: #6d6d6d;
+  }
+
+  .custom-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+
+    .page-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: $dark;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &.active,
+      &:hover {
+        background: $primary;
+        border: 2px solid $dark;
+        width: 29px;
+        height: 11px;
+        border-radius: 30px;
+      }
+    }
+  }
+}
+.description {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.3s ease;
+
+  &.expanded {
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+}
+.see-more-btn {
+  background: none;
+  border: none;
+  color: $primary;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 5px;
+  padding: 0;
+}
+.custom-card.has-more {
+  .see-more-btn {
+    display: inline-block;
+  }
+}
+

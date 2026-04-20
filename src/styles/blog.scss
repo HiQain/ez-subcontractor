@@ -1,0 +1,112 @@
+$primary: #C9DA2B;
+$gray: #F9F9F9;
+$gray-light: #9A9A9A;
+$dark: #272727;
+
+
+.hero-sec.blog {
+    padding-top: 160px;
+    padding-bottom: 70px;
+    .hero-img {
+        border-radius: 36px;
+        box-shadow: 0 10px 15px 0 #00000025;
+    }
+    &:before {
+        display: none;
+    }
+}
+
+/* Blog Section */
+.blog-sec {
+    padding: 50px 0;
+    .blog-wrapper {
+        background: center /contain no-repeat;
+        max-width: 568px;
+        width: 100%;
+        height: 444px;
+        border-radius: 28px;
+        padding: 22px;
+        display: block;
+        text-decoration: none;
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background-color: $dark;
+            z-index: -1;
+            opacity: 0.1;
+        }
+    }
+    .feature-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: black;
+    }
+    .feature-post {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 16px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        .date {
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .description {
+            font-size: 14px;
+            text-decoration: none;
+            color: $dark;
+            display: block;
+            line-height: 1.2;
+            font-weight: 500;
+        }
+    }
+    .blog-single-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+    .blog-single-description {
+        font-weight: 500;
+        margin-bottom: 30px;
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+.blog-single-hero {
+    background: center /cover no-repeat;
+    height: 685px;
+    width: 100%;
+}
+
+/* Media Query */
+@media (max-width: 992px) {
+    .blog-sec {
+        .blog-wrapper {
+            height: 350px !important;
+        }
+    }
+    .blog-single-hero {
+        height: 400px;
+    }
+}
+@media (max-width: 768px) {
+    .blog-sec {
+        .blog-wrapper {
+            height: 250px !important;
+        }
+    }
+}

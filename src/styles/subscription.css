@@ -1,0 +1,31 @@
+/* Hero */
+
+.hero-sec {
+    position: relative;
+    z-index: 1;
+    padding-top: 160px;
+    padding-bottom: 70px;
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+.hero-sec::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--custom-dark);
+    opacity: .85;
+    z-index: -1;
+}
+
+.hero-sec .content-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.hero-sec .pricing-tabs {
+    background-color: white;
+    border-color: white;
+}
